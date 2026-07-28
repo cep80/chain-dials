@@ -1,36 +1,53 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# BTC Dash
 
-## Getting Started
+A living instrument panel for Bitcoin network health — fundamentals first, charts second.
 
-First, run the development server:
+Live data from [mempool.space](https://mempool.space). Favorites-first layout, sparklines, deltas, block-found moments, Lightning tip jar, partner slot, and Pro teasers.
+
+## Observatory
+
+Five signature instruments (not TradingView clones):
+
+1. **Block Metronome** — radial 10-minute cadence clock
+2. **Mempool Atmosphere** — fee-altitude particle weather
+3. **Tip Sigil** — generative glyph from the tip hash (click to copy)
+4. **Issuance Hourglass** — 21M remaining vs issued + halving neck
+5. **Hashrate Forge** — security intensity + difficulty orbit
+
+## Quick start
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Command | What it does |
+|---------|----------------|
+| `npm run dev` | Dev server |
+| `npm run build` | Production build |
+| `npm run start` | Serve production build |
+| `npm run lint` | ESLint |
 
-## Learn More
+## Configure
 
-To learn more about Next.js, take a look at the following resources:
+Copy `.env.example` to `.env.local` and set:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `NEXT_PUBLIC_LN_ADDRESS` — Lightning Address / LNURL for tips
+- `NEXT_PUBLIC_PARTNER_*` — labeled affiliate slot
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Stack
 
-## Deploy on Vercel
+- Next.js App Router + TypeScript + Tailwind CSS v4
+- Framer Motion
+- Zustand
+- mempool.space REST + WebSocket
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Product notes
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Free board forever (price, tip, mempool, fees, mining, LN, supply)
+- Pro (phase 2): alerts, wall mode, longer history, saved layouts
+- Monetization rails in v1: tip jar, partner slot, Pro soft gates
