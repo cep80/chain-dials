@@ -8,7 +8,7 @@ export function lerp(a: number, b: number, t: number): number {
   return a + (b - a) * t;
 }
 
-/** Map hashrate to 0–1 using recent history min/max with padding. */
+/** Map hashrate to 0-1 using recent history min/max with padding. */
 export function normalizeHashrate(
   current: number | null,
   history: { v: number }[],
@@ -16,7 +16,7 @@ export function normalizeHashrate(
   if (current == null || !Number.isFinite(current)) return 0.35;
   const values = history.map((h) => h.v).filter(Number.isFinite);
   if (values.length < 2) {
-    // Rough network-scale fallback (~500–1200 EH/s era)
+    // Rough network-scale fallback (~500-1200 EH/s era)
     const eh = current / 1e18;
     return clamp((eh - 400) / 800, 0.15, 1);
   }
@@ -39,9 +39,12 @@ export function metronomeProgress(secondsSince: number | null, target = 600): nu
 
 export type MetronomeTone = "calm" | "late" | "stale";
 
-export function metronomeTone(secondsSince: number | null): MetronomeTone {
+export function metronomeTone(
+  secondsSince: number | null,
+  target = 600,
+): MetronomeTone {
   if (secondsSince == null) return "calm";
-  if (secondsSince > 20 * 60) return "stale";
-  if (secondsSince > 12 * 60) return "late";
+  if (secondsSince > target * 2) return "stale";
+  if (secondsSince > target * 1.2) return "late";
   return "calm";
 }

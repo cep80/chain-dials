@@ -13,7 +13,7 @@ export function MempoolMeter({ pressure }: { pressure: number | null }) {
     <div className="mt-3">
       <div className="mb-1 flex justify-between text-[10px] uppercase tracking-wider text-paper-muted">
         <span>Pressure</span>
-        <span className="mono">{pressure == null ? "—" : `${pressure.toFixed(0)}%`}</span>
+        <span className="mono">{pressure == null ? "-" : `${pressure.toFixed(0)}%`}</span>
       </div>
       <div className="h-2 overflow-hidden rounded-full bg-ink-soft">
         <motion.div

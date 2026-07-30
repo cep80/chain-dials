@@ -1,12 +1,13 @@
 "use client";
 
-import { useReducedMotion } from "framer-motion";
+import { Hint } from "@/components/ui/Hint";
+import { useAppReducedMotion } from "@/lib/settings/use-app-reduced-motion";
 import { useDashboardStore } from "@/lib/store";
 
 const LABELS = {
-  connecting: "Connecting",
+  connecting: "Waking up",
   connected: "Live",
-  degraded: "Degraded",
+  degraded: "Spotty",
   disconnected: "Offline",
 } as const;
 
@@ -19,22 +20,26 @@ const COLORS = {
 
 export function ConnectionStatus() {
   const connection = useDashboardStore((s) => s.connection);
-  const reduce = useReducedMotion();
+  const reduce = useAppReducedMotion();
 
   return (
-    <div
-      className="flex items-center gap-2 text-xs text-paper-muted"
-      title={`Connection: ${LABELS[connection]}`}
-    >
-      <span className="relative flex h-2.5 w-2.5">
-        {connection === "connected" && !reduce && (
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-up opacity-40" />
-        )}
-        <span
-          className={`relative inline-flex h-2.5 w-2.5 rounded-full ${COLORS[connection]}`}
-        />
-      </span>
-      <span className="hidden sm:inline">{LABELS[connection]}</span>
-    </div>
+    <Hint tip="status.connection">
+      <div
+        className="flex min-h-11 items-center gap-2 text-xs text-paper-muted"
+        tabIndex={0}
+      >
+        <span className="relative flex h-2.5 w-2.5">
+          {connection === "connected" && !reduce && (
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-up opacity-40" />
+          )}
+          <span
+            className={`relative inline-flex h-2.5 w-2.5 rounded-full ${COLORS[connection]}`}
+          />
+        </span>
+        <span className="hidden underline decoration-dotted decoration-paper-muted/40 underline-offset-2 sm:inline">
+          {LABELS[connection]}
+        </span>
+      </div>
+    </Hint>
   );
 }

@@ -2,6 +2,7 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import { useId, useMemo } from "react";
+import { useChainOptional } from "@/lib/chains/context";
 import { formatHashrate, formatPercent, formatPlainPercent } from "@/lib/format";
 import { useDashboardStore } from "@/lib/store";
 import { normalizeHashrate } from "@/lib/viz-scale";
@@ -29,19 +30,34 @@ export function HashrateForge({
   const retargetProgress = useDashboardStore((s) => s.live.retargetProgress);
   const retargetChange = useDashboardStore((s) => s.live.retargetChange);
   const retargetBlocks = useDashboardStore((s) => s.live.retargetBlocks);
+  const securityScore = useDashboardStore((s) => s.live.securityScore);
+  const forgeLabel = useDashboardStore((s) => s.live.forgeLabel);
   const boardPulse = useDashboardStore((s) => s.boardPulse);
   const histories = useDashboardStore((s) => s.histories);
+  const chain = useChainOptional();
   const reduce = useReducedMotion();
   const uid = useId().replace(/:/g, "");
   const coreGrad = `forge-core-${uid}`;
   const heatGrad = `forge-heat-${uid}`;
+  const isPow = !chain || chain.id === "btc";
 
-  const intensity = normalizeHashrate(hashrate, histories.hashrate ?? []);
+  const intensity = isPow
+    ? normalizeHashrate(hashrate, histories.hashrate ?? [])
+    : Math.max(0.12, Math.min(1, securityScore ?? 0.35));
   const orbit = Math.max(0, Math.min(100, retargetProgress ?? 0)) / 100;
   const changeUp = (retargetChange ?? 0) >= 0;
   const markerAngle = -Math.PI / 2 + orbit * Math.PI * 2;
   const markerX = px(CX + Math.cos(markerAngle) * ORBIT_R);
   const markerY = px(CY + Math.sin(markerAngle) * ORBIT_R);
+
+  const reading = isPow
+    ? formatHashrate(hashrate)
+    : (forgeLabel ??
+      (securityScore != null
+        ? `${Math.round(securityScore * 100)}% heat`
+        : "-"));
+
+  const meta = chain?.instruments.forge;
 
   const embers = useMemo(() => {
     const n = compact ? 8 : stage ? 20 : 14;
@@ -58,7 +74,9 @@ export function HashrateForge({
     });
   }, [compact, stage]);
 
-  const aria = `Hashrate forge. Network hashrate ${formatHashrate(hashrate)}. Difficulty epoch ${formatPlainPercent(retargetProgress ?? 0, 1)} complete. Estimated retarget ${formatPercent(retargetChange, 1)}.`;
+  const aria = isPow
+    ? `Hashrate forge. Network hashrate ${formatHashrate(hashrate)}. Difficulty epoch ${formatPlainPercent(retargetProgress ?? 0, 1)} complete. Estimated retarget ${formatPercent(retargetChange, 1)}.`
+    : `Security forge. ${reading}. Epoch ${formatPlainPercent(retargetProgress ?? 0, 1)} complete.`;
 
   const forge = (
     <div
@@ -113,7 +131,7 @@ export function HashrateForge({
           opacity={0.85}
         />
 
-        {/* Orbit marker — position tracks retarget progress */}
+        {/* Orbit marker - position tracks retarget progress */}
         <motion.circle
           cx={markerX}
           cy={markerY}
@@ -289,17 +307,19 @@ export function HashrateForge({
       <div className="flex flex-col items-center gap-6">
         {forge}
         <p className="mono text-5xl font-medium text-paper md:text-7xl">
-          {formatHashrate(hashrate)}
+          {isPow ? formatHashrate(hashrate) : `${Math.round(intensity * 100)}%`}
         </p>
         <p className="text-xs uppercase tracking-[0.2em] text-paper-muted">
-          network hashrate
+          {isPow
+            ? "how hard the network is hashing"
+            : (forgeLabel ?? "security heat")}
           {retargetProgress != null
             ? ` · epoch ${formatPlainPercent(retargetProgress, 1)}`
             : ""}
-          {retargetChange != null
-            ? ` · retarget ${formatPercent(retargetChange, 1)}`
+          {isPow && retargetChange != null
+            ? ` · next tweak ~${formatPercent(retargetChange, 1)}`
             : ""}
-          {retargetBlocks != null ? ` · ${retargetBlocks} blocks left` : ""}
+          {retargetBlocks != null ? ` · ${retargetBlocks} left` : ""}
         </p>
       </div>
     );
@@ -307,13 +327,14 @@ export function HashrateForge({
 
   return (
     <InstrumentFrame
-      title="Forge"
+      title={meta?.frameTitle ?? "Forge"}
       subtitle={
-        retargetProgress != null
-          ? `Heat vs recent session · epoch ${formatPlainPercent(retargetProgress, 0)}`
-          : "Heat vs recent session · difficulty orbit"
+        meta?.subtitle ??
+        (retargetProgress != null
+          ? `Glow vs this session · epoch ${formatPlainPercent(retargetProgress, 0)} through`
+          : "Glow vs this session · difficulty orbit")
       }
-      reading={formatHashrate(hashrate)}
+      reading={reading}
       large={large}
       instrumentId="forge"
     >

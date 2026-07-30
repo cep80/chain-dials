@@ -7,8 +7,9 @@ import {
   percentIssued,
   subsidyEpoch,
 } from "@/lib/bitcoin";
-import { loadFavorites, saveFavorites } from "@/lib/favorites";
+import { defaultFavoritesFor, loadFavorites, saveFavorites } from "@/lib/favorites";
 import { DEFAULT_FAVORITES } from "@/lib/metrics";
+import type { ChainId } from "@/lib/chains/types";
 import { mempoolRest } from "@/lib/mempool-rest";
 import { MempoolWs } from "@/lib/mempool-ws";
 import {
@@ -89,6 +90,7 @@ export interface DashboardState {
   hydrated: boolean;
   connection: ConnectionStatus;
   favorites: MetricId[];
+  favoriteChainId: ChainId;
   expandedId: MetricId | null;
   histories: Histories;
   flash: Partial<Record<MetricId, "up" | "down">>;
@@ -100,8 +102,13 @@ export interface DashboardState {
   setExpanded: (id: MetricId | null) => void;
   toggleFavorite: (id: MetricId) => void;
   pinDefaults: () => void;
+  /** Reload favorites for the active chain board. */
+  loadFavoritesFor: (chainId: ChainId) => void;
   clearToast: () => void;
   tick: () => void;
+  /** Patch live fields without mempool ingest (alt-chain bridge). */
+  patchLive: (partial: Partial<LiveSnapshot>, opts?: { pulse?: boolean; connection?: ConnectionStatus }) => void;
+  resetLive: () => void;
   start: () => () => void;
 }
 
@@ -131,6 +138,16 @@ const emptyLive: LiveSnapshot = {
   recentTxs: [],
   feeHistogram: [],
   mempoolBlocks: [],
+  baseFeeSeries: [],
+  prioritySeries: [],
+  mempoolPressure: null,
+  securityScore: null,
+  forgeLabel: null,
+  issuanceProgress: null,
+  supplyProgress: null,
+  inflationRate: null,
+  burnEthPerBlock: null,
+  feedSource: null,
   lastRestAt: null,
   lastWsAt: null,
 };
@@ -153,7 +170,7 @@ function mergeRecentTxs(
   const incomingIds = new Set<string>();
   const merged: AtmosphereTx[] = [];
 
-  // Keep existing particles stable — update in previous order first
+  // Keep existing particles stable - update in previous order first
   for (const old of prev) {
     const raw = incoming.find((t) => t.txid === old.txid);
     if (raw && raw.vsize) {
@@ -242,6 +259,7 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
   hydrated: false,
   connection: "disconnected" as ConnectionStatus,
   favorites: [...DEFAULT_FAVORITES],
+  favoriteChainId: "btc" as ChainId,
   expandedId: null,
   histories: {},
   flash: {},
@@ -254,9 +272,16 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
     if (get().hydrated) return;
     set({
       hydrated: true,
-      favorites: loadFavorites(),
+      favorites: loadFavorites("btc"),
       histories: loadHistory(),
       now: Date.now(),
+    });
+  },
+
+  loadFavoritesFor: (chainId) => {
+    set({
+      favoriteChainId: chainId,
+      favorites: loadFavorites(chainId),
     });
   },
 
@@ -264,19 +289,39 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
 
   toggleFavorite: (id) => {
     const current = get().favorites;
+    const chainId = get().favoriteChainId;
     const next = current.includes(id)
       ? current.filter((x) => x !== id)
       : [...current, id];
-    saveFavorites(next);
+    saveFavorites(next, chainId);
     set({ favorites: next });
   },
 
   pinDefaults: () => {
-    saveFavorites([...DEFAULT_FAVORITES]);
-    set({ favorites: [...DEFAULT_FAVORITES] });
+    const chainId = get().favoriteChainId;
+    const pins = defaultFavoritesFor(chainId);
+    saveFavorites(pins, chainId);
+    set({ favorites: pins });
   },
 
   clearToast: () => set({ blockToast: null }),
+
+  patchLive: (partial, opts) => {
+    const pulse = opts?.pulse ? get().boardPulse + 1 : get().boardPulse;
+    set({
+      live: { ...get().live, ...partial },
+      boardPulse: pulse,
+      ...(opts?.connection ? { connection: opts.connection } : {}),
+    });
+  },
+
+  resetLive: () =>
+    set({
+      live: emptyLive,
+      connection: "connecting",
+      boardPulse: 0,
+      blockToast: null,
+    }),
 
   tick: () => set({ now: Date.now() }),
 
@@ -566,7 +611,7 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
 
         if (msg.mempoolInfo) {
           const m = msg.mempoolInfo as { size?: number; bytes?: number };
-          // size = tx count. Prefer not to treat bytes as vsize — REST owns vsize/pressure.
+          // size = tx count. Prefer not to treat bytes as vsize - REST owns vsize/pressure.
           if (typeof m.size === "number") {
             ingestMempool(
               m.size,
@@ -608,7 +653,7 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
       get().tick();
       sinceSample += 1;
       const tipTs = get().live.tipTimestamp;
-      // Sample sparklines every 30s — display uses live `now` every tick
+      // Sample sparklines every 30s - display uses live `now` every tick
       if (tipTs && sinceSample % 30 === 0) {
         applyNumeric(set, get, "time_since_block", (Date.now() - tipTs) / 1000);
       }
@@ -737,7 +782,7 @@ export function getMetricDisplay(
     case "money_supply":
       return formatBtc(v, 2);
     default:
-      return "—";
+      return "-";
   }
 }
 

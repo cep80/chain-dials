@@ -19,33 +19,33 @@ export const INSTRUMENT_META: Record<
 > = {
   metronome: {
     title: "Block Metronome",
-    subtitle: "Cadence of the timechain",
+    subtitle: "Is the chain still humming?",
     narrative:
-      "Bitcoin targets a block every ten minutes. This dial is the network’s heartbeat — calm near the mark, tense when the tip goes quiet.",
+      "Bitcoin aims for a new block about every ten minutes, give or take. When the hand sits near the mark, miners are on schedule. When it keeps going… well, sometimes the network just takes a long breath.",
   },
   atmosphere: {
     title: "Mempool Atmosphere",
-    subtitle: "Live transactions as weather",
+    subtitle: "What’s waiting to get in a block",
     narrative:
-      "Mist shows the full mempool by fee altitude (from the fee histogram). Bright dots are a recent transaction sample — click one to inspect fee, size, value, and open it on mempool.space.",
+      "The mist is the whole waiting room, stacked by how much people are paying (fee rate). The bright dots are a handful of recent transactions. Click one to peek at fees and size, or poke empty space to open this fullscreen.",
   },
   sigil: {
     title: "Tip Sigil",
-    subtitle: "Identity of the chain tip",
+    subtitle: "A doodle of the latest block",
     narrative:
-      "Each block hash folds into a unique glyph. When the tip advances, a new fingerprint is born — the face of consensus.",
+      "Every block has a fingerprint (its hash). We fold that into a little glyph so the tip has a face you can recognize. New block? New doodle. Click it if you want the full hash on your clipboard.",
   },
   issuance: {
     title: "Issuance Hourglass",
-    subtitle: "Toward the 21 million hard cap",
+    subtitle: "Countdown to the next halving",
     narrative:
-      "Sand below is money already minted. Sand above is what remains. The neck tracks progress through the current subsidy epoch.",
+      "Sand tracks this subsidy era: how far we are through the stretch until miners’ block reward halves again. The tiny ring in the neck is the long story: how much of the 21 million is already out in the world.",
   },
   forge: {
     title: "Hashrate Forge",
-    subtitle: "Security as living heat",
+    subtitle: "How hard the network is working",
     narrative:
-      "Ember intensity tracks network hashrate. The outer orbit is the difficulty epoch — where the forge retargets every 2016 blocks.",
+      "Brighter heat means more hashing power securing the chain. The outer ring is the difficulty epoch. Every 2016 blocks, Bitcoin adjusts how hard it is to find the next one.",
   },
 };
 

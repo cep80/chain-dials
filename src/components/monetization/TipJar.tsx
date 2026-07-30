@@ -1,7 +1,9 @@
 "use client";
 
-const LN_ADDRESS =
-  process.env.NEXT_PUBLIC_LN_ADDRESS ?? "tips@example.com";
+import { Hint } from "@/components/ui/Hint";
+
+const LN_ADDRESS = process.env.NEXT_PUBLIC_LN_ADDRESS?.trim() ?? "";
+const PLACEHOLDER = !LN_ADDRESS || LN_ADDRESS === "tips@example.com";
 
 function BoltIcon() {
   return (
@@ -11,7 +13,22 @@ function BoltIcon() {
   );
 }
 
-export function TipJar() {
+/** Suite tip jar (Lightning). Same rail on every board. */
+export function TipJar({ label = "Tip a few sats" }: { label?: string }) {
+  if (PLACEHOLDER) {
+    return (
+      <Hint tip="tip.jar">
+        <span
+          className="inline-flex items-center gap-2 rounded-full border border-line px-4 py-2 text-sm text-paper-muted"
+          title="Set NEXT_PUBLIC_LN_ADDRESS to enable tips"
+        >
+          <BoltIcon />
+          Tips soon
+        </span>
+      </Hint>
+    );
+  }
+
   const href = LN_ADDRESS.includes("@")
     ? `lightning:${LN_ADDRESS}`
     : LN_ADDRESS.startsWith("lnbc")
@@ -19,13 +36,14 @@ export function TipJar() {
       : LN_ADDRESS;
 
   return (
-    <a
-      href={href}
-      className="inline-flex items-center gap-2 rounded-full border border-accent/40 bg-accent/10 px-4 py-2 text-sm font-semibold text-accent transition hover:bg-accent/20"
-      title={`Tip via Lightning · ${LN_ADDRESS}`}
-    >
-      <BoltIcon />
-      Tip sats
-    </a>
+    <Hint tip="tip.jar">
+      <a
+        href={href}
+        className="inline-flex items-center gap-2 rounded-full border border-accent/40 bg-accent/10 px-4 py-2 text-sm font-semibold text-accent transition hover:bg-accent/20"
+      >
+        <BoltIcon />
+        {label}
+      </a>
+    </Hint>
   );
 }

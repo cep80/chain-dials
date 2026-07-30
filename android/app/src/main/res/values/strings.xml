@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Chain Dials</string>
+    <string name="title_activity_main">Chain Dials</string>
+    <string name="package_name">com.chaindials.app</string>
+    <string name="custom_url_scheme">com.chaindials.app</string>
+</resources>

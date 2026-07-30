@@ -1,0 +1,24 @@
+{
+  "android": {
+    "icon": {
+      "sources": ["assets/icon.png"]
+    },
+    "splash": {
+      "sources": ["assets/splash.png"]
+    }
+  },
+  "ios": {
+    "icon": {
+      "sources": ["assets/icon.png"]
+    },
+    "splash": {
+      "sources": ["assets/splash.png"]
+    }
+  },
+  "pwa": {
+    "icon": {
+      "sources": ["assets/icon.png"]
+    },
+    "manifestPath": null
+  }
+}

@@ -8,10 +8,77 @@ import { HashrateForge } from "@/components/viz/HashrateForge";
 import { IssuanceHourglass } from "@/components/viz/IssuanceHourglass";
 import { MempoolAtmosphere } from "@/components/viz/MempoolAtmosphere";
 import { TipSigil } from "@/components/viz/TipSigil";
+import { BaseFeeTide } from "@/components/viz/eth/BaseFeeTide";
+import { BlockMosaic } from "@/components/viz/eth/BlockMosaic";
+import { BurnCandle } from "@/components/viz/eth/BurnCandle";
+import { SlotLattice } from "@/components/viz/eth/SlotLattice";
+import { ValidatorConstellation } from "@/components/viz/eth/ValidatorConstellation";
+import { ClearingClock } from "@/components/viz/hype/ClearingClock";
+import { FundingTide } from "@/components/viz/hype/FundingTide";
+import { HashTape } from "@/components/viz/hype/HashTape";
+import { OiVault } from "@/components/viz/hype/OiVault";
+import { VolumeFountain } from "@/components/viz/hype/VolumeFountain";
+import { InflationFountain } from "@/components/viz/sol/InflationFountain";
+import { LeaderRibbon } from "@/components/viz/sol/LeaderRibbon";
+import { PriorityJets } from "@/components/viz/sol/PriorityJets";
+import { StakeReef } from "@/components/viz/sol/StakeReef";
+import { TurbineTach } from "@/components/viz/sol/TurbineTach";
 import { useInstrumentStage } from "@/lib/instrument-stage";
-import { INSTRUMENT_META, type InstrumentId } from "@/lib/instruments";
+import { INSTRUMENT_META, INSTRUMENT_ORDER, type InstrumentId } from "@/lib/instruments";
+import { useChainOptional } from "@/lib/chains/context";
+import { ShareBar } from "@/components/share/ShareBar";
+import { useDashboardStore } from "@/lib/store";
+import { formatDuration, formatFee, formatHash, formatPlainPercent } from "@/lib/format";
 
 function StageBody({ id }: { id: InstrumentId }) {
+  const chain = useChainOptional();
+  const c = chain?.id ?? "btc";
+
+  if (c === "eth") {
+    switch (id) {
+      case "metronome":
+        return <SlotLattice stage />;
+      case "atmosphere":
+        return <BaseFeeTide stage />;
+      case "sigil":
+        return <BlockMosaic stage />;
+      case "issuance":
+        return <BurnCandle stage />;
+      case "forge":
+        return <ValidatorConstellation stage />;
+    }
+  }
+
+  if (c === "sol") {
+    switch (id) {
+      case "metronome":
+        return <TurbineTach stage />;
+      case "atmosphere":
+        return <PriorityJets stage />;
+      case "sigil":
+        return <LeaderRibbon stage />;
+      case "issuance":
+        return <InflationFountain stage />;
+      case "forge":
+        return <StakeReef stage />;
+    }
+  }
+
+  if (c === "hype") {
+    switch (id) {
+      case "metronome":
+        return <ClearingClock stage />;
+      case "atmosphere":
+        return <FundingTide stage />;
+      case "sigil":
+        return <HashTape stage />;
+      case "issuance":
+        return <VolumeFountain stage />;
+      case "forge":
+        return <OiVault stage />;
+    }
+  }
+
   switch (id) {
     case "metronome":
       return <BlockMetronome stage />;
@@ -103,6 +170,11 @@ export function InstrumentStage() {
       } else if (e.key === "f" || e.key === "F") {
         e.preventDefault();
         void toggleBrowserFullscreen();
+      } else if (e.key === "s" || e.key === "S") {
+        e.preventDefault();
+        document
+          .querySelector<HTMLButtonElement>('[data-share-x="stage"]')
+          ?.click();
       }
     };
     window.addEventListener("keydown", onKey);
@@ -115,9 +187,67 @@ export function InstrumentStage() {
     return () => document.removeEventListener("fullscreenchange", onFs);
   }, []);
 
-  if (!canPortal) return null;
+  const chain = useChainOptional();
+  const live = useDashboardStore((s) => s.live);
+  const now = useDashboardStore((s) => s.now);
+  const meta = active
+    ? (chain?.instruments[active] ?? INSTRUMENT_META[active])
+    : null;
+  const stageIndex = active ? INSTRUMENT_ORDER.indexOf(active) + 1 : 0;
+  const stageCount = INSTRUMENT_ORDER.length;
+  const frameTitle = active
+    ? (chain?.instruments[active]?.frameTitle ?? meta?.title)
+    : null;
 
-  const meta = active ? INSTRUMENT_META[active] : null;
+  const stageReading = (() => {
+    if (!active || !chain) return null;
+    const since =
+      live.tipTimestamp != null
+        ? formatDuration(Math.max(0, (now - live.tipTimestamp) / 1000))
+        : null;
+    if (active === "metronome") return since;
+    if (active === "atmosphere") {
+      if (chain.id === "eth") {
+        const base = live.baseFeeSeries[live.baseFeeSeries.length - 1];
+        return formatFee(base ?? live.feeFastest, "gwei");
+      }
+      if (chain.id === "sol") return formatFee(live.feeFastest, "µLamports");
+      if (chain.id === "hype") {
+        const f = live.baseFeeSeries[live.baseFeeSeries.length - 1];
+        if (f == null) return formatFee(live.feeFastest, "gwei");
+        const sign = f > 0 ? "+" : "";
+        return `${sign}${f.toFixed(2)} bps`;
+      }
+      return live.mempoolCount != null ? String(live.mempoolCount) : formatFee(live.feeFastest, "sat/vB");
+    }
+    if (active === "sigil") return formatHash(live.tipHash);
+    if (active === "issuance") {
+      if (chain.id === "eth") {
+        return live.burnEthPerBlock != null
+          ? `${live.burnEthPerBlock.toFixed(3)} ETH`
+          : formatPlainPercent(live.issuanceProgress, 0);
+      }
+      if (chain.id === "sol") {
+        return live.inflationRate != null
+          ? `${live.inflationRate.toFixed(1)}%`
+          : formatPlainPercent(live.issuanceProgress, 1);
+      }
+      if (chain.id === "hype") {
+        return live.inflationRate != null
+          ? `$${live.inflationRate.toFixed(1)}B`
+          : formatPlainPercent(live.issuanceProgress, 0);
+      }
+      return formatPlainPercent(live.issuanceProgress, 1);
+    }
+    if (active === "forge") return live.forgeLabel ?? formatPlainPercent(live.securityScore != null ? live.securityScore * 100 : null, 0);
+    return null;
+  })();
+
+  // Accent-tinted stage wash from CSS vars set by AppShell
+  const stageWash =
+    "radial-gradient(ellipse 70% 50% at 50% 20%, color-mix(in oklab, var(--accent) 18%, transparent), transparent 55%), var(--ink)";
+
+  if (!canPortal) return null;
 
   return createPortal(
     <AnimatePresence>
@@ -148,14 +278,13 @@ export function InstrumentStage() {
             exit={reduce ? undefined : { opacity: 0, y: 12, scale: 0.99 }}
             transition={{ type: "spring", stiffness: 280, damping: 28 }}
             style={{
-              background:
-                "radial-gradient(ellipse 70% 50% at 50% 20%, rgba(247,147,26,0.10), transparent 55%), var(--ink)",
+              background: stageWash,
             }}
           >
             <header className="flex items-start justify-between gap-4 border-b border-line/70 px-5 py-4 md:px-8 md:py-5">
               <div className="min-w-0">
                 <p className="text-[10px] uppercase tracking-[0.22em] text-accent">
-                  Observatory stage
+                  Up close
                 </p>
                 <h2
                   id={titleId}
@@ -168,6 +297,18 @@ export function InstrumentStage() {
                 </p>
               </div>
               <div className="flex shrink-0 items-center gap-2">
+                {chain && active && (
+                  <ShareBar
+                    iconOnly
+                    dataShare="stage"
+                    target={{
+                      kind: "instrument",
+                      chainId: chain.id,
+                      instrument: active,
+                      reading: stageReading,
+                    }}
+                  />
+                )}
                 <button
                   type="button"
                   onClick={() => void toggleBrowserFullscreen()}
@@ -175,7 +316,7 @@ export function InstrumentStage() {
                   aria-label={
                     browserFs ? "Exit browser fullscreen" : "Browser fullscreen"
                   }
-                  title="Browser fullscreen (F)"
+                  title="Fill the screen (F)"
                 >
                   <FullscreenIcon active={browserFs} />
                 </button>
@@ -233,6 +374,10 @@ export function InstrumentStage() {
 
             <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-line/70 px-5 py-3 text-[11px] text-paper-muted md:px-8">
               <div className="flex flex-wrap gap-3">
+                <span className="mono text-paper">
+                  {stageIndex}/{stageCount}
+                  {frameTitle ? ` · ${frameTitle}` : ""}
+                </span>
                 <span>
                   <kbd className="mono rounded border border-line px-1.5 py-0.5 text-paper">
                     Esc
@@ -252,7 +397,13 @@ export function InstrumentStage() {
                   <kbd className="mono rounded border border-line px-1.5 py-0.5 text-paper">
                     F
                   </kbd>{" "}
-                  display fullscreen
+                  fill the screen
+                </span>
+                <span>
+                  <kbd className="mono rounded border border-line px-1.5 py-0.5 text-paper">
+                    S
+                  </kbd>{" "}
+                  share
                 </span>
               </div>
               <div className="flex gap-2 md:hidden">

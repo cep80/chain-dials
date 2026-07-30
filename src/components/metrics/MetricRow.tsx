@@ -1,9 +1,11 @@
 "use client";
 
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
+import { Hint } from "@/components/ui/Hint";
 import { Sparkline } from "@/components/metrics/Sparkline";
 import { METRIC_BY_ID } from "@/lib/metrics";
 import { formatPercent } from "@/lib/format";
+import { useAppReducedMotion } from "@/lib/settings/use-app-reduced-motion";
 import {
   deltaFor,
   getMetricDisplay,
@@ -36,7 +38,7 @@ export function MetricRow({ id }: { id: MetricId }) {
   const expandedId = useDashboardStore((s) => s.expandedId);
   const toggleFavorite = useDashboardStore((s) => s.toggleFavorite);
   const setExpanded = useDashboardStore((s) => s.setExpanded);
-  const reduce = useReducedMotion();
+  const reduce = useAppReducedMotion();
 
   if (!def) return null;
 
@@ -81,14 +83,17 @@ export function MetricRow({ id }: { id: MetricId }) {
           }}
           className="flex w-8 shrink-0 items-center justify-center text-paper-muted hover:text-accent"
         >
-          <motion.span
-            key={pinned ? "on" : "off"}
-            initial={reduce ? false : { scale: 0.7 }}
-            animate={{ scale: 1 }}
-            transition={{ type: "spring", stiffness: 500, damping: 22 }}
-          >
-            <StarIcon filled={pinned} />
-          </motion.span>
+          <Hint tip="metric.pin">
+            <motion.span
+              key={pinned ? "on" : "off"}
+              initial={reduce ? false : { scale: 0.7 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", stiffness: 500, damping: 22 }}
+              className="inline-flex"
+            >
+              <StarIcon filled={pinned} />
+            </motion.span>
+          </Hint>
         </button>
 
         <button
@@ -98,7 +103,11 @@ export function MetricRow({ id }: { id: MetricId }) {
           aria-expanded={expanded}
         >
           <div className="min-w-0 flex-1">
-            <div className="truncate text-xs text-paper-muted">{def.label}</div>
+            <Hint tip="metric.row" className="max-w-full">
+              <div className="truncate text-xs text-paper-muted underline decoration-dotted decoration-paper-muted/40 underline-offset-2">
+                {def.label}
+              </div>
+            </Hint>
           </div>
           <div className="hidden w-14 shrink-0 sm:block">
             <Sparkline
@@ -117,7 +126,7 @@ export function MetricRow({ id }: { id: MetricId }) {
                 {formatPercent(pct, 1)}
               </span>
             ) : (
-              <span className="text-[11px] text-paper-muted/50">—</span>
+              <span className="text-[11px] text-paper-muted/50">-</span>
             )}
           </div>
           <div

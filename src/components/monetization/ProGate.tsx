@@ -2,9 +2,9 @@ import Link from "next/link";
 
 export function ProGate({
   title,
-  detail = "Free board stays free. Pro will unlock alerts, full wall mode, longer history, and saved layouts — not a lock on the numbers.",
-  ctaLabel = "Join Pro waitlist",
-  ctaHref = "/pro#waitlist",
+  detail = "The free board stays free. Pro will add alerts, a full wall, longer history, and saved layouts. Not a padlock on the numbers.",
+  ctaLabel = "Join the Pro waitlist",
+  ctaHref = "/btc/pro#waitlist",
   children,
 }: {
   title: string;
@@ -21,12 +21,12 @@ export function ProGate({
       <div className="absolute inset-0 flex items-center justify-center bg-ink/70 p-6 backdrop-blur-[2px]">
         <div className="max-w-sm rounded-[12px] border border-accent/40 bg-ink-elevated p-5 text-center">
           <p className="text-[10px] uppercase tracking-[0.2em] text-accent">
-            Pro preview
+            Coming later
           </p>
           <h2 className="mt-2 text-xl font-bold text-paper">{title}</h2>
           <p className="mt-2 text-sm text-paper-muted">{detail}</p>
           <p className="mt-3 text-xs text-paper-muted">
-            Checkout isn’t live yet. Live fundamentals stay free.
+            No checkout yet. The live board keeps humming for free.
           </p>
           <Link
             href={ctaHref}

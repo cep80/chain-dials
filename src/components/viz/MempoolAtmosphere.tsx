@@ -17,6 +17,7 @@ import {
   formatSats,
   formatUsd,
 } from "@/lib/format";
+import { useChainOptional } from "@/lib/chains/context";
 import { useDocumentVisible } from "@/lib/use-document-visible";
 import { useDashboardStore } from "@/lib/store";
 import { useInstrumentStage } from "@/lib/instrument-stage";
@@ -38,13 +39,13 @@ interface Particle {
   value: number;
   birth: number;
   pulse: number;
-  /** 0..1 draw opacity — fade in/out instead of pop */
+  /** 0..1 draw opacity - fade in/out instead of pop */
   alpha: number;
   /** When set, particle is leaving and will be removed at alpha 0 */
   dying: boolean;
 }
 
-/** Ambient density mote from fee histogram — not clickable. */
+/** Ambient density mote from fee histogram - not clickable. */
 interface DensityMote {
   x: number;
   y: number;
@@ -109,8 +110,18 @@ function TxInspector({
   priceUsd: number | null;
   onClose: () => void;
 }) {
-  const btc = tx.value / 1e8;
-  const usd = priceUsd != null ? btc * priceUsd : null;
+  const chain = useChainOptional();
+  const unit = chain?.feeUnit ?? "sat/vB";
+  const isBtc = !chain || chain.id === "btc";
+  const amount = isBtc ? tx.value / 1e8 : tx.value;
+  const usd =
+    priceUsd != null && amount > 0 ? amount * priceUsd : null;
+  const explorer =
+    chain?.explorerTx(tx.txid) ?? `https://mempool.space/tx/${tx.txid}`;
+  const canOpen =
+    isBtc ||
+    tx.txid.startsWith("0x") ||
+    (tx.txid.length > 32 && !tx.txid.includes("-"));
 
   return (
     <div
@@ -122,17 +133,21 @@ function TxInspector({
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-[10px] uppercase tracking-[0.18em] text-paper-muted">
-            Live mempool tx
+            A recent tx in the queue
           </p>
-          <a
-            href={`https://mempool.space/tx/${tx.txid}`}
-            target="_blank"
-            rel="noreferrer"
-            className="mono mt-1 block text-sm text-btc hover:underline"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {shortTx(tx.txid)}
-          </a>
+          {canOpen ? (
+            <a
+              href={explorer}
+              target="_blank"
+              rel="noreferrer"
+              className="mono mt-1 block text-sm text-accent hover:underline"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {shortTx(tx.txid)}
+            </a>
+          ) : (
+            <p className="mono mt-1 text-sm text-paper">{shortTx(tx.txid)}</p>
+          )}
         </div>
         <button
           type="button"
@@ -148,21 +163,41 @@ function TxInspector({
 
       <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-4">
         <div>
-          <dt className="text-[10px] uppercase tracking-wider text-paper-muted">Fee rate</dt>
-          <dd className="mono text-sm text-paper">{formatFee(tx.feeRate)}</dd>
-        </div>
-        <div>
-          <dt className="text-[10px] uppercase tracking-wider text-paper-muted">Fee</dt>
-          <dd className="mono text-sm text-paper">{formatSats(tx.fee)} sats</dd>
-        </div>
-        <div>
-          <dt className="text-[10px] uppercase tracking-wider text-paper-muted">Size</dt>
-          <dd className="mono text-sm text-paper">{formatInteger(tx.vsize)} vB</dd>
-        </div>
-        <div>
-          <dt className="text-[10px] uppercase tracking-wider text-paper-muted">Value</dt>
+          <dt className="text-[10px] uppercase tracking-wider text-paper-muted">
+            Fee rate
+          </dt>
           <dd className="mono text-sm text-paper">
-            {formatBtc(btc, 4)}
+            {formatFee(tx.feeRate, unit)}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-[10px] uppercase tracking-wider text-paper-muted">
+            Fee
+          </dt>
+          <dd className="mono text-sm text-paper">
+            {isBtc
+              ? `${formatSats(tx.fee)} sats`
+              : formatFee(tx.fee, unit)}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-[10px] uppercase tracking-wider text-paper-muted">
+            Size
+          </dt>
+          <dd className="mono text-sm text-paper">
+            {isBtc
+              ? `${formatInteger(tx.vsize)} vB`
+              : `${formatInteger(tx.vsize)} units`}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-[10px] uppercase tracking-wider text-paper-muted">
+            Value
+          </dt>
+          <dd className="mono text-sm text-paper">
+            {isBtc
+              ? formatBtc(amount, 4)
+              : `${amount.toFixed(4)} ${chain?.ticker ?? ""}`}
             {usd != null ? (
               <span className="ml-1 text-paper-muted">· {formatUsd(usd, 0)}</span>
             ) : null}
@@ -318,6 +353,7 @@ export function MempoolAtmosphere({
   const priceUsd = useDashboardStore((s) => s.live.priceUsd);
   const boardPulse = useDashboardStore((s) => s.boardPulse);
   const connection = useDashboardStore((s) => s.connection);
+  const chain = useChainOptional();
   const reduce = useReducedMotion();
   const visible = useDocumentVisible();
   const stageOpen = useInstrumentStage((s) => s.active);
@@ -345,7 +381,7 @@ export function MempoolAtmosphere({
   selectedRef.current = selectedId;
   hoverRef.current = hoverId;
 
-  // Block-found exhale — mist + sample flash with the rest of the Observatory
+  // Block-found exhale - mist + sample flash with the rest of the Observatory
   useEffect(() => {
     if (boardPulse <= 0 || reduce) return;
     setBlockFlash(boardPulse);
@@ -411,7 +447,7 @@ export function MempoolAtmosphere({
     );
   }, [feeHistogram, intensity, reduce, stage]);
 
-  // Canvas loop — stable deps only. Pressure/visibility live in refs so polls
+  // Canvas loop - stable deps only. Pressure/visibility live in refs so polls
   // don't clear the bitmap (that was the refresh flicker).
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -488,7 +524,7 @@ export function MempoolAtmosphere({
 
     const tick = () => {
       if (!visibleRef.current) {
-        // Park the loop while hidden / stage twin is showing — resume via visibility listener
+        // Park the loop while hidden / stage twin is showing - resume via visibility listener
         return;
       }
       const w = canvas.clientWidth;
@@ -503,7 +539,7 @@ export function MempoolAtmosphere({
       const list = particlesRef.current;
       const mist = densityRef.current;
 
-      // Ambient fee-histogram density (whole mempool shape — not clickable)
+      // Ambient fee-histogram density (whole mempool shape - not clickable)
       for (const m of mist) {
         m.x += m.vx;
         if (m.x < -4) m.x = w + 4;
@@ -562,7 +598,7 @@ export function MempoolAtmosphere({
       if (list.length === 0 && mist.length === 0) {
         ctx.fillStyle = "rgba(168,161,149,0.7)";
         ctx.font = "11px var(--font-mono), ui-monospace, monospace";
-        ctx.fillText("Waiting for mempool sample…", 12, h / 2);
+        ctx.fillText("Still fetching the queue…", 12, h / 2);
       }
 
       raf = requestAnimationFrame(tick);
@@ -682,7 +718,7 @@ export function MempoolAtmosphere({
 
   const sampleN = sampleLabel || recentTxs.length;
   const pendingLabel = count != null ? formatInteger(count) : null;
-  const aria = `Mempool atmosphere. ${pendingLabel ?? "Unknown"} pending. Mist shows fee-histogram density by vsize. ${sampleN} recent transactions are clickable. Empty area opens fullscreen.`;
+  const aria = `Mempool atmosphere. ${pendingLabel ?? "Unknown"} transactions waiting. Mist shows fee density. ${sampleN} recent transactions are clickable. Empty area opens a bigger view.`;
 
   const body = (
     <div
@@ -705,12 +741,12 @@ export function MempoolAtmosphere({
       {!compact ? (
         <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 p-2">
           <p className="mono text-[9px] uppercase tracking-wider text-paper-muted/80">
-            Mist = fee density · Dots = recent sample
+            Mist = who’s paying · Dots = recent txs
           </p>
           <p className="mono text-[9px] uppercase tracking-wider text-paper-muted/80">
-            {pendingLabel ? `${pendingLabel} pending` : "pending…"}
+            {pendingLabel ? `${pendingLabel} waiting` : "waiting…"}
             {sampleN > 0 ? ` · ${sampleN} clickable` : ""}
-            {sampleStale ? " · stale" : ""}
+            {sampleStale ? " · a bit stale" : ""}
           </p>
         </div>
       ) : null}
@@ -737,17 +773,17 @@ export function MempoolAtmosphere({
           />
         ) : (
           <p className="max-w-md text-center text-sm text-paper-muted">
-            Mist = full mempool by fee rate (vsize). Bright dots = recent sample —
-            click a dot to inspect; empty canvas clears selection.
+            Mist is the whole waiting room by fee rate. Bright dots are a recent
+            sample. Click one to peek; empty space clears the selection.
           </p>
         )}
         <p className="mono text-4xl font-medium text-paper md:text-6xl">
-          {pendingLabel ?? "—"}
+          {pendingLabel ?? "-"}
         </p>
         <p className="text-xs uppercase tracking-[0.2em] text-paper-muted">
-          pending in mempool
+          waiting in the mempool
           {pressurePct != null ? ` · ${formatPlainPercent(pressurePct, 0)} pressure` : ""}
-          {sampleN ? ` · ${sampleN} inspectable` : ""}
+          {sampleN ? ` · ${sampleN} to poke` : ""}
         </p>
       </div>
     );
@@ -755,9 +791,12 @@ export function MempoolAtmosphere({
 
   return (
     <InstrumentFrame
-      title="Atmosphere"
-      subtitle="Mist = density · dots = click · empty = stage"
-      reading={count != null ? `${formatInteger(count)} tx` : "—"}
+      title={chain?.instruments.atmosphere.frameTitle ?? "Atmosphere"}
+      subtitle={
+        chain?.instruments.atmosphere.subtitle ??
+        "Mist = queue · dots = peek · empty = go big"
+      }
+      reading={count != null ? `${formatInteger(count)} tx` : "-"}
       large={large}
       instrumentId="atmosphere"
     >

@@ -1,91 +1,85 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import Link from "next/link";
 import { AppShell } from "@/components/shell/AppShell";
-import { BlockFoundToast } from "@/components/shell/BlockFoundToast";
-import { PulseStrip } from "@/components/shell/PulseStrip";
-import { FavoritesBoard } from "@/components/favorites/FavoritesBoard";
-import { ModuleGrid } from "@/components/metrics/ModuleGrid";
-import { PartnerSlot } from "@/components/monetization/PartnerSlot";
-import { TipJar } from "@/components/monetization/TipJar";
-import { ProTeaser } from "@/components/monetization/ProTeaser";
-import { Observatory } from "@/components/viz/Observatory";
-import { useDashboardStore } from "@/lib/store";
+import { SuitePulseStrip } from "@/components/shell/SuitePulseStrip";
+import { SuitePriceStrip } from "@/components/price/SuitePriceStrip";
+import { ShareBar } from "@/components/share/ShareBar";
+import { Hint } from "@/components/ui/Hint";
+import { CHAIN_ORDER, CHAINS, SUITE, freshnessLabel } from "@/lib/chains/registry";
 
-export default function HomePage() {
-  const boardPulse = useDashboardStore((s) => s.boardPulse);
-  const reduce = useReducedMotion();
-
+export default function SuiteHomePage() {
   return (
-    <AppShell>
-      <div className="relative rounded-[14px]">
-        {!reduce && boardPulse > 0 && (
-          <motion.div
-            key={boardPulse}
-            aria-hidden
-            className="pointer-events-none absolute inset-0 z-10 rounded-[14px] border-2 border-accent"
-            initial={{ opacity: 0.55 }}
-            animate={{ opacity: 0 }}
-            transition={{ duration: 0.7, ease: "easeOut" }}
-          />
-        )}
-
-        <header className="mb-8 md:mb-10">
-          <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-            <div>
-              <p className="mb-2 text-xs uppercase tracking-[0.22em] text-accent">
-                Network instrument panel
-              </p>
-              <h1 className="text-4xl font-extrabold tracking-tight text-paper md:text-5xl lg:text-6xl">
-                BTC Dash
-              </h1>
-              <p className="mt-3 max-w-xl text-base text-paper-muted md:text-lg">
-                Bitcoin fundamentals, live — denser than a chart, clearer than a
-                terminal.
-              </p>
-            </div>
-            <div className="flex flex-wrap items-center gap-3">
-              <TipJar />
-              <a
-              href="/pro#waitlist"
-              className="rounded-full border border-line px-4 py-2 text-sm text-paper-muted transition hover:border-accent hover:text-paper"
-            >
-              Pro
-            </a>
-            </div>
+    <AppShell suiteHome>
+      <header className="mb-10 max-w-2xl">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="mb-2 text-xs uppercase tracking-[0.22em] text-accent">
+              Suite
+            </p>
+            <h1 className="text-4xl font-extrabold tracking-tight text-paper md:text-6xl">
+              {SUITE.name}
+            </h1>
           </div>
-        </header>
-
-        <PulseStrip />
-
-        <Observatory />
-
-        <div className="mt-8 grid gap-6 lg:grid-cols-[1.4fr_0.6fr]">
-          <FavoritesBoard />
-          <div className="flex flex-col gap-4">
-            <PartnerSlot />
-            <ProTeaser />
-          </div>
+          <ShareBar target={{ kind: "suite" }} />
         </div>
+        <p className="mt-4 text-lg text-paper-muted">{SUITE.tagline}</p>
+        <p className="mt-3 text-sm text-paper-muted">
+          Bitcoin keeps its classic dials. Ethereum gets a beacon room (lattice,
+          tide, mosaic, candle, sky). Solana gets a turbine bay (tach, jets,
+          ribbon, fountain, reef). Hyperliquid gets a clearing house (clock,
+          funding tide, tape, volume fountain, OI vault). Same habit, different
+          toys. New here?{" "}
+          <Link href="/settings" className="text-accent hover:underline">
+            Turn on newbie tooltips
+          </Link>{" "}
+          in Settings.
+        </p>
+      </header>
 
-        <section className="mt-12" aria-labelledby="catalog-heading">
-          <div className="mb-5 flex items-end justify-between gap-4">
-            <div>
-              <h2
-                id="catalog-heading"
-                className="text-2xl font-bold text-paper"
-              >
-                All modules
-              </h2>
-              <p className="mt-1 text-sm text-paper-muted">
-                Pin anything to Network Health. Click a row for definitions.
-              </p>
-            </div>
-          </div>
-          <ModuleGrid />
-        </section>
-      </div>
-      <BlockFoundToast />
+      <Hint tip="suite.pulse" as="div" className="mb-2 block w-full">
+        <SuitePulseStrip />
+      </Hint>
+
+      <SuitePriceStrip />
+
+      <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {CHAIN_ORDER.map((id) => {
+          const c = CHAINS[id];
+          return (
+            <li key={id}>
+              <Hint tip="suite.card" as="div" className="block h-full w-full">
+                <Link
+                  href={`/${c.slug}`}
+                  className="group flex h-full flex-col rounded-[14px] border border-line bg-ink-elevated/80 p-5 transition hover:border-accent/50"
+                  style={{ boxShadow: `inset 0 0 0 1px ${c.accent}22` }}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span
+                      className="rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-ink"
+                      style={{ background: c.accent }}
+                    >
+                      {c.shortName}
+                    </span>
+                    <span className="text-[10px] uppercase tracking-wider text-paper-muted">
+                      {freshnessLabel(c)}
+                    </span>
+                  </div>
+                  <h2 className="mt-4 text-2xl font-bold text-paper group-hover:text-accent">
+                    {c.name}
+                  </h2>
+                  <p className="mt-2 flex-1 text-sm leading-relaxed text-paper-muted">
+                    {c.blurb}
+                  </p>
+                  <span className="mt-4 text-xs font-semibold text-accent">
+                    Open board →
+                  </span>
+                </Link>
+              </Hint>
+            </li>
+          );
+        })}
+      </ul>
     </AppShell>
   );
 }

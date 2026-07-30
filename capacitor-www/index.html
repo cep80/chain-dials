@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="viewport-fit=cover, width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+    />
+    <meta name="theme-color" content="#0a0c10" />
+    <title>Chain Dials</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: #0a0c10;
+        color: #f3efe6;
+        font-family: system-ui, sans-serif;
+        display: grid;
+        place-items: center;
+      }
+      p {
+        opacity: 0.6;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <p>Chain Dials · loading native shell…</p>
+    <script>
+      // Fallback if CAP_SERVER_URL was not set at build time
+      var dest = "https://chaindials.com";
+      try {
+        if (location.protocol === "capacitor:" || location.protocol === "https:") {
+          location.replace(dest);
+        }
+      } catch (e) {}
+    </script>
+  </body>
+</html>

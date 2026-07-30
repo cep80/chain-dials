@@ -43,8 +43,8 @@ export function TipSigil({
   );
 
   const aria = tipHash
-    ? `Tip sigil for block ${height ?? "—"}. Hash ${tipHash}. Click to copy.`
-    : "Tip sigil waiting for chain tip";
+    ? `Tip sigil for block ${height ?? "-"}. Hash ${tipHash}. Click to copy.`
+    : "Tip sigil waiting for the next block";
 
   const glyph = tipHash ? (
     <button
@@ -53,7 +53,7 @@ export function TipSigil({
       className="group relative rounded-full outline-none focus-visible:ring-2 focus-visible:ring-accent"
       style={{ width: displaySize, height: displaySize }}
       aria-label={aria}
-      title="Click to copy tip hash"
+      title="Click to copy the tip hash"
     >
       <AnimatePresence mode="wait">
         <motion.svg
@@ -114,7 +114,7 @@ export function TipSigil({
               ))}
           </motion.g>
 
-          {/* Counter-rotating accent arcs — feels alive between blocks */}
+          {/* Counter-rotating accent arcs - feels alive between blocks */}
           <motion.g
             style={{ transformOrigin: `${SIZE / 2}px ${SIZE / 2}px` }}
             animate={reduce || !tipHash ? undefined : { rotate: -360 }}
@@ -191,7 +191,7 @@ export function TipSigil({
       aria-label={aria}
     >
       <p className="mono px-3 text-center text-[10px] uppercase tracking-wider text-paper-muted">
-        Waiting for tip
+        Tip hasn’t landed yet
       </p>
     </div>
   );
@@ -204,14 +204,16 @@ export function TipSigil({
         {glyph}
         <div className="text-center">
           <p className="mono text-lg text-paper md:text-2xl">
-            {copied ? "Copied to clipboard" : formatHash(tipHash)}
+            {copied ? "Got it, on your clipboard" : formatHash(tipHash)}
           </p>
           {height != null && (
             <p className="mt-2 text-xs uppercase tracking-[0.2em] text-paper-muted">
               Block {formatInteger(height)}
             </p>
           )}
-          <p className="mt-3 text-xs text-paper-muted">Click sigil to copy full hash</p>
+          <p className="mt-3 text-xs text-paper-muted">
+            Click the doodle to copy the full hash
+          </p>
         </div>
       </div>
     );
@@ -222,8 +224,8 @@ export function TipSigil({
       title="Tip Sigil"
       subtitle={
         height != null
-          ? `Block ${formatInteger(height)} fingerprint`
-          : "Chain tip fingerprint"
+          ? `Block ${formatInteger(height)}’s little face`
+          : "Face of the latest block"
       }
       reading={copied ? "Copied" : formatHash(tipHash)}
       large={large}

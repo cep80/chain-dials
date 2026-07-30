@@ -47,11 +47,31 @@ body {
 body {
   margin: 0;
   min-height: 100%;
+  min-height: 100dvh;
   color: var(--paper);
   background: var(--ink);
   font-family: var(--font-display);
   font-weight: 500;
   -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  overscroll-behavior-y: none;
+  /* Horizontal insets only; header/footer own vertical safe areas */
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+/* Native Capacitor shell: status bar / home indicator via chrome */
+html.native-app body {
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+/* Installed PWA / standalone: same chrome feel as native */
+@media (display-mode: standalone) {
+  html {
+    overscroll-behavior: none;
+  }
 }
 
 body::before {
@@ -122,4 +142,28 @@ button {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* Settings → Motion: Reduce (override even if OS allows motion) */
+html[data-motion="reduce"] .board-pulse {
+  animation: none;
+}
+
+html[data-motion="reduce"] *,
+html[data-motion="reduce"] *::before,
+html[data-motion="reduce"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
+/* Settings → Density */
+html[data-density="compact"] .instrument-frame-body {
+  min-height: 120px !important;
+  padding: 0.75rem !important;
+}
+
+html[data-density="compact"] .pulse-chip {
+  padding-top: 0.45rem;
+  padding-bottom: 0.45rem;
 }

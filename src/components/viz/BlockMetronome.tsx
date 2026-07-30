@@ -2,12 +2,13 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import { useEffect, useState } from "react";
+import { useChainOptional } from "@/lib/chains/context";
 import { formatDuration } from "@/lib/format";
 import { useDashboardStore } from "@/lib/store";
 import { metronomeTone } from "@/lib/viz-scale";
 import { InstrumentFrame } from "@/components/viz/InstrumentFrame";
 
-const TARGET = 600;
+const DEFAULT_TARGET = 600;
 const SIZE = 140;
 const CX = SIZE / 2;
 const CY = SIZE / 2;
@@ -48,10 +49,13 @@ export function BlockMetronome({
 }) {
   const tipTimestamp = useDashboardStore((s) => s.live.tipTimestamp);
   const boardPulse = useDashboardStore((s) => s.boardPulse);
+  const chain = useChainOptional();
+  const target = chain?.targetBlockSeconds ?? DEFAULT_TARGET;
+  const cadence = chain?.cadenceLabel ?? "block";
   const reduce = useReducedMotion();
 
   // Local clock so the dial keeps moving even when the store tick is quiet,
-  // and so we don't freeze the hand after the 10-minute mark.
+  // and so we don't freeze the hand after the target mark.
   const [since, setSince] = useState<number | null>(null);
 
   useEffect(() => {
@@ -68,18 +72,24 @@ export function BlockMetronome({
     return () => window.clearInterval(id);
   }, [tipTimestamp, reduce, boardPulse]);
 
-  const raw = since != null ? since / TARGET : 0;
-  // Hand keeps sweeping past 10m (uncapped degrees — no freeze at full circle)
+  const raw = since != null ? since / target : 0;
+  // Hand keeps sweeping past target (uncapped degrees - no freeze at full circle)
   const lap = raw % 1;
   const laps = Math.floor(raw);
-  const tone = metronomeTone(since);
+  const tone = metronomeTone(since, target);
   const angleDeg = raw * 360;
   const overshoot = raw >= 1;
   const arcLen = (overshoot ? 1 : lap) * 2 * Math.PI * R;
   const circ = 2 * Math.PI * R;
 
   const reading = formatDuration(since);
-  const aria = `Block metronome. Time since last block: ${reading}. Target interval 10 minutes.${
+  const targetLabel =
+    target >= 60
+      ? `${Math.round(target / 60)} min`
+      : target >= 1
+        ? `${target}s`
+        : `${Math.round(target * 1000)}ms`;
+  const aria = `Metronome. Time since last ${cadence}: ${reading}. Target interval ${targetLabel}.${
     laps > 0 ? ` ${laps} interval${laps === 1 ? "" : "s"} overdue.` : ""
   }`;
 
@@ -151,7 +161,7 @@ export function BlockMetronome({
             strokeWidth={t.major ? 1.5 : 1}
           />
         ))}
-        {/* Rotate the hand as a group — continuous, no spring freeze past 10m */}
+        {/* Rotate the hand as a group - continuous, no spring freeze past 10m */}
         <g
           style={{
             transformOrigin: `${CX}px ${CY}px`,
@@ -202,7 +212,7 @@ export function BlockMetronome({
           fontSize="8"
           fontFamily="var(--font-mono)"
         >
-          10m
+          {target >= 60 ? `${Math.round(target / 60)}m` : target >= 1 ? `${target}s` : "slot"}
         </text>
       </svg>
       {!reduce && boardPulse > 0 && (
@@ -227,20 +237,21 @@ export function BlockMetronome({
           {reading}
         </p>
         <p className="text-xs uppercase tracking-[0.2em] text-paper-muted">
-          since last block
-          {laps > 0 ? ` · ${laps}× past target` : ""}
+          since the last {cadence}
+          {laps > 0 ? ` · ${laps}× past the usual ${targetLabel}` : ""}
         </p>
       </div>
     );
   }
 
+  const meta = chain?.instruments.metronome;
   return (
     <InstrumentFrame
-      title="Metronome"
+      title={meta?.frameTitle ?? "Metronome"}
       subtitle={
         laps > 0
-          ? `Block cadence · ${laps}× past 10m`
-          : "Block cadence · 10 min target"
+          ? `Still waiting · ${laps}× past the usual ${targetLabel}`
+          : (meta?.subtitle ?? `Aims for ~${targetLabel} between ${cadence}s`)
       }
       reading={reading}
       large={large}

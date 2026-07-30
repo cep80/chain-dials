@@ -4,7 +4,7 @@ const PARTNER_NAME =
   process.env.NEXT_PUBLIC_PARTNER_NAME ?? "Trezor";
 const PARTNER_BLURB =
   process.env.NEXT_PUBLIC_PARTNER_BLURB ??
-  "Hold keys yourself. Hardware wallet for Bitcoiners who mean it.";
+  "Keys on a device you hold. For when “not your keys…” stops being a meme.";
 
 export function PartnerSlot() {
   return (
@@ -26,7 +26,7 @@ export function PartnerSlot() {
           {PARTNER_BLURB}
         </p>
         <span className="mt-3 inline-block text-xs font-semibold text-accent">
-          Learn more →
+          Take a look →
         </span>
       </a>
     </aside>

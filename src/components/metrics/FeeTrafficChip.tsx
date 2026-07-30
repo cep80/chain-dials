@@ -18,9 +18,9 @@ const STYLES: Record<Level, string> = {
 };
 
 const LABELS: Record<Level, string> = {
-  calm: "Calm",
+  calm: "Chill",
   busy: "Busy",
-  hot: "Hot",
+  hot: "Spicy",
 };
 
 export function FeeTrafficChip() {

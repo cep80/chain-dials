@@ -2,6 +2,7 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import { useEffect, useId, useMemo, useState } from "react";
+import { useChainOptional } from "@/lib/chains/context";
 import { formatBtc, formatInteger, formatPlainPercent } from "@/lib/format";
 import { getMetricNumeric, useDashboardStore } from "@/lib/store";
 import { InstrumentFrame } from "@/components/viz/InstrumentFrame";
@@ -27,31 +28,45 @@ export function IssuanceHourglass({
   const live = useDashboardStore((s) => s.live);
   const now = useDashboardStore((s) => s.now);
   const boardPulse = useDashboardStore((s) => s.boardPulse);
+  const chain = useChainOptional();
   const reduce = useReducedMotion();
   const uid = useId().replace(/:/g, "");
   const [grainT, setGrainT] = useState(0);
+  const [mounted, setMounted] = useState(false);
 
-  const pctIssued = getMetricNumeric(live, now, "pct_issued") ?? 0;
-  const remaining = Math.max(0, 100 - pctIssued);
-  const halvingProgress = getMetricNumeric(live, now, "halving_progress") ?? 0;
-  const blocksLeft = getMetricNumeric(live, now, "halving_blocks");
-  const supply = getMetricNumeric(live, now, "money_supply");
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isBtc = !chain || chain.id === "btc";
+  const pctIssued = isBtc
+    ? (getMetricNumeric(live, now, "pct_issued") ?? 0)
+    : (live.supplyProgress ?? 0);
+  const halvingProgress = isBtc
+    ? (getMetricNumeric(live, now, "halving_progress") ?? 0)
+    : (live.issuanceProgress ?? live.retargetProgress ?? 0);
+  const epochRemaining = Math.max(0, 100 - halvingProgress);
+  const blocksLeft = isBtc
+    ? getMetricNumeric(live, now, "halving_blocks")
+    : live.retargetBlocks;
+  const supply = isBtc ? getMetricNumeric(live, now, "money_supply") : null;
 
   const neckY = H / 2;
-  const topFill = remaining / 100;
-  const bottomFill = pctIssued / 100;
+  // Chambers track the current subsidy epoch → next halving (not 21M finality)
+  const topFill = epochRemaining / 100;
+  const bottomFill = halvingProgress / 100;
   const clipTop = `hg-top-${uid}`;
   const clipBottom = `hg-bottom-${uid}`;
   const sandGrad = `sand-${uid}`;
 
-  // Continuous grain clock — keeps the glass alive between block updates
+  // Continuous grain clock - keeps the glass alive between block updates
   useEffect(() => {
     if (reduce) return;
     const id = window.setInterval(() => setGrainT((t) => t + 1), 80);
     return () => window.clearInterval(id);
   }, [reduce]);
 
-  // One sand burst per block — discrete issuance, not continuous flow
+  // One sand burst per block - discrete issuance, not continuous flow
   useEffect(() => {
     if (boardPulse <= 0 || reduce) return;
     setGrainT((t) => t + 12);
@@ -71,7 +86,9 @@ export function IssuanceHourglass({
     });
   }, [compact, stage]);
 
-  const aria = `Issuance hourglass. ${pctIssued.toFixed(2)} percent of supply issued. ${remaining.toFixed(2)} percent remaining. Halving epoch ${halvingProgress.toFixed(1)} percent complete.`;
+  const aria = `Issuance hourglass. Current subsidy epoch ${halvingProgress.toFixed(1)} percent complete. ${
+    blocksLeft != null ? `${Math.round(blocksLeft)} blocks to next halving. ` : ""
+  }${pctIssued.toFixed(2)} percent of 21 million issued.`;
 
   const glass = (
     <div
@@ -117,7 +134,7 @@ export function IssuanceHourglass({
           strokeWidth={0.8}
         />
 
-        {/* Remaining (top chamber) */}
+        {/* Remaining until next halving (top chamber) */}
         <g clipPath={`url(#${clipTop})`}>
           <motion.rect
             x={18}
@@ -134,7 +151,7 @@ export function IssuanceHourglass({
             }
           />
           {/* Surface shimmer */}
-          {!reduce && topFill > 0.02 && (
+          {mounted && !reduce && topFill > 0.02 && (
             <motion.ellipse
               cx={50}
               cy={12 + (1 - topFill) * 56 + 2}
@@ -147,7 +164,7 @@ export function IssuanceHourglass({
           )}
         </g>
 
-        {/* Issued (bottom chamber) */}
+        {/* Epoch elapsed (bottom chamber) */}
         <g clipPath={`url(#${clipBottom})`}>
           <motion.rect
             x={18}
@@ -162,7 +179,7 @@ export function IssuanceHourglass({
               reduce ? { duration: 0 } : { type: "spring", stiffness: 50, damping: 20 }
             }
           />
-          {!reduce && (
+          {mounted && !reduce && (
             <motion.ellipse
               cx={50}
               cy={128 - bottomFill * 56}
@@ -175,27 +192,29 @@ export function IssuanceHourglass({
           )}
         </g>
 
-        {/* Falling grains through the neck */}
-        {!reduce &&
-          remaining > 0.01 &&
+        {/* Falling grains through the neck (client-only: avoid SSR float drift) */}
+        {mounted &&
+          !reduce &&
+          epochRemaining > 0.01 &&
           grains.map((g, i) => {
-            const cycle = ((grainT * g.speed * 0.08 + g.phase) % 1);
+            const cycle = (grainT * g.speed * 0.08 + g.phase) % 1;
             const y = 62 + cycle * 16;
-            const opacity = cycle < 0.1 || cycle > 0.9 ? 0 : 0.55 + g.phase * 0.35;
+            const opacity =
+              cycle < 0.1 || cycle > 0.9 ? 0 : 0.55 + g.phase * 0.35;
             return (
               <circle
                 key={i}
-                cx={g.x}
-                cy={y}
-                r={g.size}
+                cx={Number(g.x.toFixed(3))}
+                cy={Number(y.toFixed(3))}
+                r={Number(g.size.toFixed(3))}
                 fill="var(--accent)"
-                opacity={opacity}
+                opacity={Number(opacity.toFixed(3))}
               />
             );
           })}
 
         {/* Neck drip pulse */}
-        {!reduce && remaining > 0.05 && (
+        {mounted && !reduce && epochRemaining > 0.05 && (
           <motion.line
             x1={50}
             x2={50}
@@ -209,7 +228,7 @@ export function IssuanceHourglass({
           />
         )}
 
-        {/* Epoch neck ring */}
+        {/* Long clock: total % of 21M issued (secondary to epoch sand) */}
         <circle
           cx={50}
           cy={neckY}
@@ -226,7 +245,7 @@ export function IssuanceHourglass({
           stroke="var(--accent)"
           strokeWidth={2}
           strokeLinecap="round"
-          strokeDasharray={`${(halvingProgress / 100) * 2 * Math.PI * 7} ${2 * Math.PI * 7}`}
+          strokeDasharray={`${(pctIssued / 100) * 2 * Math.PI * 7} ${2 * Math.PI * 7}`}
           transform={`rotate(-90 50 ${neckY})`}
           animate={
             reduce
@@ -237,7 +256,7 @@ export function IssuanceHourglass({
         />
 
         {/* Block-found ripple */}
-        {!reduce && boardPulse > 0 && (
+        {mounted && !reduce && boardPulse > 0 && (
           <motion.circle
             key={boardPulse}
             cx={50}
@@ -261,12 +280,21 @@ export function IssuanceHourglass({
       <div className="flex flex-col items-center gap-6">
         {glass}
         <p className="mono text-5xl font-medium text-paper md:text-7xl">
-          {formatPlainPercent(pctIssued, 2)}
+          {formatPlainPercent(halvingProgress, 1)}
         </p>
         <p className="text-xs uppercase tracking-[0.2em] text-paper-muted">
-          of 21M issued
+          {isBtc
+            ? "of the way to the next halving"
+            : "of this epoch / issuance stretch"}
+          {blocksLeft != null
+            ? ` · ${formatInteger(blocksLeft)} ${isBtc ? "blocks" : "left"}`
+            : ""}
+        </p>
+        <p className="text-[10px] uppercase tracking-[0.18em] text-paper-muted/80">
+          {isBtc
+            ? `${formatPlainPercent(pctIssued, 2)} of 21M already out`
+            : `${formatPlainPercent(pctIssued, 1)} supply / stake clock`}
           {supply != null ? ` · ${formatBtc(supply, 0)}` : ""}
-          {blocksLeft != null ? ` · ${formatInteger(blocksLeft)} to halving` : ""}
         </p>
       </div>
     );
@@ -274,13 +302,16 @@ export function IssuanceHourglass({
 
   return (
     <InstrumentFrame
-      title="Issuance"
+      title={chain?.instruments.issuance.frameTitle ?? "Issuance"}
       subtitle={
-        blocksLeft != null
-          ? `${formatInteger(blocksLeft)} to halving · sand ticks on blocks`
-          : "21M hard cap · sand ticks on blocks"
+        !isBtc
+          ? (chain?.instruments.issuance.subtitle ??
+            `${formatInteger(blocksLeft)} left in this stretch`)
+          : blocksLeft != null
+            ? `${formatInteger(blocksLeft)} blocks till the reward halves · sand ticks each block`
+            : "Sand tracks this subsidy era · ticks each block"
       }
-      reading={formatPlainPercent(pctIssued, 2)}
+      reading={formatPlainPercent(halvingProgress, 1)}
       large={large}
       instrumentId="issuance"
     >

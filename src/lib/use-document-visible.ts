@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-/** True when the document tab is visible — pause heavy canvas when hidden. */
+/** True when the document tab is visible - pause heavy canvas when hidden. */
 export function useDocumentVisible(): boolean {
   const [visible, setVisible] = useState(true);
 
