@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect } from "react";
+import { type MouseEvent, useEffect } from "react";
 import { ChainSwitcher } from "@/components/shell/ChainSwitcher";
 import { ConnectionStatus } from "@/components/status/ConnectionStatus";
 import { Hint } from "@/components/ui/Hint";
@@ -164,9 +164,22 @@ export function AppShell({
   }, [chain]);
 
   const base = chain ? `/${chain.slug}` : "";
+  const focusMainContent = (event: MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault();
+    const main = document.getElementById("main-content");
+    main?.focus();
+    main?.scrollIntoView({ block: "start" });
+  };
 
   return (
     <div className="relative z-[1] flex min-h-full flex-col">
+      <a
+        href="#main-content"
+        onClick={focusMainContent}
+        className="sr-only focus-visible:fixed focus-visible:left-4 focus-visible:top-4 focus-visible:z-[300] focus-visible:rounded-md focus-visible:bg-accent focus-visible:px-3 focus-visible:py-2 focus-visible:text-sm focus-visible:font-bold focus-visible:text-ink"
+      >
+        Skip to main content
+      </a>
       <div className="sticky top-0 z-40 border-b border-line/80 bg-ink/80 backdrop-blur-md pt-[env(safe-area-inset-top,0px)]">
         <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-3 md:flex-row md:items-center md:justify-between md:px-6">
           <nav className="flex flex-wrap items-center gap-4 text-sm">
@@ -241,7 +254,11 @@ export function AppShell({
         </div>
       </div>
 
-      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 md:px-6 md:py-10">
+      <main
+        id="main-content"
+        tabIndex={-1}
+        className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 md:px-6 md:py-10"
+      >
         {children}
       </main>
 

@@ -272,7 +272,7 @@ export function InstrumentStage() {
             aria-modal="true"
             aria-labelledby={titleId}
             tabIndex={-1}
-            className="relative z-[1] m-0 flex h-full w-full flex-col outline-none md:m-4 md:h-[calc(100%-2rem)] md:max-w-6xl md:rounded-[20px] md:border md:border-line md:bg-ink-elevated"
+            className="relative z-[1] m-0 flex h-full w-full flex-col outline-none focus-visible:ring-2 focus-visible:ring-accent md:m-4 md:h-[calc(100%-2rem)] md:max-w-6xl md:rounded-[20px] md:border md:border-line md:bg-ink-elevated"
             initial={reduce ? false : { opacity: 0, y: 24, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={reduce ? undefined : { opacity: 0, y: 12, scale: 0.99 }}

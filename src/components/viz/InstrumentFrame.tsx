@@ -102,9 +102,12 @@ export function InstrumentFrame({
               <button
                 type="button"
                 onClick={expand}
-                className="rounded-md border border-line p-1.5 text-paper-muted transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-                aria-label={`Expand ${title}`}
+                className="inline-flex min-h-10 items-center gap-1.5 rounded-md border border-line px-2.5 text-paper-muted transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                aria-label={`Open ${title} in the instrument stage`}
               >
+                <span className="text-[10px] font-semibold uppercase tracking-wider">
+                  Expand
+                </span>
                 <ExpandIcon />
               </button>
             </Hint>
@@ -114,15 +117,9 @@ export function InstrumentFrame({
       <div
         className={`instrument-frame-body relative flex flex-1 items-center justify-center ${
           large ? "min-h-[220px] p-5" : "min-h-[160px] p-4"
-        } ${instrumentId ? "cursor-zoom-in" : ""}`}
-        onClick={expand}
+        }`}
       >
         {children}
-        {instrumentId && (
-          <span className="pointer-events-none absolute bottom-2 right-2 rounded-full border border-line bg-ink/85 px-2 py-0.5 text-[9px] uppercase tracking-wider text-paper-muted opacity-0 transition group-hover/frame:opacity-100 group-focus-within/frame:opacity-100">
-            Expand
-          </span>
-        )}
       </div>
     </article>
   );
