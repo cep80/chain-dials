@@ -6,23 +6,23 @@
 
 ## Subtitle (iOS, ≤30 chars)
 
-Network dials for BTC ETH SOL
+BTC ETH SOL HYPE network dials
 
 ## Short description (Play, ≤80 chars)
 
-Live Bitcoin, Ethereum, and Solana network dials. Same habit, different toys.
+Live BTC, ETH, SOL & HYPE dials. Same glance habit, different toys.
 
 ## Full description
 
 ```
 Chain Dials is a network observatory, not a trading terminal.
 
-Watch Bitcoin, Ethereum, and Solana through five instruments each:
-metronomes, tides, lattices, turbines, and more. Live readings. Shareable cards.
+Same glance habit on four chains, each with its own toys:
 
-• Bitcoin board: block metronome, mempool atmosphere, tip sigil, issuance, hashrate
-• Ethereum beacon room: slot lattice, base fee tide, mosaic, burn candle, validators
-• Solana turbine bay: tach, priority jets, leader ribbon, inflation, stake reef
+• Bitcoin: classic dials: metronome, mempool weather, tip face, issuance, hashrate
+• Ethereum: a beacon room: lattice, fee tide, mosaic, burn candle, validator sky
+• Solana: a turbine bay: tach, priority jets, leader ribbon, inflation, stake reef
+• Hyperliquid: a clearing house: clock, funding tide, hash tape, volume, OI vault
 
 Free boards. Optional tips. No account required.
 
@@ -34,7 +34,7 @@ Terms: https://chaindials.com/terms
 
 ## Keywords (iOS)
 
-bitcoin,ethereum,solana,mempool,fees,blockchain,network,observatory,dials
+bitcoin,ethereum,solana,hyperliquid,mempool,fees,blockchain,network,observatory,dials
 
 ## Category
 
@@ -54,7 +54,8 @@ Shoot dark UI full-bleed. Prefer:
 3. One instrument stage open (Metronome or Tide)
 4. Ethereum board
 5. Solana board
-6. Share sheet / stage (optional)
+6. Hyperliquid clearing house
+7. Share sheet / stage (optional)
 
 Sizes:
 

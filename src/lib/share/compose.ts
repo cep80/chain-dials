@@ -29,7 +29,7 @@ export function absoluteShareUrl(path: string): string {
   return `${siteUrl()}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
-/** Punchy one-liners tuned for X - short, human, no bait. */
+/** Punchy one-liners tuned for X: short, human, no bait. */
 const INSTRUMENT_HOOKS: Record<
   ChainId,
   Record<InstrumentId, (reading: string) => string>
@@ -38,23 +38,23 @@ const INSTRUMENT_HOOKS: Record<
     metronome: (r) =>
       r.includes("m") || r.includes("s")
         ? `Since tip: ${r}. Still humming?`
-        : `Block cadence check: ${r}.`,
+        : `Block cadence: ${r}.`,
     atmosphere: (r) => `Mempool weather: ${r}. Fee mist, live.`,
     sigil: () => `New tip face just dropped.`,
     issuance: (r) => `Halving clock: ${r} through this era.`,
     forge: (r) => `Hashrate heat: ${r}.`,
   },
   eth: {
-    metronome: (r) => `Slot lattice: ${r} since tip.`,
-    atmosphere: (r) => `Base fee tide: ${r}.`,
-    sigil: () => `ETH tip mosaic, fresh hash glass.`,
+    metronome: (r) => `${r} since tip. Lattice still ticking.`,
+    atmosphere: (r) => `Base fee tide sitting at ${r}.`,
+    sigil: () => `Fresh tip mosaic. New glass.`,
     issuance: (r) => `Burn candle: ${r} last block.`,
     forge: (r) => `Validator sky: ${r}.`,
   },
   sol: {
-    metronome: (r) => `Turbine tach: ${r} since slot.`,
+    metronome: (r) => `Tach check: ${r} since slot.`,
     atmosphere: (r) => `Priority jets: ${r}.`,
-    sigil: () => `Leader ribbon, new blockhash parade.`,
+    sigil: () => `Leader ribbon just rolled a new hash.`,
     issuance: (r) => `Inflation fountain: ${r}.`,
     forge: (r) => `Stake reef: ${r}.`,
   },
@@ -62,7 +62,7 @@ const INSTRUMENT_HOOKS: Record<
     metronome: (r) => `Clearing clock: ${r} since tip.`,
     atmosphere: (r) => `Funding tide: ${r}.`,
     sigil: () => `Hash tape just printed a new tip.`,
-    issuance: (r) => `Volume fountain: ${r} notional spray.`,
+    issuance: (r) => `Volume fountain spraying ${r}.`,
     forge: (r) => `OI vault: ${r}.`,
   },
 };
@@ -154,7 +154,7 @@ export function composeSuiteTweet(): SharePayload {
   const url = absoluteShareUrl("/");
   const text = [
     "Chain Dials",
-    "Bitcoin, Ethereum, Solana - same habit, different toys.",
+    "Live network dials for Bitcoin, Ethereum, Solana, and Hyperliquid.",
     "",
     url,
   ].join("\n");

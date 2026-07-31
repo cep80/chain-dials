@@ -1,7 +1,7 @@
 {
   "name": "Chain Dials",
   "short_name": "Chain Dials",
-  "description": "Bitcoin, Ethereum, and Solana network dials. Same habit, different toys.",
+  "description": "Live network dials for Bitcoin, Ethereum, Solana, and Hyperliquid.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

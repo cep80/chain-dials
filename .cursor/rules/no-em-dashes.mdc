@@ -1,0 +1,27 @@
+---
+description: Never use em dashes (or en dashes as punctuation) in project copy
+alwaysApply: true
+---
+
+# No em dashes
+
+Never use em dashes (`—`) anywhere in this project: UI copy, comments, docs, commits, metadata, OG text, tweets, store listings.
+
+Also never fake them with spaced hyphens (` - `) or en dashes (`–`) as sentence punctuation. For number ranges, use a plain hyphen (`0-100`).
+
+## Prefer instead
+
+- Commas, periods, or semicolons
+- Parentheses for asides
+- Colons for short labels
+- A plain hyphen only for compounds or numeric ranges (`tip-foam`, `0-100`)
+
+```text
+❌ A quiet place to watch — live dials
+❌ A quiet place to watch - live dials
+✅ A quiet place to watch: live dials
+✅ A quiet place to watch. Live dials.
+✅ A quiet place to watch (live dials)
+```
+
+If you see an existing em dash (or spaced-hyphen aside) while editing a file, replace it.

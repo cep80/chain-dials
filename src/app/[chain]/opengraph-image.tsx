@@ -21,7 +21,7 @@ export default async function Image({
       chainLabel: "?",
       title: "Board",
       headline: "Chain Dials",
-      sub: "Four chains. Four toys.",
+      sub: "Live dials. Pick a board.",
       accent: "#f7931a",
     });
   }

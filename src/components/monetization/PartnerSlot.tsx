@@ -13,7 +13,7 @@ export function PartnerSlot() {
       aria-label="Partner"
     >
       <p className="text-[10px] uppercase tracking-[0.18em] text-paper-muted">
-        Partner
+        Partner · may earn a commission
       </p>
       <a
         href={PARTNER_URL}

@@ -9,9 +9,9 @@ export default function Image() {
   return renderShareCard({
     brand: "Chain",
     chainLabel: "Suite",
-    title: "Three toys",
-    headline: "BTC · ETH · SOL",
-    sub: "Same habit. Different dials.",
+    title: "Chain Dials",
+    headline: "BTC · ETH · SOL · HYPE",
+    sub: "Live dials. Pick a board.",
     accent: "#f7931a",
   });
 }

@@ -15,13 +15,14 @@ export function BurnCandle({
   stage?: boolean;
 }) {
   const burn = useDashboardStore((s) => s.live.issuanceProgress) ?? 0;
-  const supply = useDashboardStore((s) => s.live.supplyProgress) ?? 90;
+  const supply = useDashboardStore((s) => s.live.supplyProgress);
   const burnEth = useDashboardStore((s) => s.live.burnEthPerBlock);
   const boardPulse = useDashboardStore((s) => s.boardPulse);
   const reduce = useReducedMotion();
 
   const flame = Math.max(0.12, Math.min(1, burn / 100));
-  const wax = Math.max(0.2, Math.min(0.85, supply / 120));
+  const wax =
+    supply != null ? Math.max(0.2, Math.min(0.85, supply / 120)) : 0.55;
 
   const h = stage ? 260 : large ? 190 : compact ? 100 : 154;
   const w = stage ? 120 : large ? 100 : compact ? 56 : 80;
@@ -36,7 +37,7 @@ export function BurnCandle({
       className="relative flex items-end justify-center"
       style={{ width: w, height: h }}
       role="img"
-      aria-label={`Burn candle. About ${burnLabel} burned in the latest block. Supply clock ${supply.toFixed(0)} percent.`}
+      aria-label={`Burn candle. About ${burnLabel} burned in the latest block. Supply clock ${supply != null ? `${supply.toFixed(0)} percent` : "unavailable"}.`}
     >
       <motion.div
         className="absolute z-[2]"
@@ -100,11 +101,14 @@ export function BurnCandle({
           {burnLabel}
         </p>
         <p className="text-xs uppercase tracking-[0.2em] text-paper-muted">
-          burned last block · supply clock {formatPlainPercent(supply, 0)}
+          burned last block
+          {supply != null
+            ? ` · supply clock ${formatPlainPercent(supply, 0)}`
+            : " · supply feed unavailable"}
         </p>
         <p className="max-w-sm text-center text-[11px] text-paper-muted">
-          Flame ≈ base fee × gas used (EIP-1559 burn). Wax tracks circulating
-          supply vs a soft 120M clock, not mint rate.
+          Flame = base fee × gas used (EIP-1559 burn). Wax tracks reported
+          circulating supply against a soft 120M clock, not mint rate.
         </p>
       </div>
     );
@@ -113,7 +117,7 @@ export function BurnCandle({
   return (
     <InstrumentFrame
       title="Candle"
-      subtitle="Flame = ETH burned last block · wax = supply clock"
+      subtitle="Flame = ETH burned last block · wax = reported supply clock"
       reading={burnLabel}
       large={large}
       instrumentId="issuance"

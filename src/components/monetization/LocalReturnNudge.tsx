@@ -8,7 +8,7 @@ const KEY = (slug: string) => `chain-dials:local-nudge:${slug}:v1`;
 
 /**
  * Pre-Pro return vector: optional browser notifications for fee spike / quiet tip.
- * Local only - no email backend yet.
+ * Local only. No email backend yet.
  */
 export function LocalReturnNudge() {
   const chain = useChain();
@@ -99,7 +99,7 @@ export function LocalReturnNudge() {
       <p className="text-sm font-semibold text-paper">Local return nudge</p>
       <p className="mt-1 text-xs text-paper-muted">
         Optional browser pings when fees spike or the tip goes quiet on{" "}
-        {chain.name}. Stays on this device - not email, not Pro yet.
+        {chain.name}. Stays on this device. Not email, not Pro yet.
       </p>
       <div className="mt-3 flex flex-wrap gap-2">
         {!enabled ? (

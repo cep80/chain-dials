@@ -27,7 +27,7 @@ export const INSTRUMENT_META: Record<
     title: "Mempool Atmosphere",
     subtitle: "What’s waiting to get in a block",
     narrative:
-      "The mist is the whole waiting room, stacked by how much people are paying (fee rate). The bright dots are a handful of recent transactions. Click one to peek at fees and size, or poke empty space to open this fullscreen.",
+      "The mist is the whole waiting room, stacked by how much people are paying. Those bright dots? A handful of recent transactions. Click one to peek, or poke the empty space to go fullscreen.",
   },
   sigil: {
     title: "Tip Sigil",
@@ -39,13 +39,13 @@ export const INSTRUMENT_META: Record<
     title: "Issuance Hourglass",
     subtitle: "Countdown to the next halving",
     narrative:
-      "Sand tracks this subsidy era: how far we are through the stretch until miners’ block reward halves again. The tiny ring in the neck is the long story: how much of the 21 million is already out in the world.",
+      "Sand tracks this subsidy era: how far we are until miners’ block reward halves again. That tiny ring in the neck? The long story: how much of the 21 million is already out in the world.",
   },
   forge: {
     title: "Hashrate Forge",
     subtitle: "How hard the network is working",
     narrative:
-      "Brighter heat means more hashing power securing the chain. The outer ring is the difficulty epoch. Every 2016 blocks, Bitcoin adjusts how hard it is to find the next one.",
+      "Brighter heat means more hashing power securing the chain. The outer ring is the difficulty epoch: every 2016 blocks, Bitcoin quietly decides how hard the next stretch should be.",
   },
 };
 

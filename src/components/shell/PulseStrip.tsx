@@ -90,6 +90,12 @@ export function PulseStrip() {
         : chain && chain.id !== "btc"
           ? "pulse.fee_samples"
           : "pulse.mempool";
+  const feeLabel =
+    chain?.id === "sol"
+      ? "Priority p90"
+      : chain?.id === "eth" || chain?.id === "hype"
+        ? "Gas p90"
+        : "Fee";
 
   return (
     <motion.section
@@ -120,7 +126,7 @@ export function PulseStrip() {
         chainId={chain?.id}
       />
       <Chip
-        label="Fee"
+        label={feeLabel}
         value={formatFee(live.feeFastest, feeUnit)}
         tip="pulse.fee"
         chainId={chain?.id}

@@ -25,7 +25,7 @@ export default function SettingsPage() {
           Settings
         </h1>
         <p className="mt-3 text-base text-paper-muted md:text-lg">
-          Make the suite kinder to newcomers — or quieter once you know what a
+          Make the suite kinder to newcomers, or quieter once you know what a
           tip is. Everything here is local to this browser.
         </p>
       </header>

@@ -37,7 +37,12 @@ export default function PrivacyPage() {
       <p>Depending on features you use, the app may keep locally:</p>
       <ul>
         <li>Favorite instruments per chain</li>
+        <li>Settings (tooltips, motion, density, preferred chain, chart range)</li>
         <li>Short history used by instruments (for example fee atmosphere)</li>
+        <li>
+          Optional return-nudge preference (`chain-dials:local-nudge:*`), only
+          if you opt in; stays on-device
+        </li>
         <li>Simple dismiss flags for optional tips</li>
       </ul>
       <p>

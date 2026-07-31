@@ -103,6 +103,12 @@ export function SuitePulseStrip() {
         {CHAIN_ORDER.map((id) => {
           const c = CHAINS[id];
           const row = tips[id];
+          const feeLabel =
+            id === "sol"
+              ? "Priority"
+              : id === "eth" || id === "hype"
+                ? "Gas p90"
+                : "Fee";
           const since =
             row?.timestamp != null ? (now - row.timestamp) / 1000 : null;
           return (
@@ -133,7 +139,7 @@ export function SuitePulseStrip() {
                   </div>
                   <div>
                     <div className="text-[9px] uppercase tracking-wider text-paper-muted">
-                      Fee
+                      {feeLabel}
                     </div>
                     <div className="mt-0.5 text-paper">
                       {formatFee(row?.feeFastest ?? null, c.feeUnit)}

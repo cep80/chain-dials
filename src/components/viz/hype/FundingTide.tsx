@@ -12,6 +12,15 @@ function formatBps(v: number | null | undefined): string {
   return `${sign}${v.toFixed(2)} bps`;
 }
 
+function median(values: number[]): number | null {
+  if (!values.length) return null;
+  const sorted = [...values].sort((a, b) => a - b);
+  const middle = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 0
+    ? (sorted[middle - 1]! + sorted[middle]!) / 2
+    : sorted[middle]!;
+}
+
 export function FundingTide({
   large = false,
   compact = false,
@@ -27,18 +36,15 @@ export function FundingTide({
   const count = useDashboardStore((s) => s.live.mempoolCount);
   const reduce = useReducedMotion();
 
-  const latest =
-    fundingSeries.length > 0
-      ? fundingSeries[fundingSeries.length - 1]!
-      : null;
+  const medianFunding = median(fundingSeries);
 
   const absCap = Math.max(
     ...fundingSeries.map((v) => Math.abs(v)),
     0.5,
   );
   const tide =
-    latest != null
-      ? Math.max(0.15, Math.min(0.9, 0.45 + latest / (absCap * 2.2)))
+    medianFunding != null
+      ? Math.max(0.15, Math.min(0.9, 0.45 + medianFunding / (absCap * 2.2)))
       : 0.45;
 
   const wave = useMemo(() => {
@@ -72,7 +78,7 @@ export function FundingTide({
 
   const w = stage ? 420 : large ? 260 : compact ? 120 : 200;
   const h = stage ? 220 : large ? 150 : compact ? 72 : 120;
-  const reading = formatBps(latest);
+  const reading = formatBps(medianFunding);
 
   const body = (
     <div
@@ -129,7 +135,7 @@ export function FundingTide({
       <div className="flex w-full flex-col items-center gap-5">
         {body}
         <p className="mono text-5xl font-medium text-paper md:text-7xl">
-          {formatBps(latest)}
+          {formatBps(medianFunding)}
         </p>
         <p className="text-xs uppercase tracking-[0.2em] text-paper-muted">
           funding bps · top markets
@@ -148,7 +154,7 @@ export function FundingTide({
   return (
     <InstrumentFrame
       title="Tide"
-      subtitle="Funding wave across top perps · click to expand"
+      subtitle="Funding profile across top perps · click to expand"
       reading={reading}
       large={large}
       instrumentId="atmosphere"

@@ -1,11 +1,11 @@
 # Chain Dials
 
-Four chains. Four different toys.
+Live network dials for Bitcoin, Ethereum, Solana, and Hyperliquid.
 
-- **Bitcoin** `/btc` — Metronome, Atmosphere, Tip Sigil, Issuance Hourglass, Hashrate Forge
-- **Ethereum** `/eth` — Slot Lattice, Base Fee Tide, Block Mosaic, Burn Candle, Validator Constellation
-- **Solana** `/sol` — Turbine Tach, Priority Jets, Leader Ribbon, Inflation Fountain, Stake Reef
-- **Hyperliquid** `/hype` — Clearing Clock, Funding Tide, Hash Tape, Volume Fountain, OI Vault
+- **Bitcoin** `/btc`: Metronome, Atmosphere, Tip Sigil, Issuance Hourglass, Hashrate Forge
+- **Ethereum** `/eth`: Slot Lattice, Base Fee Tide, Block Mosaic, Burn Candle, Validator Constellation
+- **Solana** `/sol`: Turbine Tach, Priority Jets, Leader Ribbon, Inflation Fountain, Stake Reef
+- **Hyperliquid** `/hype`: Clearing Clock, Funding Tide, Hash Tape, Volume Fountain, OI Vault
 
 ## Quick start
 

@@ -24,16 +24,12 @@ export default function SuiteHomePage() {
           <ShareBar target={{ kind: "suite" }} />
         </div>
         <p className="mt-4 text-lg text-paper-muted">{SUITE.tagline}</p>
-        <p className="mt-3 text-sm text-paper-muted">
-          Bitcoin keeps its classic dials. Ethereum gets a beacon room (lattice,
-          tide, mosaic, candle, sky). Solana gets a turbine bay (tach, jets,
-          ribbon, fountain, reef). Hyperliquid gets a clearing house (clock,
-          funding tide, tape, volume fountain, OI vault). Same habit, different
-          toys. New here?{" "}
+        <p className="mt-3 text-sm leading-relaxed text-paper-muted">
+          {SUITE.description} Pick a chain below. If a term feels fuzzy,{" "}
           <Link href="/settings" className="text-accent hover:underline">
-            Turn on newbie tooltips
+            newbie tooltips
           </Link>{" "}
-          in Settings.
+          in Settings help a lot.
         </p>
       </header>
 

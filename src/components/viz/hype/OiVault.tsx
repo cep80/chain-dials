@@ -22,7 +22,7 @@ export function OiVault({
 }) {
   const score = useDashboardStore((s) => s.live.securityScore) ?? 0.4;
   const label = useDashboardStore((s) => s.live.forgeLabel);
-  const gasMood = useDashboardStore((s) => s.live.retargetProgress);
+  const gasMood = useDashboardStore((s) => s.live.mempoolPressure);
   const boardPulse = useDashboardStore((s) => s.boardPulse);
   const reduce = useReducedMotion();
 

@@ -53,7 +53,7 @@ export function BaseFeeTide({
     return `${d} L 100 100 L 0 100 Z`;
   }, [baseSeries, tide]);
 
-  // Soft tip-foam dashes — not clickable sample dots
+  // Soft tip-foam dashes (not clickable sample dots)
   const foam = useMemo(() => {
     const tips = prioritySeries.length
       ? prioritySeries.slice(- (compact ? 6 : 12))

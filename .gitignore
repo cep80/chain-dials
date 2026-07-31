@@ -58,3 +58,5 @@ ios/App/build/
 ios/DerivedData/
 *.xcuserstate
 .capacitor/
+
+.vercel

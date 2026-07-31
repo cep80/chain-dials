@@ -126,22 +126,22 @@ export interface LiveSnapshot {
   /** Fee rate histogram from /mempool: [feeRate, vsize] bins for density viz. */
   feeHistogram: [number, number][];
   mempoolBlocks: MempoolBlockProjection[];
-  /** EIP-1559 base fee series (gwei), newest last — ETH */
+  /** EIP-1559 base fee series (gwei), newest last (ETH) */
   baseFeeSeries: number[];
   /** Priority tip series (gwei) or SOL priority samples */
   prioritySeries: number[];
-  /** 0–100 queue / block fullness pressure (alt chains) */
+  /** 0-100 queue / block fullness pressure (alt chains) */
   mempoolPressure: number | null;
-  /** 0–1 forge heat for PoS / non-hashrate chains */
+  /** 0-1 forge heat for PoS / non-hashrate chains */
   securityScore: number | null;
   /** Human label under the forge (stake, peers, …) */
   forgeLabel: string | null;
   /**
-   * ETH: burn intensity 0–100 from base fee × gas used.
-   * SOL: epoch progress 0–100 (fountain basin).
+   * ETH: burn intensity 0-100 from base fee × gas used.
+   * SOL: epoch progress 0-100 (fountain basin).
    */
   issuanceProgress: number | null;
-  /** Alt-chain neck ring 0–100 (supply clock / circulating share) */
+  /** Alt-chain neck ring 0-100 (supply clock / circulating share) */
   supplyProgress: number | null;
   /** SOL inflation rate percent (fountain spray) */
   inflationRate: number | null;

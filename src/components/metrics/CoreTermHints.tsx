@@ -48,7 +48,7 @@ export function CoreTermHints() {
               live.mempoolPressure != null
                 ? formatPlainPercent(live.mempoolPressure, 0)
                 : "-",
-            hint: "Mean gas-used ratio across recent blocks - not a pending mempool.",
+            hint: "Mean gas-used ratio across recent blocks, not a pending mempool.",
           },
           {
             term: "Epoch",
@@ -56,7 +56,7 @@ export function CoreTermHints() {
               live.retargetProgress != null
                 ? formatPlainPercent(live.retargetProgress, 0)
                 : "-",
-            hint: "Execution height mapped onto a 32-slot epoch window.",
+            hint: "Position in the current Ethereum consensus epoch (32 slots).",
           },
           {
             term: "Stake warmth",
@@ -67,14 +67,19 @@ export function CoreTermHints() {
       : chain.id === "hype"
         ? [
             {
-              term: "Funding",
-              value: (() => {
-                const f = live.baseFeeSeries[live.baseFeeSeries.length - 1];
-                if (f == null) return "-";
+            term: "Funding (median)",
+            value: (() => {
+                const sorted = [...live.baseFeeSeries].sort((a, b) => a - b);
+                if (!sorted.length) return "-";
+                const middle = Math.floor(sorted.length / 2);
+                const f =
+                  sorted.length % 2 === 0
+                    ? (sorted[middle - 1]! + sorted[middle]!) / 2
+                    : sorted[middle]!;
                 const sign = f > 0 ? "+" : "";
                 return `${sign}${f.toFixed(2)} bps`;
               })(),
-              hint: "Latest sample from top-volume perps (info API).",
+              hint: "Median hourly funding across the sampled top-volume perps.",
             },
             {
               term: "Gas (HyperEVM)",
@@ -103,8 +108,8 @@ export function CoreTermHints() {
         : [
           {
             term: "Priority fee",
-            value: formatFee(live.feeFastest, "µLamports"),
-            hint: "p90 of recent prioritization fee samples.",
+            value: formatFee(live.feeFastest, "µLamports/CU"),
+            hint: "p90 recent prioritization-fee price per compute unit.",
           },
           {
             term: "Since tip",
@@ -125,7 +130,7 @@ export function CoreTermHints() {
               live.inflationRate != null
                 ? `${live.inflationRate.toFixed(1)}%`
                 : "-",
-            hint: "On-chain getInflationRate total - drives fountain spray.",
+            hint: "On-chain getInflationRate total. Drives fountain spray.",
           },
           {
             term: "Stake reef",

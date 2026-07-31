@@ -211,7 +211,7 @@ export function InstrumentStage() {
         const base = live.baseFeeSeries[live.baseFeeSeries.length - 1];
         return formatFee(base ?? live.feeFastest, "gwei");
       }
-      if (chain.id === "sol") return formatFee(live.feeFastest, "µLamports");
+      if (chain.id === "sol") return formatFee(live.feeFastest, "µLamports/CU");
       if (chain.id === "hype") {
         const f = live.baseFeeSeries[live.baseFeeSeries.length - 1];
         if (f == null) return formatFee(live.feeFastest, "gwei");

@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { PriceChart, type ChartMode } from "@/components/price/PriceChart";
+import { PredictionMarketCrosscheck } from "@/components/price/PredictionMarketCrosscheck";
+import { PriceScenario } from "@/components/price/PriceScenario";
 import { Hint } from "@/components/ui/Hint";
 import { usePriceHistory } from "@/hooks/usePriceHistory";
 import { useChain } from "@/lib/chains/context";
@@ -14,11 +16,20 @@ import {
 } from "@/lib/format";
 import {
   PRICE_RANGE_ORDER,
+  type PriceHistoryPayload,
   type PriceRangeId,
 } from "@/lib/price/types";
 import { useSettingsStore } from "@/lib/settings/store";
 import { useAppReducedMotion } from "@/lib/settings/use-app-reduced-motion";
 import { useDashboardStore } from "@/lib/store";
+
+function priceSourceLabel(data: PriceHistoryPayload | null) {
+  if (!data) return null;
+  if (data.source === "coingecko") return "CoinGecko";
+  if (data.source === "binance") return "Binance";
+  if (data.source === "coinbase") return "Coinbase";
+  return data.source;
+}
 
 export function PriceChartPanel() {
   const chain = useChain();
@@ -26,13 +37,14 @@ export function PriceChartPanel() {
   const reduce = useAppReducedMotion();
   const defaultPriceRange = useSettingsStore((s) => s.defaultPriceRange);
   const hydrated = useSettingsStore((s) => s.hydrated);
-  const [range, setRange] = useState<PriceRangeId>("7D");
+  const [rangeOverride, setRangeOverride] = useState<PriceRangeId | null>(null);
   const [mode, setMode] = useState<ChartMode>("line");
+  const range = rangeOverride ?? (hydrated ? defaultPriceRange : "7D");
   const { data, loading, error, reload } = usePriceHistory(chain.id, range);
-
-  useEffect(() => {
-    if (hydrated) setRange(defaultPriceRange);
-  }, [hydrated, defaultPriceRange]);
+  const { data: shortForecastData, loading: shortForecastLoading } =
+    usePriceHistory(chain.id, "7D");
+  const { data: longForecastData, loading: longForecastLoading } =
+    usePriceHistory(chain.id, "1Y");
 
   const stats = data?.stats ?? null;
   const close = livePrice ?? stats?.close ?? null;
@@ -42,18 +54,17 @@ export function PriceChartPanel() {
   const points = data?.points ?? [];
   const candles = data?.candles ?? [];
   const canCandle = candles.length >= 2 && range !== "1H";
+  const activeMode: ChartMode = canCandle ? mode : "line";
 
-  useEffect(() => {
-    if (!canCandle && mode === "candle") setMode("line");
-  }, [canCandle, mode]);
-
-  const sourceLabel = useMemo(() => {
-    if (!data) return null;
-    if (data.source === "coingecko") return "CoinGecko";
-    if (data.source === "binance") return "Binance";
-    if (data.source === "coinbase") return "Coinbase";
-    return data.source;
-  }, [data]);
+  const sourceLabel = useMemo(() => priceSourceLabel(data), [data]);
+  const shortForecastSource = useMemo(
+    () => priceSourceLabel(shortForecastData),
+    [shortForecastData],
+  );
+  const longForecastSource = useMemo(
+    () => priceSourceLabel(longForecastData),
+    [longForecastData],
+  );
 
   return (
     <motion.section
@@ -145,7 +156,7 @@ export function PriceChartPanel() {
                     type="button"
                     role="tab"
                     aria-selected={on}
-                    onClick={() => setRange(id)}
+                    onClick={() => setRangeOverride(id)}
                     className={`min-h-9 rounded-md px-2.5 text-xs font-medium transition ${
                       on
                         ? "bg-accent text-ink"
@@ -169,7 +180,7 @@ export function PriceChartPanel() {
                   type="button"
                   onClick={() => setMode("line")}
                   className={`min-h-9 px-3 text-xs transition ${
-                    mode === "line"
+                    activeMode === "line"
                       ? "bg-ink-soft text-paper"
                       : "text-paper-muted hover:text-paper"
                   }`}
@@ -181,7 +192,7 @@ export function PriceChartPanel() {
                   disabled={!canCandle}
                   onClick={() => canCandle && setMode("candle")}
                   className={`min-h-9 border-l border-line px-3 text-xs transition disabled:cursor-not-allowed disabled:opacity-40 ${
-                    mode === "candle"
+                    activeMode === "candle"
                       ? "bg-ink-soft text-paper"
                       : "text-paper-muted hover:text-paper"
                   }`}
@@ -232,14 +243,27 @@ export function PriceChartPanel() {
             ) : null}
             <PriceChart
               points={points}
-              candles={canCandle && mode === "candle" ? candles : []}
-              mode={canCandle && mode === "candle" ? "candle" : "line"}
+              candles={activeMode === "candle" ? candles : []}
+              mode={activeMode}
               accent={chain.accent}
               positive={positive}
             />
           </>
         )}
       </div>
+
+      {data ? (
+        <PriceScenario
+          shortPoints={shortForecastData?.points ?? []}
+          longPoints={longForecastData?.points ?? []}
+          ticker={chain.ticker}
+          shortSource={shortForecastSource}
+          longSource={longForecastSource}
+          loading={shortForecastLoading || longForecastLoading}
+        />
+      ) : null}
+
+      <PredictionMarketCrosscheck chain={chain.id} />
 
       <div className="flex flex-wrap items-center justify-between gap-2 border-t border-line/80 px-4 py-2.5 text-[10px] uppercase tracking-[0.14em] text-paper-muted md:px-5">
         <Hint tip="chart.source">

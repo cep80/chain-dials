@@ -3,6 +3,7 @@
 import { AppShell } from "@/components/shell/AppShell";
 import { useChain } from "@/lib/chains/context";
 import { SUITE } from "@/lib/chains/registry";
+import { supportEmail } from "@/lib/site";
 import Link from "next/link";
 
 const FEATURES = [
@@ -26,6 +27,7 @@ const FEATURES = [
 
 export default function ProPage() {
   const chain = useChain();
+  const email = supportEmail();
   return (
     <AppShell>
       <div className="mx-auto max-w-3xl">
@@ -54,7 +56,7 @@ export default function ProPage() {
               </p>
             </div>
             <a
-              href={`mailto:hello@example.com?subject=${encodeURIComponent(`${SUITE.name} Pro waitlist (${chain.shortName})`)}`}
+              href={`mailto:${email}?subject=${encodeURIComponent(`${SUITE.name} Pro waitlist (${chain.shortName})`)}`}
               className="rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-ink transition hover:bg-paper"
             >
               Email me when it’s real

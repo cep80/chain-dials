@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     template: "%s · Chain Dials",
   },
   description:
-    "Four chains, four visual languages. Bitcoin dials, Ethereum beacon room, Solana turbine bay, Hyperliquid clearing house.",
+    "A quiet place to watch Bitcoin, Ethereum, Solana, and Hyperliquid: live dials, each board with its own instruments.",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
@@ -47,13 +47,13 @@ export const metadata: Metadata = {
     siteName: SITE_NAME,
     title: "Chain Dials: Bitcoin, Ethereum, Solana, Hyperliquid",
     description:
-      "Four chains, four visual languages. Live dials you can actually share.",
+      "Live network dials for Bitcoin, Ethereum, Solana, and Hyperliquid. Pick a board and glance.",
   },
   twitter: {
     card: "summary_large_image",
     title: "Chain Dials",
     description:
-      "Bitcoin, Ethereum, Solana, Hyperliquid - same habit, different toys.",
+      "Live network dials you can actually glance at (BTC, ETH, SOL, HYPE).",
   },
   other: {
     "mobile-web-app-capable": "yes",

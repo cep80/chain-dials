@@ -151,7 +151,7 @@ async function solReading(
       };
     case "atmosphere":
       return {
-        headline: formatFee(snap.feeFastest, "µLamports"),
+        headline: formatFee(snap.feeFastest, "µLamports/CU"),
         sub: "priority p90",
         accent,
       };

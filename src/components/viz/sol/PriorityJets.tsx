@@ -20,6 +20,7 @@ export function PriorityJets({
   const hist = useDashboardStore((s) => s.live.feeHistogram);
   const feeFastest = useDashboardStore((s) => s.live.feeFastest);
   const count = useDashboardStore((s) => s.live.mempoolCount);
+  const now = useDashboardStore((s) => s.now);
   const reduce = useReducedMotion();
   const [picked, setPicked] = useState<AtmosphereTx | null>(null);
 
@@ -33,7 +34,7 @@ export function PriorityJets({
             fee: feeRate,
             vsize: 1,
             value: 0,
-            seenAt: Date.now(),
+            seenAt: now,
             fresh: i < 4,
             kind: "sample" as const,
           }));
@@ -45,7 +46,7 @@ export function PriorityJets({
       x: ((i + 0.5) / take.length) * 100,
       delay: (i % 5) * 0.12,
     }));
-  }, [fees, hist, compact, stage]);
+  }, [fees, hist, compact, stage, now]);
 
   const w = stage ? 420 : large ? 260 : compact ? 120 : 200;
   const h = stage ? 220 : large ? 150 : compact ? 72 : 120;
@@ -63,7 +64,7 @@ export function PriorityJets({
       className="relative overflow-hidden rounded-[10px] border border-line bg-ink"
       style={{ width: w, height: h }}
       role="img"
-      aria-label={`Priority fee samples. Top ${formatFee(feeFastest, "µLamports")}.`}
+      aria-label={`Priority fee samples. Top ${formatFee(feeFastest, "µLamports/CU")}.`}
       onClick={clearPick}
     >
       <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="h-full w-full">
@@ -120,7 +121,7 @@ export function PriorityJets({
       className="mono text-[10px] text-paper-muted"
       onClick={(e) => e.stopPropagation()}
     >
-      Sample {formatFee(picked.feeRate, "µLamports")}
+      Sample {formatFee(picked.feeRate, "µLamports/CU")}
       {picked.kind === "sample" || picked.txid.includes("sample")
         ? " · not a transaction"
         : ""}
@@ -134,7 +135,7 @@ export function PriorityJets({
         {body}
         {picked ? (
           <p className="mono text-sm text-paper">
-            {formatFee(picked.feeRate, "µLamports")} prioritization sample
+            {formatFee(picked.feeRate, "µLamports/CU")} prioritization sample
           </p>
         ) : (
           <p className="text-[11px] text-paper-muted">
@@ -142,7 +143,7 @@ export function PriorityJets({
           </p>
         )}
         <p className="mono text-5xl font-medium text-paper md:text-7xl">
-          {formatFee(feeFastest, "µLamports")}
+          {formatFee(feeFastest, "µLamports/CU")}
         </p>
         <p className="text-xs uppercase tracking-[0.2em] text-paper-muted">
           p90 sample
@@ -156,7 +157,7 @@ export function PriorityJets({
     <InstrumentFrame
       title="Jets"
       subtitle="Prioritization fee samples · jet = peek · empty = go big"
-      reading={formatFee(feeFastest, "µLamports")}
+      reading={formatFee(feeFastest, "µLamports/CU")}
       large={large}
       instrumentId="atmosphere"
     >

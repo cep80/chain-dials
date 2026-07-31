@@ -15,14 +15,15 @@ export function VolumeFountain({
   compact?: boolean;
   stage?: boolean;
 }) {
-  const supply = useDashboardStore((s) => s.live.supplyProgress) ?? 25;
+  const supply = useDashboardStore((s) => s.live.supplyProgress);
   const volumeHeat = useDashboardStore((s) => s.live.issuanceProgress) ?? 40;
   const dayVlmB = useDashboardStore((s) => s.live.inflationRate);
   const label = useDashboardStore((s) => s.live.forgeLabel);
   const boardPulse = useDashboardStore((s) => s.boardPulse);
   const reduce = useReducedMotion();
 
-  const level = Math.max(0.12, Math.min(0.88, supply / 100));
+  const level =
+    supply != null ? Math.max(0.12, Math.min(0.88, supply / 100)) : 0.35;
   const spray = Math.max(0.35, Math.min(1.5, volumeHeat / 55));
   const dropCount = Math.round((compact ? 5 : stage ? 14 : 9) * spray);
 
@@ -33,21 +34,20 @@ export function VolumeFountain({
         delay: (i % 7) * 0.16,
         speed: 0.8 + (i % 4) * 0.22 * spray,
       })),
-    [compact, stage, dropCount, spray],
+    [dropCount, spray],
   );
 
   const h = stage ? 260 : large ? 190 : compact ? 100 : 154;
   const w = stage ? 160 : large ? 120 : compact ? 64 : 100;
 
-  const reading =
-    dayVlmB != null ? `$${dayVlmB.toFixed(1)}B` : formatPlainPercent(volumeHeat, 0);
+  const reading = dayVlmB != null ? `$${dayVlmB.toFixed(1)}B` : "—";
 
   const fountain = (
     <div
       className="relative overflow-hidden rounded-[12px] border border-line bg-ink"
       style={{ width: w, height: h }}
       role="img"
-      aria-label={`Volume fountain. Supply ${supply.toFixed(0)} percent. Day volume ${dayVlmB?.toFixed(1) ?? "unknown"} billion.`}
+      aria-label={`Volume fountain. Circulating supply ${supply != null ? `${supply.toFixed(0)} percent of reported max` : "unavailable"}. Day volume ${dayVlmB?.toFixed(1) ?? "unknown"} billion.`}
     >
       <svg viewBox="0 0 100 140" className="h-full w-full">
         <motion.rect
@@ -105,11 +105,11 @@ export function VolumeFountain({
       <div className="flex flex-col items-center gap-6">
         {fountain}
         <p className="mono text-5xl font-medium text-paper md:text-7xl">
-          {dayVlmB != null ? `$${dayVlmB.toFixed(1)}B` : formatPlainPercent(supply, 1)}
+          {dayVlmB != null ? `$${dayVlmB.toFixed(1)}B` : "—"}
         </p>
         <p className="text-xs uppercase tracking-[0.2em] text-paper-muted">
           24h notional spray
-          {` · supply ${formatPlainPercent(supply, 1)} of max`}
+          {supply != null ? ` · supply ${formatPlainPercent(supply, 1)} of reported max` : " · supply feed unavailable"}
         </p>
         {label ? (
           <p className="max-w-sm text-center text-[11px] text-paper-muted">{label}</p>
@@ -123,8 +123,8 @@ export function VolumeFountain({
       title="Fountain"
       subtitle={
         dayVlmB != null
-          ? `Supply basin · spray from $${dayVlmB.toFixed(1)}B/24h`
-          : "Supply basin · spray = volume mood"
+          ? `${supply != null ? "Reported supply basin" : "Supply feed unavailable"} · spray from $${dayVlmB.toFixed(1)}B/24h`
+          : "Reported supply basin · spray = volume mood"
       }
       reading={reading}
       large={large}

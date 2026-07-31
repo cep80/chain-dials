@@ -23,7 +23,7 @@ export function InflationFountain({
   const reduce = useReducedMotion();
 
   const level = Math.max(0.15, Math.min(0.9, progress / 100));
-  // Spray density from inflation rate (~5–8% typical → mid spray)
+  // Spray density from inflation rate (~5-8% typical → mid spray)
   const spray =
     inflation != null
       ? Math.max(0.35, Math.min(1.4, inflation / 6))

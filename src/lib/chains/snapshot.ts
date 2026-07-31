@@ -21,8 +21,8 @@ export interface ChainSnapshot {
   epochProgress: number | null;
   epochBlocksLeft: number | null;
   /**
-   * ETH: burn intensity 0–100.
-   * SOL: epoch progress 0–100 (basin).
+   * ETH: burn intensity 0-100.
+   * SOL: epoch progress 0-100 (basin).
    */
   issuanceProgress: number | null;
   supplyProgress: number | null;
@@ -105,18 +105,41 @@ function ethBurnedInBlock(baseGwei: number, gasUsedRatio: number): number {
   return (baseGwei * 1e9 * gasUsedRatio * gasLimit) / 1e18;
 }
 
+/**
+ * Return the consensus-layer slot of the canonical beacon head when a public
+ * Beacon API is available. Execution block numbers are not consensus slots.
+ */
+async function fetchEthConsensusSlot(): Promise<number | null> {
+  try {
+    const res = await fetch(
+      "https://ethereum-beacon-api.publicnode.com/eth/v2/beacon/blocks/head",
+      {
+        headers: { accept: "application/json" },
+        next: { revalidate: 0 },
+      },
+    );
+    if (!res.ok) return null;
+    const body = (await res.json()) as {
+      data?: { message?: { slot?: string | number } };
+    };
+    const slot = Number(body.data?.message?.slot);
+    return Number.isSafeInteger(slot) && slot >= 0 ? slot : null;
+  } catch {
+    return null;
+  }
+}
+
 async function fetchEth(tip: TipSnapshot): Promise<ChainSnapshot> {
   const rpc = "https://ethereum.publicnode.com";
 
-  const feeHistory = (await jsonRpc(rpc, "eth_feeHistory", [
-    "0x18",
-    "latest",
-    [10, 50, 90],
-  ])) as {
-    baseFeePerGas?: string[];
-    gasUsedRatio?: number[];
-    reward?: string[][];
-  };
+  const [feeHistory, consensusSlot] = await Promise.all([
+    jsonRpc(rpc, "eth_feeHistory", ["0x18", "latest", [10, 50, 90]]) as Promise<{
+      baseFeePerGas?: string[];
+      gasUsedRatio?: number[];
+      reward?: string[][];
+    }>,
+    fetchEthConsensusSlot(),
+  ]);
 
   const bases = (feeHistory.baseFeePerGas ?? []).map(weiToGwei);
   const ratios = feeHistory.gasUsedRatio ?? [];
@@ -143,9 +166,7 @@ async function fetchEth(tip: TipSnapshot): Promise<ChainSnapshot> {
   const burns = ratios.map((r, i) =>
     ethBurnedInBlock(executedBases[i] ?? base, r),
   );
-  const burnEthPerBlock = burns[burns.length - 1] ?? 0;
-  // Scale: ~2 ETH/block → full flame
-  const issuanceProgress = Math.min(100, (burnEthPerBlock / 2) * 100);
+  let burnEthPerBlock = burns[burns.length - 1] ?? 0;
 
   const sampleFees = tips90
     .map((t, i) => (executedBases[i] ?? base) + t)
@@ -170,8 +191,19 @@ async function fetchEth(tip: TipSnapshot): Promise<ChainSnapshot> {
         maxPriorityFeePerGas?: string;
         value?: string;
         gas?: string;
+        gasUsed?: string;
+        baseFeePerGas?: string;
       }>;
+      gasUsed?: string;
+      baseFeePerGas?: string;
     } | null;
+    const exactGasUsed = block?.gasUsed ? hexToNumber(block.gasUsed) : null;
+    const exactBaseGwei = block?.baseFeePerGas
+      ? weiToGwei(block.baseFeePerGas)
+      : null;
+    if (exactGasUsed != null && exactBaseGwei != null) {
+      burnEthPerBlock = (exactBaseGwei * exactGasUsed) / 1e9;
+    }
     const txs = block?.transactions ?? [];
     mempoolCount = txs.length;
     recentTxs = txs.slice(0, 32).map((tx, i) => {
@@ -237,7 +269,7 @@ async function fetchEth(tip: TipSnapshot): Promise<ChainSnapshot> {
     // keep gas fallback
   }
 
-  let supplyProgress = 90;
+  let supplyProgress: number | null = null;
   try {
     const res = await fetch("https://ultrasound.money/api/v2/fees/supply", {
       headers: { accept: "application/json" },
@@ -251,12 +283,17 @@ async function fetchEth(tip: TipSnapshot): Promise<ChainSnapshot> {
       source = `${source}+ultrasound`;
     }
   } catch {
-    // keep
+    // Keep unavailable rather than presenting a fixed supply value as a reading.
   }
 
-  const slotInEpoch = (tip.height ?? 0) % 32;
-  const epochProgress = (slotInEpoch / 32) * 100;
-  const epochBlocksLeft = 32 - slotInEpoch;
+  const slotInEpoch = consensusSlot != null ? consensusSlot % 32 : null;
+  const epochProgress =
+    slotInEpoch != null ? (slotInEpoch / 32) * 100 : null;
+  const epochBlocksLeft =
+    slotInEpoch != null ? 32 - slotInEpoch : null;
+  if (consensusSlot != null) source = `${source}+beacon-slot`;
+  // Scale: ~2 ETH burned in an execution block → full flame.
+  const issuanceProgress = Math.min(100, (burnEthPerBlock / 2) * 100);
 
   return {
     tip,
@@ -497,8 +534,8 @@ async function fetchHype(tip: TipSnapshot): Promise<ChainSnapshot> {
 
   // Volume heat: ~$5B day notional → full spray
   const issuanceProgress = Math.min(100, (dayVlmUsd / 5_000_000_000) * 100);
-  // Soft circulating estimate vs 1B max (CoinGecko ~220–250M); refine if we get a feed later
-  let supplyProgress = 25;
+  // Do not substitute an assumed circulating supply when the feed is unavailable.
+  let supplyProgress: number | null = null;
   try {
     const res = await fetch(
       "https://api.coingecko.com/api/v3/coins/hyperliquid?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false",
@@ -522,7 +559,7 @@ async function fetchHype(tip: TipSnapshot): Promise<ChainSnapshot> {
       }
     }
   } catch {
-    // keep soft default
+    // Keep unavailable.
   }
 
   const securityScore = Math.max(
@@ -533,11 +570,6 @@ async function fetchHype(tip: TipSnapshot): Promise<ChainSnapshot> {
     totalOiUsd > 0
       ? `$${(totalOiUsd / 1e9).toFixed(1)}B OI · $${(dayVlmUsd / 1e9).toFixed(1)}B/24h`
       : `${(avgRatio * 100).toFixed(0)}% gas used`;
-
-  // Epoch stand-in: rolling window of last 32 HyperEVM blocks
-  const slotInEpoch = (tip.height ?? 0) % 32;
-  const epochProgress = (slotInEpoch / 32) * 100;
-  const epochBlocksLeft = 32 - slotInEpoch;
 
   return {
     tip,
@@ -563,8 +595,10 @@ async function fetchHype(tip: TipSnapshot): Promise<ChainSnapshot> {
           ),
     securityRaw: totalOiUsd > 0 ? totalOiUsd : avgRatio * 100,
     securityScore,
-    epochProgress,
-    epochBlocksLeft,
+    // HyperEVM does not use Ethereum consensus epochs. Leave these unset
+    // rather than presenting an arbitrary 32-block window as an epoch.
+    epochProgress: null,
+    epochBlocksLeft: null,
     issuanceProgress,
     supplyProgress,
     inflationRate: dayVlmUsd > 0 ? dayVlmUsd / 1e9 : null,

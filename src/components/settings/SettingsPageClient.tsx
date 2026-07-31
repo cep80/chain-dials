@@ -79,7 +79,7 @@ export function SettingsPageClient() {
   return (
     <div className="space-y-6">
       <div className="rounded-[14px] border border-line bg-ink-soft/40 px-5 py-4 text-sm text-paper-muted md:px-6">
-        Preferences stay on this device only. No account, no sync cloud — just
+        Preferences stay on this device only. No account, no sync cloud, just
         localStorage.{" "}
         <Hint tip="settings.newbie">
           <span className="underline decoration-dotted underline-offset-4">

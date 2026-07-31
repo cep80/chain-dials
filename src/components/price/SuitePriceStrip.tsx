@@ -138,7 +138,7 @@ export function SuitePriceStrip() {
                 <div className="flex items-end justify-between gap-3">
                   <div>
                     <div className="mono text-xl font-medium text-paper group-hover:text-accent">
-                      {s.loading ? "—" : formatUsdSmart(s.close)}
+                      {s.loading ? "-" : formatUsdSmart(s.close)}
                     </div>
                     <div className="mt-1 text-[10px] uppercase tracking-wider text-paper-muted">
                       7D USD

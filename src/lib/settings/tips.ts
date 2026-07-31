@@ -65,11 +65,11 @@ const BASE: Record<TipId, TipBody> = {
   },
   "pulse.last_block": {
     title: "Last block",
-    body: "How many transactions landed in the most recent block we inspected — not a pending mempool count.",
+    body: "How many transactions landed in the most recent block we inspected, not a pending mempool count.",
   },
   "pulse.fee_samples": {
     title: "Fee samples",
-    body: "Recent fee/priority samples from the network — a mood check, not every pending tx.",
+    body: "Recent fee/priority samples from the network: a mood check, not every pending tx.",
   },
   "pulse.perps": {
     title: "Perps",
@@ -89,7 +89,7 @@ const BASE: Record<TipId, TipBody> = {
   },
   "nav.board": {
     title: "Board",
-    body: "The main dials view for this chain — instruments, price, and live pulse.",
+    body: "The main dials view for this chain: instruments, price, and live pulse.",
   },
   "nav.alerts": {
     title: "Alerts",
@@ -125,7 +125,7 @@ const BASE: Record<TipId, TipBody> = {
   },
   "instrument.atmosphere": {
     title: "Fee weather",
-    body: "How busy or pricey the network feels right now — mempool mist, fee tide, jets, or funding.",
+    body: "How busy or pricey the network feels right now: mempool mist, fee tide, jets, or funding.",
   },
   "instrument.sigil": {
     title: "Tip face",
@@ -133,11 +133,11 @@ const BASE: Record<TipId, TipBody> = {
   },
   "instrument.issuance": {
     title: "Issuance",
-    body: "Supply / reward story for this chain — halvings, burns, inflation, or volume spray.",
+    body: "Supply / reward story for this chain: halvings, burns, inflation, or volume spray.",
   },
   "instrument.forge": {
     title: "Security heat",
-    body: "How hard the network is working to stay secure — hashrate, stake, or open interest.",
+    body: "How hard the network is working to stay secure: hashrate, stake, or open interest.",
   },
   "chart.range": {
     title: "Range",
@@ -153,11 +153,11 @@ const BASE: Record<TipId, TipBody> = {
   },
   "suite.card": {
     title: "Chain board",
-    body: "Open this chain’s observatory. Each board has its own visual language and data feed.",
+    body: "Open this chain’s board. Same glance habit, different toys and its own feed.",
   },
   "suite.pulse": {
     title: "Suite pulse",
-    body: "Quick tip + fee snapshot across every chain so you can see who’s humming.",
+    body: "A quick tip + fee peek across every chain, so you can see who’s humming.",
   },
   "metric.pin": {
     title: "Pin",
@@ -173,7 +173,7 @@ const BASE: Record<TipId, TipBody> = {
   },
   "tip.jar": {
     title: "Tip jar",
-    body: "Optional Lightning tip. Totally voluntary — boards stay free either way.",
+    body: "Optional Lightning tip. Totally voluntary. Boards stay free either way.",
   },
   "settings.newbie": {
     title: "Newbie tooltips",
@@ -212,6 +212,24 @@ export function resolveTip(
 ): TipBody {
   const tip = BASE[id];
   if (id === "pulse.fee" && ctx?.feeUnit) {
+    if (ctx.chainId === "sol") {
+      return {
+        ...tip,
+        body: "The p90 recent prioritization-fee price in micro-lamports per compute unit. It is not the total transaction fee or a confirmation-time promise.",
+      };
+    }
+    if (ctx.chainId === "eth") {
+      return {
+        ...tip,
+        body: "The p90 effective gas price across recent execution blocks. It is a recent-block reading, not a pending-mempool or confirmation-time estimate.",
+      };
+    }
+    if (ctx.chainId === "hype") {
+      return {
+        ...tip,
+        body: "The p90 effective HyperEVM gas price across recent blocks. It does not describe HyperCore trading fees.",
+      };
+    }
     return {
       ...tip,
       body: `A “pay this to get in soon” estimate, shown in ${ctx.feeUnit}.`,
@@ -233,6 +251,12 @@ export function resolveTip(
     return {
       ...tip,
       body: "Time since the latest execution block (~12s target). Amber means it’s been quiet longer than usual.",
+    };
+  }
+  if (id === "instrument.forge" && ctx?.chainId === "hype") {
+    return {
+      title: "Open interest",
+      body: "Aggregate open interest across sampled perpetual markets. It measures trading exposure, not network security.",
     };
   }
   return tip;
