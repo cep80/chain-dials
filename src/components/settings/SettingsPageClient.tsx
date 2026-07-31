@@ -79,32 +79,31 @@ export function SettingsPageClient() {
   return (
     <div className="space-y-6">
       <div className="rounded-[14px] border border-line bg-ink-soft/40 px-5 py-4 text-sm text-paper-muted md:px-6">
-        Preferences stay on this device only. No account, no sync cloud, just
+        Preferences stay on this device only. No account, no sync cloud — just
         localStorage.{" "}
         <Hint tip="settings.newbie">
           <span className="underline decoration-dotted underline-offset-4">
-            Newbie tooltips
+            Guidance tooltips
           </span>
         </Hint>{" "}
-        are on by default so jargon like “tip” doesn’t feel like a secret
-        handshake.
+        are on by default so terms like “tip” stay clear.
       </div>
 
       <SettingsSection
         id="guidance"
         eyebrow="Guidance"
-        title="Help for humans"
-        blurb="Plain language overlaid on the board. Turn it down once the dials feel obvious."
+        title="Plain-language help"
+        blurb="Short explanations overlaid on the board. Turn them down once the instruments feel familiar."
       >
         <SettingsRow
-          label="Newbie tooltips"
-          description="Hover or focus almost any label to get a short explanation. Works with keyboard focus too."
+          label="Guidance tooltips"
+          description="Hover or focus almost any label for a short explanation. Works with keyboard focus too."
           tip="settings.newbie"
           control={
             <SettingsToggle
               checked={newbieTooltips}
               onChange={(v) => set("newbieTooltips", v)}
-              label="Newbie tooltips"
+              label="Guidance tooltips"
             />
           }
         />
@@ -122,7 +121,7 @@ export function SettingsPageClient() {
         />
         <SettingsRow
           label="Block found toasts"
-          description="Show a little popup when a new block or slot lands while you’re watching."
+          description="Show a brief notice when a new block or slot lands while you’re watching."
           tip="settings.toasts"
           control={
             <SettingsToggle

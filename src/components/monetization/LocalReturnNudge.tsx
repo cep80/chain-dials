@@ -50,7 +50,7 @@ export function LocalReturnNudge() {
       ) {
         lastFeeNudge.current = Date.now();
         new Notification(`${chain.shortName} fees heating up`, {
-          body: `Hottest fee around ${Math.round(fee)} ${chain.feeUnit}. Open the board if you care.`,
+          body: `Hottest fee around ${Math.round(fee)} ${chain.feeUnit}.`,
           tag: `fee-${chain.slug}`,
         });
       }
@@ -71,7 +71,7 @@ export function LocalReturnNudge() {
     ) {
       lastQuietNudge.current = Date.now();
       new Notification(`${chain.shortName} tip looks quiet`, {
-        body: `No new ${chain.tipNoun} for a bit. Worth a glance?`,
+        body: `No new ${chain.tipNoun} for a while.`,
         tag: `quiet-${chain.slug}`,
       });
     }

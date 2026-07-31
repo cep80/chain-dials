@@ -74,7 +74,7 @@ export default function ChainBoardPage() {
               />
               <TipJar
                 label={
-                  chain.id === "btc" ? "Tip a few sats" : "Support the suite"
+                  chain.id === "btc" ? "Send sats" : "Support the suite"
                 }
               />
               <Link
@@ -113,8 +113,8 @@ export default function ChainBoardPage() {
                     Everything else
                   </h2>
                   <p className="mt-1 text-sm text-paper-muted">
-                    Pin what you care about up top. Click a row if a term feels
-                    mysterious.
+                    Pin what you care about up top. Expand a row for the
+                    plain-language definition.
                   </p>
                 </div>
               </div>

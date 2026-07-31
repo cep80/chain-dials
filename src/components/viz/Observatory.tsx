@@ -127,11 +127,11 @@ export function Observatory({ large = false }: { large?: boolean }) {
             id="observatory-heading"
             className="text-2xl font-bold tracking-tight text-paper md:text-3xl"
           >
-            {chain?.observatoryTitle ?? "Five weird little dials"}
+            {chain?.observatoryTitle ?? "Instruments"}
           </h2>
           <p className="mt-1 max-w-xl text-sm text-paper-muted">
             {chain?.observatoryBlurb ??
-              "Cadence, mempool weather, tip face, halvings, and hashrate. Click to go big."}
+              "Cadence, mempool, tip glyph, halvings, and hashrate. Open one to expand."}
           </p>
         </div>
       </div>

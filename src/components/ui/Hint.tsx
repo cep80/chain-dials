@@ -28,7 +28,7 @@ type HintProps = {
 
 /**
  * Accessible hover/focus tip for newcomers.
- * Renders children unchanged when newbie tooltips are off.
+ * Renders children unchanged when guidance tooltips are off.
  */
 export function Hint({
   tip,

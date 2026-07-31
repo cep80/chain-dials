@@ -773,8 +773,8 @@ export function MempoolAtmosphere({
           />
         ) : (
           <p className="max-w-md text-center text-sm text-paper-muted">
-            Mist is the whole waiting room by fee rate. Bright dots are a recent
-            sample. Click one to peek; empty space clears the selection.
+            Mist is the mempool by fee rate. Bright dots are recent samples.
+            Select one for detail; empty space clears the selection.
           </p>
         )}
         <p className="mono text-4xl font-medium text-paper md:text-6xl">
@@ -783,7 +783,7 @@ export function MempoolAtmosphere({
         <p className="text-xs uppercase tracking-[0.2em] text-paper-muted">
           waiting in the mempool
           {pressurePct != null ? ` · ${formatPlainPercent(pressurePct, 0)} pressure` : ""}
-          {sampleN ? ` · ${sampleN} to poke` : ""}
+          {sampleN ? ` · ${sampleN} samples` : ""}
         </p>
       </div>
     );
@@ -794,7 +794,7 @@ export function MempoolAtmosphere({
       title={chain?.instruments.atmosphere.frameTitle ?? "Atmosphere"}
       subtitle={
         chain?.instruments.atmosphere.subtitle ??
-        "Mist = queue · dots = peek · empty = go big"
+        "Mist = queue · dots = select · empty = expand"
       }
       reading={count != null ? `${formatInteger(count)} tx` : "-"}
       large={large}

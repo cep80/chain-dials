@@ -212,7 +212,7 @@ export function TipSigil({
             </p>
           )}
           <p className="mt-3 text-xs text-paper-muted">
-            Click the doodle to copy the full hash
+            Click the glyph to copy the full hash
           </p>
         </div>
       </div>
@@ -224,8 +224,8 @@ export function TipSigil({
       title="Tip Sigil"
       subtitle={
         height != null
-          ? `Block ${formatInteger(height)}’s little face`
-          : "Face of the latest block"
+          ? `Block ${formatInteger(height)} tip glyph`
+          : "Glyph from the tip hash"
       }
       reading={copied ? "Copied" : formatHash(tipHash)}
       large={large}

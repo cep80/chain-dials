@@ -19,33 +19,33 @@ export const INSTRUMENT_META: Record<
 > = {
   metronome: {
     title: "Block Metronome",
-    subtitle: "Is the chain still humming?",
+    subtitle: "Time since the latest block",
     narrative:
-      "Bitcoin aims for a new block about every ten minutes, give or take. When the hand sits near the mark, miners are on schedule. When it keeps going… well, sometimes the network just takes a long breath.",
+      "Bitcoin targets a new block about every ten minutes. When the hand sits near the mark, miners are on schedule. When it runs past, the network is simply taking longer between tips.",
   },
   atmosphere: {
     title: "Mempool Atmosphere",
-    subtitle: "What’s waiting to get in a block",
+    subtitle: "Unconfirmed transactions waiting for a block",
     narrative:
-      "The mist is the whole waiting room, stacked by how much people are paying. Those bright dots? A handful of recent transactions. Click one to peek, or poke the empty space to go fullscreen.",
+      "The mist is the mempool, stacked by fee rate. Bright dots are recent sample transactions. Select one for detail, or click empty space to expand fullscreen.",
   },
   sigil: {
     title: "Tip Sigil",
-    subtitle: "A doodle of the latest block",
+    subtitle: "A glyph from the tip hash",
     narrative:
-      "Every block has a fingerprint (its hash). We fold that into a little glyph so the tip has a face you can recognize. New block? New doodle. Click it if you want the full hash on your clipboard.",
+      "Every block has a hash. We fold that fingerprint into a glyph so the tip is easy to recognize. A new block brings a new glyph. Click to copy the full hash.",
   },
   issuance: {
     title: "Issuance Hourglass",
     subtitle: "Countdown to the next halving",
     narrative:
-      "Sand tracks this subsidy era: how far we are until miners’ block reward halves again. That tiny ring in the neck? The long story: how much of the 21 million is already out in the world.",
+      "Sand tracks this subsidy era: progress until the next block-reward halving. The ring in the neck shows how much of the 21 million supply is already issued.",
   },
   forge: {
     title: "Hashrate Forge",
-    subtitle: "How hard the network is working",
+    subtitle: "Network hashing power",
     narrative:
-      "Brighter heat means more hashing power securing the chain. The outer ring is the difficulty epoch: every 2016 blocks, Bitcoin quietly decides how hard the next stretch should be.",
+      "Brighter heat means more hashing power securing the chain. The outer ring is the difficulty epoch: every 2016 blocks, Bitcoin retargets how hard the next stretch should be.",
   },
 };
 

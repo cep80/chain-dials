@@ -6,7 +6,7 @@ import { siteUrl, SITE_NAME } from "@/lib/site";
 export const metadata: Metadata = {
   title: "Settings",
   description:
-    "Newbie tooltips, motion, density, and board defaults for Chain Dials. Stored on this device only.",
+    "Guidance tooltips, motion, density, and board defaults for Chain Dials. Stored on this device only.",
   alternates: { canonical: `${siteUrl()}/settings` },
   openGraph: {
     title: `Settings · ${SITE_NAME}`,
@@ -25,8 +25,9 @@ export default function SettingsPage() {
           Settings
         </h1>
         <p className="mt-3 text-base text-paper-muted md:text-lg">
-          Make the suite kinder to newcomers, or quieter once you know what a
-          tip is. Everything here is local to this browser.
+          Turn on clearer labels when you’re learning the board, or dial them
+          down once the instruments feel familiar. Everything here stays local
+          to this browser.
         </p>
       </header>
       <SettingsPageClient />

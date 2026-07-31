@@ -123,7 +123,7 @@ export function ClearingClock({
   return (
     <InstrumentFrame
       title="Clock"
-      subtitle="~1s HyperEVM heartbeats · hand near clearing"
+      subtitle="~1s HyperEVM blocks · hand near the mark"
       reading={reading}
       large={large}
       instrumentId="metronome"

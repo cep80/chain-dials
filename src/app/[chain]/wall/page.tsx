@@ -26,8 +26,8 @@ export default function WallPage() {
       <div className="mb-6">
         <h1 className="text-3xl font-extrabold text-paper">Wall Mode</h1>
         <p className="mt-2 max-w-2xl text-paper-muted">
-          Free heartbeat below. The full instrument TV layout is a Pro peek for
-          now. We still can’t charge you even if you beg.
+          Free heartbeat below. The full instrument wall layout is a Pro
+          preview for now — checkout isn’t live yet.
         </p>
       </div>
 

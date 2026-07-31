@@ -12,14 +12,14 @@ export default function AlertsPage() {
       <div className="mb-6">
         <h1 className="text-3xl font-extrabold text-paper">Alerts</h1>
         <p className="mt-2 text-paper-muted">
-          A peek at the kind of nudges Pro will send for {chain.name}. Email and
-          full rules are still preview. You can turn on a local browser nudge
-          below while you wait.
+          A preview of the nudges Pro will send for {chain.name}. Email and full
+          rules are still coming. You can turn on a local browser nudge below
+          while you wait.
         </p>
       </div>
       <ProGate
         title="Fee & tip nudges"
-        detail="These rules are fake props for now. We aren’t emailing you about fees (yet)."
+        detail="These rules are placeholders for now. We aren’t emailing you about fees yet."
         ctaLabel="Join the Pro waitlist"
         ctaHref={`/${chain.slug}/pro#waitlist`}
       >
@@ -27,7 +27,7 @@ export default function AlertsPage() {
           {[
             `Fee hottest > threshold (${chain.feeUnit})`,
             `No new ${chain.cadenceLabel} for a while`,
-            "Waiting room looking stuffed",
+            "Mempool looking full",
             "Price ±5% in 1 hour",
           ].map((rule) => (
             <div

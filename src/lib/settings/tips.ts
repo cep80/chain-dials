@@ -61,7 +61,7 @@ const BASE: Record<TipId, TipBody> = {
   },
   "pulse.mempool": {
     title: "Mempool",
-    body: "The waiting room of unconfirmed transactions. When it’s busy, fees usually climb.",
+    body: "Unconfirmed transactions waiting for a block. When it’s busy, fees usually climb.",
   },
   "pulse.last_block": {
     title: "Last block",
@@ -93,11 +93,11 @@ const BASE: Record<TipId, TipBody> = {
   },
   "nav.alerts": {
     title: "Alerts",
-    body: "Preview of fee/tip nudges. Local browser nudges work today; full rules are still warming up.",
+    body: "Preview of fee and tip nudges. Local browser nudges work today; full rules are still coming.",
   },
   "nav.wall": {
     title: "Wall",
-    body: "Big-screen layout for the instruments. Free heartbeat always; full wall is a Pro peek.",
+    body: "Big-screen layout for the instruments. Free heartbeat always; full wall is a Pro preview.",
   },
   "nav.pro": {
     title: "Pro",
@@ -116,12 +116,12 @@ const BASE: Record<TipId, TipBody> = {
     body: "Live = feeds are healthy. Spotty/Offline means we’re retrying public APIs.",
   },
   "instrument.expand": {
-    title: "Go bigger",
-    body: "Open this instrument fullscreen so you can actually see the toy.",
+    title: "Expand",
+    body: "Open this instrument fullscreen for a closer look.",
   },
   "instrument.metronome": {
     title: "Cadence",
-    body: "Is the chain still humming? Tracks time since the latest block or slot.",
+    body: "Tracks time since the latest block or slot.",
   },
   "instrument.atmosphere": {
     title: "Fee weather",
@@ -129,11 +129,11 @@ const BASE: Record<TipId, TipBody> = {
   },
   "instrument.sigil": {
     title: "Tip face",
-    body: "A visual fingerprint of the latest block hash. New tip, new doodle or tape.",
+    body: "A visual fingerprint of the latest block hash — glyph, mosaic, ribbon, or tape.",
   },
   "instrument.issuance": {
     title: "Issuance",
-    body: "Supply / reward story for this chain: halvings, burns, inflation, or volume spray.",
+    body: "Supply and reward story for this chain: halvings, burns, inflation, or volume spray.",
   },
   "instrument.forge": {
     title: "Security heat",
@@ -153,11 +153,11 @@ const BASE: Record<TipId, TipBody> = {
   },
   "suite.card": {
     title: "Chain board",
-    body: "Open this chain’s board. Same glance habit, different toys and its own feed.",
+    body: "Open this chain’s board — same glance habit, its own instruments and feed.",
   },
   "suite.pulse": {
     title: "Suite pulse",
-    body: "A quick tip + fee peek across every chain, so you can see who’s humming.",
+    body: "A quick tip and fee reading across every chain.",
   },
   "metric.pin": {
     title: "Pin",
@@ -172,12 +172,12 @@ const BASE: Record<TipId, TipBody> = {
     body: "Copy a link or post a reading to X / Nostr without leaving the board.",
   },
   "tip.jar": {
-    title: "Tip jar",
-    body: "Optional Lightning tip. Totally voluntary. Boards stay free either way.",
+    title: "Support",
+    body: "Optional Lightning support. Voluntary — boards stay free either way.",
   },
   "settings.newbie": {
-    title: "Newbie tooltips",
-    body: "When on, hover or focus labels to get plain-language explanations.",
+    title: "Guidance tooltips",
+    body: "When on, hover or focus labels for plain-language explanations.",
   },
   "settings.terms": {
     title: "Term hints",
@@ -185,7 +185,7 @@ const BASE: Record<TipId, TipBody> = {
   },
   "settings.toasts": {
     title: "Block toasts",
-    body: "Little popups when a new block or slot lands while you’re watching.",
+    body: "Brief notices when a new block or slot lands while you’re watching.",
   },
   "settings.motion": {
     title: "Motion",

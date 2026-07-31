@@ -124,7 +124,7 @@ export function VolumeFountain({
       subtitle={
         dayVlmB != null
           ? `${supply != null ? "Reported supply basin" : "Supply feed unavailable"} · spray from $${dayVlmB.toFixed(1)}B/24h`
-          : "Reported supply basin · spray = volume mood"
+          : "Reported supply basin · spray = 24h volume"
       }
       reading={reading}
       large={large}

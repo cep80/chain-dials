@@ -204,7 +204,7 @@ async function hypeReading(
           funding != null
             ? `${funding > 0 ? "+" : ""}${funding.toFixed(2)} bps`
             : formatFee(snap.feeFastest, "gwei"),
-        sub: funding != null ? "funding" : "gas",
+        sub: funding != null ? "HYPE funding" : "gas",
         accent,
       };
     case "sigil":

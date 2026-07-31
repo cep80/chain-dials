@@ -129,7 +129,7 @@ export function InflationFountain({
       subtitle={
         inflation != null
           ? `Epoch water · spray from ${inflation.toFixed(1)}% inflation`
-          : "Epoch water · spray = inflation mood"
+          : "Epoch water · spray = inflation"
       }
       reading={reading}
       large={large}

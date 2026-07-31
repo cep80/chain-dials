@@ -103,7 +103,7 @@ export function InstrumentFrame({
                 type="button"
                 onClick={expand}
                 className="rounded-md border border-line p-1.5 text-paper-muted transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-                aria-label={`Open ${title} bigger`}
+                aria-label={`Expand ${title}`}
               >
                 <ExpandIcon />
               </button>
@@ -120,7 +120,7 @@ export function InstrumentFrame({
         {children}
         {instrumentId && (
           <span className="pointer-events-none absolute bottom-2 right-2 rounded-full border border-line bg-ink/85 px-2 py-0.5 text-[9px] uppercase tracking-wider text-paper-muted opacity-0 transition group-hover/frame:opacity-100 group-focus-within/frame:opacity-100">
-            Go bigger
+            Expand
           </span>
         )}
       </div>

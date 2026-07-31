@@ -110,7 +110,7 @@ export function PriorityJets({
       </svg>
       {!compact && (
         <p className="pointer-events-none absolute bottom-1 left-2 mono text-[9px] uppercase tracking-wider text-paper-muted">
-          fee samples · jet = peek · empty = go big
+          fee samples · jet = select · empty = expand
         </p>
       )}
     </div>
@@ -139,7 +139,7 @@ export function PriorityJets({
           </p>
         ) : (
           <p className="text-[11px] text-paper-muted">
-            Click a jet for the fee sample · empty clears
+            Select a jet for the fee sample · empty clears
           </p>
         )}
         <p className="mono text-5xl font-medium text-paper md:text-7xl">
@@ -156,7 +156,7 @@ export function PriorityJets({
   return (
     <InstrumentFrame
       title="Jets"
-      subtitle="Prioritization fee samples · jet = peek · empty = go big"
+      subtitle="Prioritization fee samples · jet = select · empty = expand"
       reading={formatFee(feeFastest, "µLamports/CU")}
       large={large}
       instrumentId="atmosphere"

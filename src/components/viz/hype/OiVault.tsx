@@ -140,7 +140,7 @@ export function OiVault({
   return (
     <InstrumentFrame
       title="Vault"
-      subtitle="Open interest as stacked heat · orbit = gas mood"
+      subtitle="Open interest as stacked heat · orbit = gas"
       reading={reading}
       large={large}
       instrumentId="forge"

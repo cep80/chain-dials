@@ -87,7 +87,7 @@ export const METRICS: MetricDef[] = [
     module: "markets",
     label: "Sats per Dollar",
     definition:
-      "How many satoshis (tiny bits of a bitcoin) one US dollar buys right now. Handy if you think in sats.",
+      "How many satoshis one US dollar buys right now — useful if you think in sats.",
     source: "derived",
     format: "sats",
     higherIsBetter: false,
@@ -98,7 +98,7 @@ export const METRICS: MetricDef[] = [
     module: "markets",
     label: "Market Cap",
     definition:
-      "Price × coins already issued. A big round number people like to argue about.",
+      "Price × coins already issued. A large market-size figure.",
     source: "derived",
     format: "usd",
     higherIsBetter: true,
@@ -119,7 +119,7 @@ export const METRICS: MetricDef[] = [
     module: "blockchain",
     label: "Time Since Last Block",
     definition:
-      "How long since the latest block showed up. The network aims for ~10 minutes; sometimes it nips, sometimes it naps.",
+      "How long since the latest block. The network aims for about ten minutes; stretches longer or shorter are normal.",
     source: "mempool.space",
     format: "duration",
     higherIsBetter: false,
@@ -199,7 +199,7 @@ export const METRICS: MetricDef[] = [
     module: "fees",
     label: "Economy",
     definition:
-      "The patient person’s fee. Fine when you’re not in a hurry and the queue isn’t wild.",
+      "The patient fee target — fine when you’re not in a hurry and the queue isn’t crowded.",
     source: "mempool.space",
     format: "fee",
     higherIsBetter: false,
@@ -209,7 +209,7 @@ export const METRICS: MetricDef[] = [
     module: "mining",
     label: "Hashrate",
     definition:
-      "Guess of how much hashing power is securing the network lately. More heat, more security (and more electricity jokes).",
+      "Estimate of hashing power securing the network lately. More heat usually means more security.",
     source: "mempool.space",
     format: "hashrate",
     higherIsBetter: true,

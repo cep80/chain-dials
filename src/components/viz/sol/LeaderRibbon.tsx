@@ -110,7 +110,7 @@ export function LeaderRibbon({
       subtitle={
         height != null
           ? `Slot ${formatInteger(height)} ticker tape`
-          : "Blockhash on a parade ribbon"
+          : "Blockhash on a ticker ribbon"
       }
       reading={copied ? "Copied" : formatHash(tipHash)}
       large={large}

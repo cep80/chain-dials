@@ -29,7 +29,7 @@ export function absoluteShareUrl(path: string): string {
   return `${siteUrl()}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
-/** Punchy one-liners tuned for X: short, human, no bait. */
+/** Short share lines: clear reading, no bait. */
 const INSTRUMENT_HOOKS: Record<
   ChainId,
   Record<InstrumentId, (reading: string) => string>
@@ -37,32 +37,32 @@ const INSTRUMENT_HOOKS: Record<
   btc: {
     metronome: (r) =>
       r.includes("m") || r.includes("s")
-        ? `Since tip: ${r}. Still humming?`
+        ? `Since tip: ${r}.`
         : `Block cadence: ${r}.`,
-    atmosphere: (r) => `Mempool weather: ${r}. Fee mist, live.`,
-    sigil: () => `New tip face just dropped.`,
+    atmosphere: (r) => `Mempool: ${r}.`,
+    sigil: () => `New tip glyph.`,
     issuance: (r) => `Halving clock: ${r} through this era.`,
-    forge: (r) => `Hashrate heat: ${r}.`,
+    forge: (r) => `Hashrate: ${r}.`,
   },
   eth: {
-    metronome: (r) => `${r} since tip. Lattice still ticking.`,
-    atmosphere: (r) => `Base fee tide sitting at ${r}.`,
-    sigil: () => `Fresh tip mosaic. New glass.`,
+    metronome: (r) => `${r} since tip. Slot lattice.`,
+    atmosphere: (r) => `Base fee tide: ${r}.`,
+    sigil: () => `Fresh tip mosaic.`,
     issuance: (r) => `Burn candle: ${r} last block.`,
     forge: (r) => `Validator sky: ${r}.`,
   },
   sol: {
-    metronome: (r) => `Tach check: ${r} since slot.`,
+    metronome: (r) => `Tach: ${r} since slot.`,
     atmosphere: (r) => `Priority jets: ${r}.`,
-    sigil: () => `Leader ribbon just rolled a new hash.`,
+    sigil: () => `Leader ribbon: new tip hash.`,
     issuance: (r) => `Inflation fountain: ${r}.`,
     forge: (r) => `Stake reef: ${r}.`,
   },
   hype: {
     metronome: (r) => `Clearing clock: ${r} since tip.`,
     atmosphere: (r) => `Funding tide: ${r}.`,
-    sigil: () => `Hash tape just printed a new tip.`,
-    issuance: (r) => `Volume fountain spraying ${r}.`,
+    sigil: () => `Hash tape: new tip print.`,
+    issuance: (r) => `Volume fountain: ${r}.`,
     forge: (r) => `OI vault: ${r}.`,
   },
 };

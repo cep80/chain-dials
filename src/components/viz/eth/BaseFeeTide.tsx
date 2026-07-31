@@ -118,7 +118,7 @@ export function BaseFeeTide({
       {!compact && (
         <div className="pointer-events-none absolute inset-x-0 bottom-0 flex justify-between p-2 mono text-[9px] uppercase tracking-wider text-paper-muted">
           <span>base fee wave</span>
-          <span>tip foam (decor)</span>
+          <span>tip foam</span>
         </div>
       )}
     </div>
@@ -140,7 +140,7 @@ export function BaseFeeTide({
           {count != null ? ` · ${formatInteger(count)} in last block` : ""}
         </p>
         <p className="text-center text-[11px] text-paper-muted">
-          Click anywhere to expand. Foam is decorative priority tips, not samples.
+          Click anywhere to expand. Foam shows decorative priority tips, not samples.
         </p>
       </div>
     );
@@ -149,7 +149,7 @@ export function BaseFeeTide({
   return (
     <InstrumentFrame
       title="Tide"
-      subtitle="Base fee wave · tip foam is decor · click to expand"
+      subtitle="Base fee wave · tip foam is decorative · click to expand"
       reading={reading}
       large={large}
       instrumentId="atmosphere"

@@ -67,19 +67,14 @@ export function CoreTermHints() {
       : chain.id === "hype"
         ? [
             {
-            term: "Funding (median)",
-            value: (() => {
-                const sorted = [...live.baseFeeSeries].sort((a, b) => a - b);
-                if (!sorted.length) return "-";
-                const middle = Math.floor(sorted.length / 2);
-                const f =
-                  sorted.length % 2 === 0
-                    ? (sorted[middle - 1]! + sorted[middle]!) / 2
-                    : sorted[middle]!;
+              term: "Funding (latest)",
+              value: (() => {
+                const f = live.baseFeeSeries[live.baseFeeSeries.length - 1];
+                if (f == null) return "-";
                 const sign = f > 0 ? "+" : "";
                 return `${sign}${f.toFixed(2)} bps`;
               })(),
-              hint: "Median hourly funding across the sampled top-volume perps.",
+              hint: "Latest hourly HYPE perp funding from Hyperliquid fundingHistory (~48h series drives the tide).",
             },
             {
               term: "Gas (HyperEVM)",

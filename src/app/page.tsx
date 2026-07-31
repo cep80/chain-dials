@@ -25,11 +25,12 @@ export default function SuiteHomePage() {
         </div>
         <p className="mt-4 text-lg text-paper-muted">{SUITE.tagline}</p>
         <p className="mt-3 text-sm leading-relaxed text-paper-muted">
-          {SUITE.description} Pick a chain below. If a term feels fuzzy,{" "}
+          {SUITE.description} Pick a chain below. For plain-language labels, turn
+          on{" "}
           <Link href="/settings" className="text-accent hover:underline">
-            newbie tooltips
+            guidance tooltips
           </Link>{" "}
-          in Settings help a lot.
+          in Settings.
         </p>
       </header>
 

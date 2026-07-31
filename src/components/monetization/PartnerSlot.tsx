@@ -4,7 +4,7 @@ const PARTNER_NAME =
   process.env.NEXT_PUBLIC_PARTNER_NAME ?? "Trezor";
 const PARTNER_BLURB =
   process.env.NEXT_PUBLIC_PARTNER_BLURB ??
-  "Keys on a device you hold. For when “not your keys…” stops being a meme.";
+  "Keys on a device you hold — so custody stays yours.";
 
 export function PartnerSlot() {
   return (

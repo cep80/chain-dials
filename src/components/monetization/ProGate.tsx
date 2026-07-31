@@ -26,7 +26,7 @@ export function ProGate({
           <h2 className="mt-2 text-xl font-bold text-paper">{title}</h2>
           <p className="mt-2 text-sm text-paper-muted">{detail}</p>
           <p className="mt-3 text-xs text-paper-muted">
-            No checkout yet. The live board keeps humming for free.
+            No checkout yet. The live board stays free.
           </p>
           <Link
             href={ctaHref}

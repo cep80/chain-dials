@@ -8,7 +8,11 @@ export interface ChainSnapshot {
   feeHalfHour: number | null;
   feeHour: number | null;
   feeEconomy: number | null;
-  /** EIP-1559 base fee series (gwei), newest last */
+  /**
+   * ETH: EIP-1559 base fee series (gwei), newest last.
+   * HYPE: hourly HYPE perp funding (bps), newest last.
+   * SOL: recent prioritization fee samples.
+   */
   baseFeeSeries: number[];
   /** Priority tip series (gwei), newest last */
   prioritySeries: number[];
@@ -419,8 +423,9 @@ async function fetchSol(tip: TipSnapshot): Promise<ChainSnapshot> {
 
 async function fetchHype(tip: TipSnapshot): Promise<ChainSnapshot> {
   const rpc = "https://rpc.hyperliquid.xyz/evm";
+  const fundingHistoryStart = Date.now() - 48 * 60 * 60 * 1000;
 
-  const [feeHistory, metaRes] = await Promise.all([
+  const [feeHistory, metaRes, fundingHistRes] = await Promise.all([
     jsonRpc(rpc, "eth_feeHistory", ["0x18", "latest", [10, 50, 90]]) as Promise<{
       baseFeePerGas?: string[];
       gasUsedRatio?: number[];
@@ -430,6 +435,16 @@ async function fetchHype(tip: TipSnapshot): Promise<ChainSnapshot> {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ type: "metaAndAssetCtxs" }),
+      next: { revalidate: 0 },
+    }),
+    fetch("https://api.hyperliquid.xyz/info", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        type: "fundingHistory",
+        coin: "HYPE",
+        startTime: fundingHistoryStart,
+      }),
       next: { revalidate: 0 },
     }),
   ]);
@@ -459,12 +474,28 @@ async function fetchHype(tip: TipSnapshot): Promise<ChainSnapshot> {
     ratios.length > 0 ? ratios.reduce((a, b) => a + b, 0) / ratios.length : 0.35;
 
   let fundingBps: number[] = [];
+  let fundingHistoryBps: number[] = [];
   let recentTxs: AtmosphereTx[] = [];
   let totalOiUsd = 0;
   let dayVlmUsd = 0;
   let marketCount = 0;
   let hypeMark: number | null = null;
   let source = "hyperevm+fees";
+
+  if (fundingHistRes.ok) {
+    try {
+      const hist = (await fundingHistRes.json()) as Array<{
+        fundingRate?: string;
+        time?: number;
+      }>;
+      fundingHistoryBps = hist
+        .map((row) => (Number.parseFloat(row.fundingRate ?? "") || 0) * 10_000)
+        .filter((v) => Number.isFinite(v));
+      if (fundingHistoryBps.length) source = "hyperevm+funding-history";
+    } catch {
+      // fall back to cross-market snapshot below
+    }
+  }
 
   if (metaRes.ok) {
     try {
@@ -521,13 +552,20 @@ async function fetchHype(tip: TipSnapshot): Promise<ChainSnapshot> {
         fresh: i < 6,
         kind: "sample" as const,
       }));
-      source = "hyperevm+info";
+      source = fundingHistoryBps.length
+        ? `${source}+info`
+        : "hyperevm+info";
     } catch {
-      // keep fee-only
+      // keep fee-only / history-only
     }
   }
 
-  const fundingAbs = fundingBps.map((f) => Math.abs(f));
+  const seriesForTide = fundingHistoryBps.length
+    ? fundingHistoryBps
+    : fundingBps;
+  const fundingAbs = (
+    fundingBps.length ? fundingBps : seriesForTide
+  ).map((f) => Math.abs(f));
   const feeHistogram = histogramFromFees(
     fundingAbs.length ? fundingAbs : [Math.abs(feeFastest)],
   );
@@ -577,8 +615,8 @@ async function fetchHype(tip: TipSnapshot): Promise<ChainSnapshot> {
     feeHalfHour,
     feeHour,
     feeEconomy,
-    baseFeeSeries: fundingBps.length
-      ? fundingBps
+    baseFeeSeries: seriesForTide.length
+      ? seriesForTide
       : executedBases.length
         ? executedBases
         : bases,

@@ -9,11 +9,11 @@ import Link from "next/link";
 const FEATURES = [
   {
     title: "Alerts that nudge",
-    body: "Fee spikes, a quiet tip, a stuffed waiting room, price bands. Email or a webhook, when we ship it.",
+    body: "Fee spikes, a quiet tip, a full mempool, price bands. Email or a webhook, when we ship it.",
   },
   {
     title: "Wall / TV mode",
-    body: "All five instruments, big type, less chrome. Nice on a second monitor. Also fine on the office TV nobody watches.",
+    body: "All five instruments, larger type, less chrome — built for a second monitor.",
   },
   {
     title: "Longer memory",
@@ -21,7 +21,7 @@ const FEATURES = [
   },
   {
     title: "Saved layouts",
-    body: "Name a pinboard, share a URL. Your “just the fees” setup, one click away.",
+    body: "Name a pinboard, share a URL. Your preferred layout, one click away.",
   },
 ];
 
@@ -33,12 +33,12 @@ export default function ProPage() {
       <div className="mx-auto max-w-3xl">
         <p className="text-xs uppercase tracking-[0.22em] text-accent">Pro</p>
         <h1 className="mt-2 text-4xl font-extrabold text-paper md:text-5xl">
-          Extra dials, same free board
+          More tools, same free board
         </h1>
         <p className="mt-4 text-lg text-paper-muted">
-          {SUITE.name} keeps the live numbers free on every chain. Pro is for the
-          stuff around them: alerts, a full wall, longer history. We’re not
-          taking payments yet; this is a polite waitlist.
+          {SUITE.name} keeps the live numbers free on every chain. Pro is for
+          what sits around them: alerts, a full wall, longer history. We’re not
+          taking payments yet — this is a waitlist.
         </p>
 
         <div
@@ -52,14 +52,14 @@ export default function ProPage() {
                 $6<span className="text-lg text-paper-muted">/mo</span>
               </p>
               <p className="mt-1 text-sm text-paper-muted">
-                or ~50k sats · actual checkout is still a future problem
+                or ~50k sats · checkout comes later
               </p>
             </div>
             <a
               href={`mailto:${email}?subject=${encodeURIComponent(`${SUITE.name} Pro waitlist (${chain.shortName})`)}`}
               className="rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-ink transition hover:bg-paper"
             >
-              Email me when it’s real
+              Email me when it’s ready
             </a>
           </div>
           <p className="mt-4 text-xs text-paper-muted">

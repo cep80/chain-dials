@@ -36,15 +36,18 @@ export function FundingTide({
   const count = useDashboardStore((s) => s.live.mempoolCount);
   const reduce = useReducedMotion();
 
+  const latestFunding =
+    fundingSeries.length > 0 ? fundingSeries[fundingSeries.length - 1]! : null;
   const medianFunding = median(fundingSeries);
 
   const absCap = Math.max(
     ...fundingSeries.map((v) => Math.abs(v)),
     0.5,
   );
+  const tideAnchor = latestFunding ?? medianFunding;
   const tide =
-    medianFunding != null
-      ? Math.max(0.15, Math.min(0.9, 0.45 + medianFunding / (absCap * 2.2)))
+    tideAnchor != null
+      ? Math.max(0.15, Math.min(0.9, 0.45 + tideAnchor / (absCap * 2.2)))
       : 0.45;
 
   const wave = useMemo(() => {
@@ -78,7 +81,7 @@ export function FundingTide({
 
   const w = stage ? 420 : large ? 260 : compact ? 120 : 200;
   const h = stage ? 220 : large ? 150 : compact ? 72 : 120;
-  const reading = formatBps(medianFunding);
+  const reading = formatBps(latestFunding);
 
   const body = (
     <div
@@ -122,7 +125,7 @@ export function FundingTide({
       </svg>
       {!compact && (
         <div className="pointer-events-none absolute inset-x-0 bottom-0 flex justify-between p-2 mono text-[9px] uppercase tracking-wider text-paper-muted">
-          <span>funding wave</span>
+          <span>48h funding</span>
           <span>gas foam</span>
         </div>
       )}
@@ -135,17 +138,19 @@ export function FundingTide({
       <div className="flex w-full flex-col items-center gap-5">
         {body}
         <p className="mono text-5xl font-medium text-paper md:text-7xl">
-          {formatBps(medianFunding)}
+          {formatBps(latestFunding)}
         </p>
         <p className="text-xs uppercase tracking-[0.2em] text-paper-muted">
-          funding bps · top markets
+          HYPE funding · hourly history
+          {medianFunding != null ? ` · median ${formatBps(medianFunding)}` : ""}
           {pressure != null
             ? ` · gas fullness ${formatPlainPercent(pressure, 0)}`
             : ""}
           {count != null ? ` · ${formatInteger(count)} perps` : ""}
         </p>
         <p className="text-center text-[11px] text-paper-muted">
-          Positive funding: longs pay shorts. Foam is HyperEVM priority tips.
+          Wave is Hyperliquid HYPE funding history (hourly). Positive: longs
+          pay shorts. Foam is HyperEVM priority tips.
         </p>
       </div>
     );
@@ -154,7 +159,7 @@ export function FundingTide({
   return (
     <InstrumentFrame
       title="Tide"
-      subtitle="Funding profile across top perps · click to expand"
+      subtitle="HYPE funding history · click to expand"
       reading={reading}
       large={large}
       instrumentId="atmosphere"

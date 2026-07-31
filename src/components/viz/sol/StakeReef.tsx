@@ -119,7 +119,7 @@ export function StakeReef({
         {reef}
         <p className="mono text-4xl font-medium text-paper md:text-6xl">{reading}</p>
         <p className="text-xs uppercase tracking-[0.2em] text-paper-muted">
-          stake kelp
+          stake reef
           {epoch != null ? ` · epoch ${formatPlainPercent(epoch, 0)}` : ""}
         </p>
       </div>
@@ -129,7 +129,7 @@ export function StakeReef({
   return (
     <InstrumentFrame
       title="Reef"
-      subtitle="Vote stake as kelp · current = epoch"
+      subtitle="Vote stake as reef · current = epoch"
       reading={reading}
       large={large}
       instrumentId="forge"

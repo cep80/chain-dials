@@ -133,8 +133,8 @@ export function BlockMosaic({
       title="Mosaic"
       subtitle={
         height != null
-          ? `Block ${formatInteger(height)} as stained glass`
-          : "Tip hash as stained glass"
+          ? `Block ${formatInteger(height)} tip mosaic`
+          : "Tip hash as colored tiles"
       }
       reading={copied ? "Copied" : formatHash(tipHash)}
       large={large}

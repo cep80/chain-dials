@@ -13,17 +13,17 @@ function BoltIcon() {
   );
 }
 
-/** Suite tip jar (Lightning). Same rail on every board. */
-export function TipJar({ label = "Tip a few sats" }: { label?: string }) {
+/** Suite Lightning support control. Same rail on every board. */
+export function TipJar({ label = "Send sats" }: { label?: string }) {
   if (PLACEHOLDER) {
     return (
       <Hint tip="tip.jar">
         <span
           className="inline-flex items-center gap-2 rounded-full border border-line px-4 py-2 text-sm text-paper-muted"
-          title="Set NEXT_PUBLIC_LN_ADDRESS to enable tips"
+          title="Set NEXT_PUBLIC_LN_ADDRESS to enable Lightning support"
         >
           <BoltIcon />
-          Tips soon
+          Support coming soon
         </span>
       </Hint>
     );
