@@ -54,6 +54,9 @@ export const PRICE_RANGE_ORDER: PriceRangeId[] = [
   "ALL",
 ];
 
+/** Ranges available without Pro. */
+export const FREE_PRICE_RANGES: PriceRangeId[] = ["1H", "24H", "7D"];
+
 export const PRICE_RANGE_META: Record<
   PriceRangeId,
   { label: string; /** CoinGecko days param */ days: string; sliceMs?: number }

@@ -1,5 +1,6 @@
 import { CHAIN_ORDER, CHAINS } from "@/lib/chains/registry";
 import type { ChainId } from "@/lib/chains/types";
+import { fetchCoinbaseSpotPrices } from "@/lib/price/coinbase";
 
 export interface TipSnapshot {
   height: number | null;
@@ -132,7 +133,25 @@ export async function fetchTip(chain: ChainId): Promise<TipSnapshot> {
 }
 
 export async function fetchSuitePrices(): Promise<Partial<Record<ChainId, number>>> {
-  const ids = CHAIN_ORDER.map((id) => CHAINS[id].coingeckoId).join(",");
+  const fromCoinbase = await fetchCoinbaseSpotPrices();
+  const missing = CHAIN_ORDER.filter((id) => fromCoinbase[id] == null);
+
+  if (missing.length === 0) return fromCoinbase;
+
+  // Optional CoinGecko fill for any gaps (no key required; key only helps rate limits)
+  try {
+    const gecko = await fetchCoinGeckoSpot(missing);
+    return { ...fromCoinbase, ...gecko };
+  } catch {
+    if (Object.keys(fromCoinbase).length > 0) return fromCoinbase;
+    throw new Error("spot price fetch failed (Coinbase + CoinGecko)");
+  }
+}
+
+async function fetchCoinGeckoSpot(
+  chains: ChainId[],
+): Promise<Partial<Record<ChainId, number>>> {
+  const ids = chains.map((id) => CHAINS[id].coingeckoId).join(",");
   const url = `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`;
   const headers: Record<string, string> = { accept: "application/json" };
   const demo = process.env.COINGECKO_DEMO_API_KEY?.trim();
@@ -146,7 +165,7 @@ export async function fetchSuitePrices(): Promise<Partial<Record<ChainId, number
   if (!res.ok) throw new Error(`CoinGecko ${res.status}`);
   const data = (await res.json()) as Record<string, { usd?: number }>;
   const out: Partial<Record<ChainId, number>> = {};
-  for (const id of CHAIN_ORDER) {
+  for (const id of chains) {
     const usd = data[CHAINS[id].coingeckoId]?.usd;
     if (typeof usd === "number") out[id] = usd;
   }

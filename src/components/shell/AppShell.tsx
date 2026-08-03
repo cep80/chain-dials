@@ -207,7 +207,7 @@ export function AppShell({
                     Alerts
                     {!isProEnabled() ? (
                       <span className="ml-1 text-[10px] uppercase tracking-wider opacity-60">
-                        Preview
+                        Pro
                       </span>
                     ) : null}
                   </Link>
@@ -220,12 +220,35 @@ export function AppShell({
                     Wall
                   </Link>
                 </Hint>
+                {chain.id === "btc" ? (
+                  <Hint tip="nav.forensics">
+                    <Link
+                      href="/btc/forensics"
+                      className="min-h-11 inline-flex items-center text-paper-muted transition hover:text-paper"
+                    >
+                      Trace
+                    </Link>
+                  </Hint>
+                ) : null}
                 <Hint tip="nav.pro">
                   <Link
                     href={`/${chain.slug}/pro`}
                     className="min-h-11 inline-flex items-center text-paper-muted transition hover:text-paper"
                   >
                     Pro
+                    {!isProEnabled() ? (
+                      <span className="ml-1 text-[10px] uppercase tracking-wider opacity-60">
+                        $6
+                      </span>
+                    ) : null}
+                  </Link>
+                </Hint>
+                <Hint tip="nav.account">
+                  <Link
+                    href="/account"
+                    className="min-h-11 inline-flex items-center text-paper-muted transition hover:text-paper"
+                  >
+                    Account
                   </Link>
                 </Hint>
               </>

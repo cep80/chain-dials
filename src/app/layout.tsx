@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Mono, Syne } from "next/font/google";
+import { AuthProvider } from "@/components/auth/AuthProvider";
 import { NativeAppProvider } from "@/components/native/NativeAppProvider";
 import { SettingsProvider } from "@/components/settings/SettingsProvider";
 import { siteUrl, SITE_NAME } from "@/lib/site";
@@ -80,7 +81,9 @@ export default function RootLayout({
     <html lang="en" className={`${syne.variable} ${plexMono.variable} h-full`}>
       <body className="relative min-h-full">
         <NativeAppProvider>
-          <SettingsProvider>{children}</SettingsProvider>
+          <AuthProvider>
+            <SettingsProvider>{children}</SettingsProvider>
+          </AuthProvider>
         </NativeAppProvider>
       </body>
     </html>

@@ -115,6 +115,10 @@ export function Observatory({ large = false }: { large?: boolean }) {
   const reduce = useReducedMotion();
   const chain = useChainOptional();
   const id = chain?.id ?? "btc";
+  const title = chain?.observatoryTitle ?? "Observatory";
+  const blurb =
+    chain?.observatoryBlurb ??
+    "Cadence, mempool weather, tip face, halvings, and hashrate. Expand an instrument to go big.";
 
   return (
     <section aria-labelledby="observatory-heading" className="mt-8">

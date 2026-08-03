@@ -1,3 +1,4 @@
+import { CHAIN_ORDER } from "@/lib/chains/registry";
 import type { ChainId } from "@/lib/chains/types";
 import type {
   OhlcCandle,
@@ -7,12 +8,14 @@ import type {
   PriceRangeId,
 } from "@/lib/price/types";
 
-const PRODUCT: Record<ChainId, string> = {
+export const COINBASE_PRODUCT: Record<ChainId, string> = {
   btc: "BTC-USD",
   eth: "ETH-USD",
   sol: "SOL-USD",
   hype: "HYPE-USD",
 };
+
+const PRODUCT = COINBASE_PRODUCT;
 
 function computeStats(points: PricePoint[]): PriceHistoryStats | null {
   if (points.length < 2) return null;
@@ -168,4 +171,35 @@ export async function fetchCoinbasePriceHistory(
     candles,
     stats: computeStats(points),
   };
+}
+
+/** Free public spot tickers (no API key). */
+export async function fetchCoinbaseSpotPrices(
+  chains: ChainId[] = [...CHAIN_ORDER],
+): Promise<Partial<Record<ChainId, number>>> {
+  const out: Partial<Record<ChainId, number>> = {};
+  await Promise.all(
+    chains.map(async (id) => {
+      const product = COINBASE_PRODUCT[id];
+      try {
+        const res = await fetch(
+          `https://api.exchange.coinbase.com/products/${product}/ticker`,
+          {
+            headers: {
+              accept: "application/json",
+              "User-Agent": "ChainDials/1.0",
+            },
+            next: { revalidate: 0 },
+          },
+        );
+        if (!res.ok) return;
+        const body = (await res.json()) as { price?: string };
+        const n = Number(body.price);
+        if (Number.isFinite(n) && n > 0) out[id] = n;
+      } catch {
+        // leave gap for caller fallbacks
+      }
+    }),
+  );
+  return out;
 }

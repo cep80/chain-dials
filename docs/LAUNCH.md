@@ -71,5 +71,5 @@ Bump both before every store upload.
   do not see a fake fingerprint).
 - Optional: Apple Associated Domains + `apple-app-site-association`
 - Crash reporting only if you accept the privacy update
-- Set `COINGECKO_DEMO_API_KEY` or `COINGECKO_API_KEY` on the host for spot price resilience
+- Set `COINGECKO_DEMO_API_KEY` or `COINGECKO_API_KEY` only if you want CoinGecko as a gap-fill (spot and history prefer Coinbase public APIs)
 - Set `NEXT_PUBLIC_LN_ADDRESS` when you want the tip jar visible

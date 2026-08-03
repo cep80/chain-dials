@@ -31,6 +31,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly",
       priority: 0.4,
     },
+    {
+      url: `${base}/forensics`,
+      lastModified: now,
+      changeFrequency: "hourly",
+      priority: 0.7,
+    },
+    {
+      url: `${base}/btc/forensics`,
+      lastModified: now,
+      changeFrequency: "hourly",
+      priority: 0.7,
+    },
   ];
 
   const chains = CHAIN_ORDER.flatMap((id) => {

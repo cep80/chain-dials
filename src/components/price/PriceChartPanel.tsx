@@ -15,6 +15,7 @@ import {
   formatUsdSmart,
 } from "@/lib/format";
 import {
+  FREE_PRICE_RANGES,
   PRICE_RANGE_ORDER,
   type PriceHistoryPayload,
   type PriceRangeId,
@@ -22,6 +23,8 @@ import {
 import { useSettingsStore } from "@/lib/settings/store";
 import { useAppReducedMotion } from "@/lib/settings/use-app-reduced-motion";
 import { useDashboardStore } from "@/lib/store";
+import { useProAccess } from "@/hooks/useProAccess";
+import Link from "next/link";
 
 function priceSourceLabel(data: PriceHistoryPayload | null) {
   if (!data) return null;
@@ -37,9 +40,12 @@ export function PriceChartPanel() {
   const reduce = useAppReducedMotion();
   const defaultPriceRange = useSettingsStore((s) => s.defaultPriceRange);
   const hydrated = useSettingsStore((s) => s.hydrated);
+  const { pro } = useProAccess();
   const [rangeOverride, setRangeOverride] = useState<PriceRangeId | null>(null);
   const [mode, setMode] = useState<ChartMode>("line");
-  const range = rangeOverride ?? (hydrated ? defaultPriceRange : "7D");
+  const requested = rangeOverride ?? (hydrated ? defaultPriceRange : "7D");
+  const range: PriceRangeId =
+    !pro && !FREE_PRICE_RANGES.includes(requested) ? "7D" : requested;
   const { data, loading, error, reload } = usePriceHistory(chain.id, range);
   const { data: shortForecastData, loading: shortForecastLoading } =
     usePriceHistory(chain.id, "7D");
@@ -150,20 +156,28 @@ export function PriceChartPanel() {
             >
               {PRICE_RANGE_ORDER.map((id) => {
                 const on = id === range;
+                const locked = !pro && !FREE_PRICE_RANGES.includes(id);
                 return (
                   <button
                     key={id}
                     type="button"
                     role="tab"
                     aria-selected={on}
-                    onClick={() => setRangeOverride(id)}
+                    title={locked ? "Pro unlocks longer ranges" : undefined}
+                    onClick={() => {
+                      if (locked) return;
+                      setRangeOverride(id);
+                    }}
                     className={`min-h-9 rounded-md px-2.5 text-xs font-medium transition ${
                       on
                         ? "bg-accent text-ink"
-                        : "border border-line text-paper-muted hover:border-accent/50 hover:text-paper"
+                        : locked
+                          ? "border border-line/60 text-paper-muted/50"
+                          : "border border-line text-paper-muted hover:border-accent/50 hover:text-paper"
                     }`}
                   >
                     {id}
+                    {locked ? " · Pro" : ""}
                   </button>
                 );
               })}
@@ -208,6 +222,34 @@ export function PriceChartPanel() {
             >
               Refresh
             </button>
+            {pro ? (
+              <button
+                type="button"
+                disabled={!points.length}
+                onClick={() => {
+                  const rows = ["t,price", ...points.map((p) => `${p.t},${p.price}`)];
+                  const blob = new Blob([rows.join("\n")], {
+                    type: "text/csv;charset=utf-8",
+                  });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = `${chain.id}-price-${range}.csv`;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                }}
+                className="min-h-9 rounded-md border border-line px-3 text-xs text-paper-muted transition hover:border-accent/50 hover:text-paper disabled:opacity-40"
+              >
+                CSV
+              </button>
+            ) : (
+              <Link
+                href={`/${chain.slug}/pro`}
+                className="min-h-9 inline-flex items-center rounded-md border border-line px-3 text-xs text-paper-muted transition hover:border-accent/50 hover:text-paper"
+              >
+                CSV · Pro
+              </Link>
+            )}
           </div>
         </div>
       </div>

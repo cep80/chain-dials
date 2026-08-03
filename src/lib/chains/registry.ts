@@ -19,6 +19,7 @@ export const CHAINS: Record<ChainId, ChainConfig> = {
     tipNoun: "block",
     explorerTx: (id) => `https://mempool.space/tx/${id}`,
     explorerBlock: (h) => `https://mempool.space/block/${h}`,
+    explorerAddress: (a) => `https://mempool.space/address/${a}`,
     dataStatus: "live",
     coingeckoId: "bitcoin",
     modules: "full",

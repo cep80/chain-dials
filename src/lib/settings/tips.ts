@@ -14,7 +14,9 @@ export type TipId =
   | "nav.board"
   | "nav.alerts"
   | "nav.wall"
+  | "nav.forensics"
   | "nav.pro"
+  | "nav.account"
   | "nav.settings"
   | "nav.suite"
   | "status.connection"
@@ -99,9 +101,17 @@ const BASE: Record<TipId, TipBody> = {
     title: "Wall",
     body: "Full-size instrument layout for a TV or second screen. Free on every board.",
   },
+  "nav.forensics": {
+    title: "Trace",
+    body: "Coldcard drain watchboard: live attacker holdings, victim lookup, and hop tracing for investigators.",
+  },
   "nav.pro": {
     title: "Pro",
-    body: "What’s coming for power users. Boards stay free; Pro is optional extras (not sold yet).",
+    body: "Alerts, longer price history, saved layouts. Boards stay free; Pro is optional extras via Stripe.",
+  },
+  "nav.account": {
+    title: "Account",
+    body: "Sign in, manage Pro billing, and refresh your entitlement.",
   },
   "nav.settings": {
     title: "Settings",

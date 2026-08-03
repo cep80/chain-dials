@@ -14,6 +14,7 @@ import { ModuleGrid } from "@/components/metrics/ModuleGrid";
 import { PartnerSlot } from "@/components/monetization/PartnerSlot";
 import { TipJar } from "@/components/monetization/TipJar";
 import { ProTeaser } from "@/components/monetization/ProTeaser";
+import { SavedLayoutsPanel } from "@/components/pro/SavedLayoutsPanel";
 import { Observatory } from "@/components/viz/Observatory";
 import { PriceChartPanel } from "@/components/price/PriceChartPanel";
 import { freshnessLabel } from "@/lib/chains/registry";
@@ -89,7 +90,7 @@ export default function ChainBoardPage() {
 
         <PulseStrip />
 
-        <PriceChartPanel />
+            <PriceChartPanel />
 
         <Observatory />
 
@@ -102,6 +103,8 @@ export default function ChainBoardPage() {
                 <ProTeaser />
               </div>
             </div>
+
+            <SavedLayoutsPanel />
 
             <section className="mt-12" aria-labelledby="catalog-heading">
               <div className="mb-5 flex items-end justify-between gap-4">

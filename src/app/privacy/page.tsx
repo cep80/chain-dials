@@ -20,6 +20,10 @@ export default function PrivacyPage() {
       <h2>Summary</h2>
       <ul>
         <li>No account is required to use the boards.</li>
+        <li>
+          Optional accounts (email/password) power Pro checkout, saved layouts,
+          and synced alert rules. Billing is handled by Stripe.
+        </li>
         <li>We do not sell personal information.</li>
         <li>
           Favorites and small UI preferences stay on your device
@@ -72,8 +76,9 @@ export default function PrivacyPage() {
       <h2>Payments</h2>
       <p>
         Optional Lightning tips use an address or LNURL you see in the product.
-        Pro billing, if enabled later, will be processed by a payment provider
-        under their terms. We do not store full card numbers.
+        Pro subscriptions are billed by Stripe under their terms. We store Stripe
+        customer and subscription IDs on your account record so we can unlock
+        Pro features. We do not store full card numbers.
       </p>
 
       <h2>Children</h2>
