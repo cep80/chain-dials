@@ -79,31 +79,30 @@ export function SettingsPageClient() {
   return (
     <div className="space-y-6">
       <div className="rounded-[14px] border border-line bg-ink-soft/40 px-5 py-4 text-sm text-paper-muted md:px-6">
-        Preferences stay on this device only. No account, no sync cloud — just
-        localStorage.{" "}
+        Preferences stay on this device. No account, no cloud sync.{" "}
         <Hint tip="settings.newbie">
           <span className="underline decoration-dotted underline-offset-4">
-            Guidance tooltips
+            Label tips
           </span>
         </Hint>{" "}
-        are on by default so terms like “tip” stay clear.
+        are on by default so words like “tip” make sense on first look.
       </div>
 
       <SettingsSection
         id="guidance"
-        eyebrow="Guidance"
-        title="Plain-language help"
-        blurb="Short explanations overlaid on the board. Turn them down once the instruments feel familiar."
+        eyebrow="Tips"
+        title="On-screen help"
+        blurb="Short explanations on labels. Turn them off when you know the board."
       >
         <SettingsRow
-          label="Guidance tooltips"
-          description="Hover or focus almost any label for a short explanation. Works with keyboard focus too."
+          label="Label tips"
+          description="Hover or focus almost any label to get a short explanation. Works with keyboard focus too."
           tip="settings.newbie"
           control={
             <SettingsToggle
               checked={newbieTooltips}
               onChange={(v) => set("newbieTooltips", v)}
-              label="Guidance tooltips"
+              label="Label tips"
             />
           }
         />
@@ -121,7 +120,7 @@ export function SettingsPageClient() {
         />
         <SettingsRow
           label="Block found toasts"
-          description="Show a brief notice when a new block or slot lands while you’re watching."
+          description="Show a little popup when a new block or slot lands while you’re watching."
           tip="settings.toasts"
           control={
             <SettingsToggle
@@ -137,7 +136,7 @@ export function SettingsPageClient() {
         id="display"
         eyebrow="Display"
         title="Motion & density"
-        blurb="Keep the observatory calm or lively. Density helps when you park this on a laptop wall."
+        blurb="Calm or lively motion. Compact packing for a laptop or wall display."
       >
         <SettingsRow
           label="Motion"
@@ -182,7 +181,7 @@ export function SettingsPageClient() {
       >
         <SettingsRow
           label="Preferred chain"
-          description="Used when a shortcut needs a default board (for example, “Open board” from suite chrome)."
+          description="Used when a shortcut needs a default board (for example, Open board from the suite home)."
           tip="settings.chain"
           control={
             <SettingsSelect<ChainId>
@@ -216,7 +215,7 @@ export function SettingsPageClient() {
       >
         <SettingsRow
           label="Reset settings"
-          description={`Restore defaults (tooltips ${SETTINGS_DEFAULTS.newbieTooltips ? "on" : "off"}, comfortable density, Bitcoin preferred).`}
+          description={`Restore defaults (label tips ${SETTINGS_DEFAULTS.newbieTooltips ? "on" : "off"}, comfortable density, Bitcoin preferred).`}
           control={
             <button
               type="button"

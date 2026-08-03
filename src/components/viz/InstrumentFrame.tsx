@@ -103,7 +103,7 @@ export function InstrumentFrame({
                 type="button"
                 onClick={expand}
                 className="inline-flex min-h-10 items-center gap-1.5 rounded-md border border-line px-2.5 text-paper-muted transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-                aria-label={`Open ${title} in the instrument stage`}
+                aria-label={`Open ${title} fullscreen`}
               >
                 <span className="text-[10px] font-semibold uppercase tracking-wider">
                   Expand

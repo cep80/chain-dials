@@ -118,7 +118,7 @@ export function Observatory({ large = false }: { large?: boolean }) {
   const title = chain?.observatoryTitle ?? "Observatory";
   const blurb =
     chain?.observatoryBlurb ??
-    "Cadence, mempool weather, tip face, halvings, and hashrate. Expand an instrument to go big.";
+    "Block timing, mempool weather, tip face, halvings, and hashrate. Expand an instrument to go fullscreen.";
 
   return (
     <section aria-labelledby="observatory-heading" className="mt-8">

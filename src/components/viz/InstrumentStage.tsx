@@ -262,7 +262,7 @@ export function InstrumentStage() {
           <button
             type="button"
             className="absolute inset-0 bg-ink/85 backdrop-blur-md"
-            aria-label="Close instrument stage"
+            aria-label="Close fullscreen view"
             onClick={close}
           />
 

@@ -93,7 +93,7 @@ function AccountBody() {
             className="text-accent underline"
             onClick={() => void update()}
           >
-            refresh entitlement
+            refresh Pro status
           </button>
           .
         </div>
@@ -168,7 +168,7 @@ function AccountBody() {
         <p className="font-semibold text-paper">What Pro unlocks</p>
         <ul className="mt-2 list-disc space-y-1 pl-5">
           <li>Configurable alert rules (browser nudges, synced to your account)</li>
-          <li>Named saved layouts for your pinboards</li>
+          <li>Named saved layouts for each chain board</li>
           <li>Longer price history ranges (30D through ALL) plus CSV export</li>
           <li>Wall mode stays free for everyone</li>
         </ul>

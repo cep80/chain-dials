@@ -63,7 +63,7 @@ const BASE: Record<TipId, TipBody> = {
   },
   "pulse.mempool": {
     title: "Mempool",
-    body: "Unconfirmed transactions waiting for a block. When it’s busy, fees usually climb.",
+    body: "The waiting room of unconfirmed transactions. When it’s busy, fees usually climb.",
   },
   "pulse.last_block": {
     title: "Last block",
@@ -87,7 +87,7 @@ const BASE: Record<TipId, TipBody> = {
   },
   "pulse.feed": {
     title: "Feed",
-    body: "How fresh this board’s data is. Bitcoin streams live; other chains refresh on a short snapshot cadence.",
+    body: "How fresh this board’s data is. Bitcoin updates live; other chains refresh about every 15 seconds.",
   },
   "nav.board": {
     title: "Board",
@@ -111,11 +111,11 @@ const BASE: Record<TipId, TipBody> = {
   },
   "nav.account": {
     title: "Account",
-    body: "Sign in, manage Pro billing, and refresh your entitlement.",
+    body: "Sign in, manage Pro billing, and refresh your Pro status.",
   },
   "nav.settings": {
     title: "Settings",
-    body: "Tooltips, motion, density, and other preferences. Stored only on this device.",
+    body: "Tips, motion, density, and other preferences. Stored only on this device.",
   },
   "nav.suite": {
     title: "Suite home",
@@ -123,14 +123,14 @@ const BASE: Record<TipId, TipBody> = {
   },
   "status.connection": {
     title: "Connection",
-    body: "Shows feed health. Bitcoin says Live (WebSocket). Other boards show About every 15s when connected. Spotty/Offline means we’re retrying public APIs.",
+    body: "Shows feed health. Bitcoin updates live; other boards refresh about every 15s. Spotty or Offline means we’re reconnecting.",
   },
   "instrument.expand": {
-    title: "Expand",
-    body: "Open this instrument fullscreen for a closer look.",
+    title: "Go bigger",
+    body: "Open this instrument fullscreen.",
   },
   "instrument.metronome": {
-    title: "Cadence",
+    title: "Still humming?",
     body: "Tracks time since the latest block or slot.",
   },
   "instrument.atmosphere": {
@@ -139,11 +139,11 @@ const BASE: Record<TipId, TipBody> = {
   },
   "instrument.sigil": {
     title: "Tip face",
-    body: "A visual fingerprint of the latest block hash — glyph, mosaic, ribbon, or tape.",
+    body: "A visual fingerprint of the latest block hash. New tip, new doodle or tape.",
   },
   "instrument.issuance": {
     title: "Issuance",
-    body: "Supply and reward story for this chain: halvings, burns, inflation, or volume spray.",
+    body: "Supply / reward story for this chain: halvings, burns, inflation, or volume spray.",
   },
   "instrument.forge": {
     title: "Security heat",
@@ -163,11 +163,11 @@ const BASE: Record<TipId, TipBody> = {
   },
   "suite.card": {
     title: "Chain board",
-    body: "Open this chain’s board — same glance habit, its own instruments and feed.",
+    body: "Open this chain’s board: same layout idea, different dials.",
   },
   "suite.pulse": {
     title: "Suite pulse",
-    body: "A quick tip and fee reading across every chain.",
+    body: "A quick tip and fee peek across every chain.",
   },
   "metric.pin": {
     title: "Pin",
@@ -175,7 +175,7 @@ const BASE: Record<TipId, TipBody> = {
   },
   "metric.row": {
     title: "Metric",
-    body: "Tap to expand the plain-language definition and data source.",
+    body: "Tap for a short definition and where the number comes from.",
   },
   "share.bar": {
     title: "Share",
@@ -186,16 +186,16 @@ const BASE: Record<TipId, TipBody> = {
     body: "Optional Lightning tip when an address is configured. Totally voluntary. Boards stay free either way.",
   },
   "settings.newbie": {
-    title: "Guidance tooltips",
-    body: "When on, hover or focus labels for plain-language explanations.",
+    title: "Label tips",
+    body: "When on, hover or focus labels to get short explanations.",
   },
   "settings.terms": {
     title: "Term hints",
-    body: "Shows the glossary section under core (non-Bitcoin) boards.",
+    body: "Shows the glossary section under Ethereum, Solana, and Hyperliquid boards.",
   },
   "settings.toasts": {
     title: "Block toasts",
-    body: "Brief notices when a new block or slot lands while you’re watching.",
+    body: "Little popups when a new block or slot lands while you’re watching.",
   },
   "settings.motion": {
     title: "Motion",
@@ -207,7 +207,7 @@ const BASE: Record<TipId, TipBody> = {
   },
   "settings.chain": {
     title: "Preferred chain",
-    body: "Used for shortcuts like “Open board” from the suite when we need a default.",
+    body: "Used for shortcuts like Open board from the suite home when a default is needed.",
   },
   "settings.range": {
     title: "Default price range",
@@ -248,7 +248,7 @@ export function resolveTip(
   if (id === "pulse.since_tip" && ctx?.chainId === "sol") {
     return {
       ...tip,
-      body: "Time since the latest slot. Amber means slots look quieter than Solana’s usual pace (or the poll lagged).",
+      body: "Time since the latest slot. Amber means slots look quieter than Solana’s usual pace (or the feed is a little behind).",
     };
   }
   if (id === "pulse.since_tip" && ctx?.chainId === "hype") {

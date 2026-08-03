@@ -131,7 +131,7 @@ export function renderShareCard(opts: {
             color: "#9aa3b2",
           }}
         >
-          <span>Live network dial · not a chart terminal</span>
+          <span>Live network dials · not a trading terminal</span>
           <span style={{ color: accent }}>chaindials.com</span>
         </div>
       </div>

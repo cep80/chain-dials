@@ -16,7 +16,7 @@ const FEATURES = [
   },
   {
     title: "Wall / TV mode",
-    body: "All five instruments, big type, less chrome. Free for everyone. Pro doesn’t lock the wall.",
+    body: "All five instruments, big type, fewer controls. Free for everyone. Pro doesn’t lock the wall.",
   },
   {
     title: "Longer memory",
@@ -24,7 +24,7 @@ const FEATURES = [
   },
   {
     title: "Saved layouts",
-    body: "Name a pinboard per chain and restore it later. Synced when you’re signed in with Pro.",
+    body: "Name a layout per chain and restore it later. Synced when you’re signed in with Pro.",
   },
 ];
 
@@ -69,8 +69,8 @@ export default function ProPage() {
           Extra dials, same free board
         </h1>
         <p className="mt-4 text-lg text-paper-muted">
-          {SUITE.name} keeps the live numbers free on every chain. Pro is for the
-          stuff around them: alerts, longer history, saved layouts.
+          {SUITE.name} keeps the live numbers free on every chain. Pro adds
+          optional extras: alerts, longer history, saved layouts.
         </p>
 
         <div
@@ -115,16 +115,13 @@ export default function ProPage() {
           {error ? <p className="mt-3 text-sm text-down">{error}</p> : null}
           {!pro ? (
             <p className="mt-4 text-xs text-paper-muted">
-              Needs Stripe env keys in production (
-              <code className="text-paper">STRIPE_SECRET_KEY</code>,{" "}
-              <code className="text-paper">STRIPE_PRICE_ID</code>, webhook
-              secret). Free boards stay available either way.{" "}
+              Just subscribed?{" "}
               <button
                 type="button"
                 className="text-accent hover:underline"
                 onClick={() => void update()}
               >
-                Refresh entitlement
+                Refresh Pro status
               </button>
             </p>
           ) : null}

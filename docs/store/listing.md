@@ -10,14 +10,14 @@ BTC ETH SOL HYPE network dials
 
 ## Short description (Play, ≤80 chars)
 
-Live BTC, ETH, SOL & HYPE dials. Same glance habit, different toys.
+Live dials for BTC, ETH, SOL & HYPE. Watch networks, not charts.
 
 ## Full description
 
 ```
-Chain Dials is a network observatory, not a trading terminal.
+Chain Dials is for watching networks, not for trading.
 
-Same glance habit on four chains, each with its own toys:
+The same board layout on four chains, each with its own dials:
 
 • Bitcoin: classic dials: metronome, mempool weather, tip face, issuance, hashrate
 • Ethereum: a beacon room: lattice, fee tide, mosaic, burn candle, validator sky
@@ -34,7 +34,7 @@ Terms: https://chaindials.com/terms
 
 ## Keywords (iOS)
 
-bitcoin,ethereum,solana,hyperliquid,mempool,fees,blockchain,network,observatory,dials
+bitcoin,ethereum,solana,hyperliquid,mempool,fees,blockchain,network,dials
 
 ## Category
 
@@ -51,11 +51,11 @@ Shoot dark UI full-bleed. Prefer:
 
 1. Suite home (four chains)
 2. Bitcoin board with live dials
-3. One instrument stage open (Metronome or Tide)
+3. One instrument open fullscreen (Metronome or Tide)
 4. Ethereum board
 5. Solana board
 6. Hyperliquid clearing house
-7. Share sheet / stage (optional)
+7. Share sheet / fullscreen view (optional)
 
 Sizes:
 

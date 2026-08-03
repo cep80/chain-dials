@@ -44,8 +44,7 @@ export default function PrivacyPage() {
         <li>Settings (tooltips, motion, density, preferred chain, chart range)</li>
         <li>Short history used by instruments (for example fee atmosphere)</li>
         <li>
-          Optional return-nudge preference (`chain-dials:local-nudge:*`), only
-          if you opt in; stays on-device
+          Optional return-nudge preference, only if you opt in; stays on-device
         </li>
         <li>Simple dismiss flags for optional tips</li>
       </ul>

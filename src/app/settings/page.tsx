@@ -6,11 +6,11 @@ import { siteUrl, SITE_NAME } from "@/lib/site";
 export const metadata: Metadata = {
   title: "Settings",
   description:
-    "Guidance tooltips, motion, density, and board defaults for Chain Dials. Stored on this device only.",
+    "Tooltips, motion, density, and board defaults for Chain Dials. Stored on this device only.",
   alternates: { canonical: `${siteUrl()}/settings` },
   openGraph: {
     title: `Settings · ${SITE_NAME}`,
-    description: "Tune guidance and display preferences for Chain Dials.",
+    description: "Tips, motion, density, and board defaults for Chain Dials.",
   },
 };
 
@@ -25,9 +25,8 @@ export default function SettingsPage() {
           Settings
         </h1>
         <p className="mt-3 text-base text-paper-muted md:text-lg">
-          Turn on clearer labels when you’re learning the board, or dial them
-          down once the instruments feel familiar. Everything here stays local
-          to this browser.
+          Turn tips on while you’re learning, or off once the board feels
+          familiar. Everything here stays in this browser.
         </p>
       </header>
       <SettingsPageClient />

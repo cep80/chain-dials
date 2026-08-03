@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     template: "%s · Chain Dials",
   },
   description:
-    "Live network dials for Bitcoin, Ethereum, Solana, and Hyperliquid — each board with its own instruments.",
+    "Live dials for Bitcoin, Ethereum, Solana, and Hyperliquid. One board per chain.",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
@@ -48,13 +48,13 @@ export const metadata: Metadata = {
     siteName: SITE_NAME,
     title: "Chain Dials: Bitcoin, Ethereum, Solana, Hyperliquid",
     description:
-      "Live network dials for Bitcoin, Ethereum, Solana, and Hyperliquid. Pick a board.",
+      "Live network dials for Bitcoin, Ethereum, Solana, and Hyperliquid. Pick a board and glance.",
   },
   twitter: {
     card: "summary_large_image",
     title: "Chain Dials",
     description:
-      "Live network dials for Bitcoin, Ethereum, Solana, and Hyperliquid.",
+      "Live network dials for BTC, ETH, SOL, and HYPE.",
   },
   other: {
     "mobile-web-app-capable": "yes",

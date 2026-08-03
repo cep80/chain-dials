@@ -99,7 +99,7 @@ export function PulseStrip() {
 
   return (
     <motion.section
-      aria-label="Quick network snapshot"
+      aria-label="Quick network readings"
       className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6"
       initial={reduce ? false : { opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}

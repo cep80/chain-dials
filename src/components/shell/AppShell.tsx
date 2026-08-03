@@ -8,10 +8,9 @@ import { Hint } from "@/components/ui/Hint";
 import { InstrumentStage } from "@/components/viz/InstrumentStage";
 import { useAltChainStore } from "@/lib/chains/alt-store";
 import { useChainOptional } from "@/lib/chains/context";
-import { CHAINS, freshnessLabel, SUITE } from "@/lib/chains/registry";
+import { freshnessLabel, SUITE } from "@/lib/chains/registry";
 import { formatRelativeAge } from "@/lib/format";
 import { isProEnabled } from "@/lib/pro";
-import { useSettingsStore } from "@/lib/settings/store";
 import { useDashboardStore } from "@/lib/store";
 
 export function AppShell({
@@ -23,7 +22,6 @@ export function AppShell({
   suiteHome?: boolean;
 }) {
   const chain = useChainOptional();
-  const preferredChain = useSettingsStore((s) => s.preferredChain);
   const startBtc = useDashboardStore((s) => s.start);
   const hydrate = useDashboardStore((s) => s.hydrate);
   const resetLive = useDashboardStore((s) => s.resetLive);
@@ -253,14 +251,6 @@ export function AppShell({
                 </Hint>
               </>
             )}
-            {!chain && (
-              <Link
-                href={`/${preferredChain}`}
-                className="min-h-11 inline-flex items-center text-paper-muted transition hover:text-paper"
-              >
-                Open {CHAINS[preferredChain]?.shortName ?? "Bitcoin"}
-              </Link>
-            )}
             <Hint tip="nav.settings">
               <Link
                 href="/settings"
@@ -271,7 +261,7 @@ export function AppShell({
             </Hint>
           </nav>
           <div className="flex flex-wrap items-center gap-3">
-            {!suiteHome && <ChainSwitcher />}
+            <ChainSwitcher />
             <ConnectionStatus />
           </div>
         </div>

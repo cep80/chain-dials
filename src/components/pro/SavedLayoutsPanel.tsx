@@ -97,7 +97,7 @@ export function SavedLayoutsPanel() {
     <section className="mt-8 rounded-[14px] border border-line bg-ink-elevated/60 p-5">
       <h2 className="text-lg font-bold text-paper">Saved layouts</h2>
       <p className="mt-1 text-sm text-paper-muted">
-        Name the current {chain.shortName} pinboard and restore it later. Pro
+        Name the current {chain.shortName} layout and restore it later. Pro
         syncs these to your account.
       </p>
       <div className="mt-4 flex flex-col gap-2 sm:flex-row">

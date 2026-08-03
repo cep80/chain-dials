@@ -33,8 +33,8 @@ export function ConnectionStatus() {
     connection !== "connected"
       ? undefined
       : chain?.dataStatus === "live"
-        ? "WebSocket + REST. Readings update as the network moves."
-        : "Connected, but this board polls about every 15s (not a tick-by-tick feed).";
+        ? "Live feed. Readings update as the network moves."
+        : "Connected. This board refreshes about every 15 seconds.";
 
   return (
     <Hint tip="status.connection">

@@ -21,7 +21,7 @@ export default async function Image({
       chainLabel: "?",
       title: "Instrument",
       headline: "Chain Dials",
-      sub: "Network observatory",
+      sub: "Live network dials",
       accent: "#f7931a",
     });
   }

@@ -18,7 +18,7 @@ export default function TermsPage() {
 
       <h2>What this is</h2>
       <p>
-        {SITE_NAME} is a network observatory: visual instruments for Bitcoin,
+        {SITE_NAME} shows live visual dials for Bitcoin,
         Ethereum, Solana, and Hyperliquid public metrics. It is not a wallet, exchange,
         broker, or investment adviser. Nothing in the product is financial,
         legal, or tax advice.

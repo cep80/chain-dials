@@ -18,7 +18,7 @@ export function ProTeaser() {
       <p className="mt-2 text-sm leading-relaxed text-paper-muted">
         {pro
           ? "Manage billing, saved layouts, and alert rules from your account."
-          : "Synced alert rules, longer price ranges, CSV export, and named pinboards. Wall mode stays free."}
+          : "Synced alert rules, longer price ranges, CSV export, and named layouts. Wall mode stays free."}
       </p>
       <Link
         href={href}
