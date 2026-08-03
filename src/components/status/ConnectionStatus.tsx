@@ -1,15 +1,10 @@
 "use client";
 
 import { Hint } from "@/components/ui/Hint";
+import { useChainOptional } from "@/lib/chains/context";
+import { freshnessLabel } from "@/lib/chains/registry";
 import { useAppReducedMotion } from "@/lib/settings/use-app-reduced-motion";
 import { useDashboardStore } from "@/lib/store";
-
-const LABELS = {
-  connecting: "Waking up",
-  connected: "Live",
-  degraded: "Spotty",
-  disconnected: "Offline",
-} as const;
 
 const COLORS = {
   connecting: "bg-warn",
@@ -20,24 +15,47 @@ const COLORS = {
 
 export function ConnectionStatus() {
   const connection = useDashboardStore((s) => s.connection);
+  const chain = useChainOptional();
   const reduce = useAppReducedMotion();
+
+  const label =
+    connection === "connecting"
+      ? "Waking up"
+      : connection === "degraded"
+        ? "Spotty"
+        : connection === "disconnected"
+          ? "Offline"
+          : chain
+            ? freshnessLabel(chain)
+            : "Connected";
+
+  const tipBody =
+    connection !== "connected"
+      ? undefined
+      : chain?.dataStatus === "live"
+        ? "WebSocket + REST. Readings update as the network moves."
+        : "Connected, but this board polls about every 15s (not a tick-by-tick feed).";
 
   return (
     <Hint tip="status.connection">
       <div
         className="flex min-h-11 items-center gap-2 text-xs text-paper-muted"
-        tabIndex={0}
+        role="status"
+        aria-live="polite"
+        title={tipBody}
       >
         <span className="relative flex h-2.5 w-2.5">
-          {connection === "connected" && !reduce && (
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-up opacity-40" />
-          )}
+          {connection === "connected" &&
+            chain?.dataStatus === "live" &&
+            !reduce && (
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-up opacity-40" />
+            )}
           <span
             className={`relative inline-flex h-2.5 w-2.5 rounded-full ${COLORS[connection]}`}
           />
         </span>
         <span className="hidden underline decoration-dotted decoration-paper-muted/40 underline-offset-2 sm:inline">
-          {LABELS[connection]}
+          {label}
         </span>
       </div>
     </Hint>

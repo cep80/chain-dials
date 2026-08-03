@@ -45,6 +45,10 @@ export interface PredictionMarketCrosscheck {
   chain: ChainId;
   asOf: number;
   exactPairCount: number;
+  venues: {
+    polymarket: boolean;
+    kalshi: boolean;
+  };
   crossVenue: CrossVenueArbitrage[];
   withinVenue: PredictionMarketParityGap[];
   ruleMismatches: RuleMismatch[];

@@ -63,7 +63,7 @@ export async function fetchTip(chain: ChainId): Promise<TipSnapshot> {
       return {
         height: Number.isFinite(height) ? height : null,
         hash,
-        timestamp: timestamp ?? Date.now(),
+        timestamp,
         source: "mempool.space",
       };
     }
@@ -78,9 +78,7 @@ export async function fetchTip(chain: ChainId): Promise<TipSnapshot> {
       return {
         height,
         hash: block?.hash ?? null,
-        timestamp: block?.timestamp
-          ? hexToNumber(block.timestamp) * 1000
-          : Date.now(),
+        timestamp: block?.timestamp ? hexToNumber(block.timestamp) * 1000 : null,
         source: "publicnode",
       };
     }
@@ -109,7 +107,7 @@ export async function fetchTip(chain: ChainId): Promise<TipSnapshot> {
       return {
         height: slot,
         hash: blockhash?.value?.blockhash ?? null,
-        timestamp: timestamp ?? Date.now(),
+        timestamp,
         source: timestamp != null ? "solana-blocktime" : "solana-poll",
       };
     }
@@ -126,7 +124,7 @@ export async function fetchTip(chain: ChainId): Promise<TipSnapshot> {
         hash: block?.hash ?? null,
         timestamp: block?.timestamp
           ? hexToNumber(block.timestamp) * 1000
-          : Date.now(),
+          : null,
         source: "hyperevm",
       };
     }

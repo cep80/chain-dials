@@ -22,7 +22,8 @@ export async function generateMetadata({
   params: Promise<{ chain: string; metric: string }>;
 }): Promise<Metadata> {
   const { chain, metric } = await params;
-  if (!isChainId(chain) || !isMetricId(metric)) {
+  // Metric catalog + copy are Bitcoin-shaped; alt boards use instrument share instead.
+  if (!isChainId(chain) || chain !== "btc" || !isMetricId(metric)) {
     return { title: SITE_NAME };
   }
   const c = CHAINS[chain];
@@ -56,6 +57,6 @@ export default async function MetricSharePage({
   params: Promise<{ chain: string; metric: string }>;
 }) {
   const { chain, metric } = await params;
-  if (!isChainId(chain) || !isMetricId(metric)) notFound();
+  if (!isChainId(chain) || chain !== "btc" || !isMetricId(metric)) notFound();
   return <ShareMetricClient chainId={chain} metric={metric} />;
 }

@@ -66,6 +66,10 @@ Bump both before every store upload.
 
 ## After first ship
 
-- Wire Digital Asset Links (`public/.well-known/assetlinks.json`) with your Play SHA-256 for verified App Links
+- Wire Digital Asset Links: put your Play App Signing SHA-256 into
+  `public/.well-known/assetlinks.json` (file is `[]` until then so crawlers
+  do not see a fake fingerprint).
 - Optional: Apple Associated Domains + `apple-app-site-association`
 - Crash reporting only if you accept the privacy update
+- Set `COINGECKO_DEMO_API_KEY` or `COINGECKO_API_KEY` on the host for spot price resilience
+- Set `NEXT_PUBLIC_LN_ADDRESS` when you want the tip jar visible

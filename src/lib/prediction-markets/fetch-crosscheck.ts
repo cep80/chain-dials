@@ -442,6 +442,10 @@ async function loadCrosscheck(chain: ChainId): Promise<PredictionMarketCrosschec
     chain,
     asOf: Date.now(),
     exactPairCount: crossVenue.exactPairCount,
+    venues: {
+      polymarket: true,
+      kalshi: Boolean(KALSHI_SERIES[chain]),
+    },
     crossVenue: crossVenue.gaps,
     withinVenue: [
       ...withinVenueGaps("polymarket", polymarket),

@@ -93,11 +93,11 @@ const BASE: Record<TipId, TipBody> = {
   },
   "nav.alerts": {
     title: "Alerts",
-    body: "Preview of fee and tip nudges. Local browser nudges work today; full rules are still coming.",
+    body: "Preview of fee/tip nudges. Local browser nudges work today; full email rules are still warming up.",
   },
   "nav.wall": {
     title: "Wall",
-    body: "Big-screen layout for the instruments. Free heartbeat always; full wall is a Pro preview.",
+    body: "Full-size instrument layout for a TV or second screen. Free on every board.",
   },
   "nav.pro": {
     title: "Pro",
@@ -113,7 +113,7 @@ const BASE: Record<TipId, TipBody> = {
   },
   "status.connection": {
     title: "Connection",
-    body: "Live = feeds are healthy. Spotty/Offline means we’re retrying public APIs.",
+    body: "Shows feed health. Bitcoin says Live (WebSocket). Other boards show About every 15s when connected. Spotty/Offline means we’re retrying public APIs.",
   },
   "instrument.expand": {
     title: "Expand",
@@ -172,8 +172,8 @@ const BASE: Record<TipId, TipBody> = {
     body: "Copy a link or post a reading to X / Nostr without leaving the board.",
   },
   "tip.jar": {
-    title: "Support",
-    body: "Optional Lightning support. Voluntary — boards stay free either way.",
+    title: "Tip jar",
+    body: "Optional Lightning tip when an address is configured. Totally voluntary. Boards stay free either way.",
   },
   "settings.newbie": {
     title: "Guidance tooltips",

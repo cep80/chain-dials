@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { AppShell } from "@/components/shell/AppShell";
 import { SuitePulseStrip } from "@/components/shell/SuitePulseStrip";
+import { SuiteWatchlistStrip } from "@/components/shell/SuiteWatchlistStrip";
+import { InstrumentOfTheDay } from "@/components/shell/InstrumentOfTheDay";
 import { SuitePriceStrip } from "@/components/price/SuitePriceStrip";
 import { ShareBar } from "@/components/share/ShareBar";
 import { Hint } from "@/components/ui/Hint";
@@ -34,9 +36,13 @@ export default function SuiteHomePage() {
         </p>
       </header>
 
+      <InstrumentOfTheDay />
+
       <Hint tip="suite.pulse" as="div" className="mb-2 block w-full">
         <SuitePulseStrip />
       </Hint>
+
+      <SuiteWatchlistStrip />
 
       <SuitePriceStrip />
 
