@@ -1,10 +1,12 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
-import { useMemo } from "react";
+import { motion } from "framer-motion";
+import { useId, useMemo } from "react";
+import { useAppReducedMotion } from "@/lib/settings/use-app-reduced-motion";
 import { InstrumentFrame } from "@/components/viz/InstrumentFrame";
 import { formatFee, formatInteger, formatPlainPercent } from "@/lib/format";
 import { useDashboardStore } from "@/lib/store";
+import { tideHeight } from "@/lib/viz-scale";
 
 export function BaseFeeTide({
   large = false,
@@ -21,7 +23,8 @@ export function BaseFeeTide({
   const prioritySeries = useDashboardStore((s) => s.live.prioritySeries);
   const pressure = useDashboardStore((s) => s.live.mempoolPressure);
   const count = useDashboardStore((s) => s.live.mempoolCount);
-  const reduce = useReducedMotion();
+  const reduce = useAppReducedMotion();
+  const uid = useId().replace(/:/g, "");
 
   const latestBase =
     baseSeries.length > 0 ? baseSeries[baseSeries.length - 1]! : null;
@@ -32,10 +35,7 @@ export function BaseFeeTide({
 
   // Tide height from base fee level (gwei), soft-capped
   const baseCap = Math.max(...(baseSeries.length ? baseSeries : [20]), 20);
-  const tide =
-    latestBase != null
-      ? Math.max(0.12, Math.min(0.92, latestBase / (baseCap * 1.15)))
-      : 0.4;
+  const tide = tideHeight(latestBase, baseCap);
 
   const wave = useMemo(() => {
     const series =
@@ -77,24 +77,44 @@ export function BaseFeeTide({
 
   const body = (
     <div
-      className="relative overflow-hidden rounded-[10px] border border-line bg-ink"
+      className={`relative overflow-hidden rounded-[12px] border border-line/80 bg-ink shadow-[0_0_40px_color-mix(in_oklab,var(--accent)_8%,transparent)] ${
+        reduce ? "" : "instrument-live-glow"
+      }`}
       style={{ width: w, height: h }}
       role="img"
       aria-label={`Base fee tide. Base ${formatFee(latestBase, "gwei")}. Priority tip ${formatFee(latestTip, "gwei")}.`}
     >
       <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="h-full w-full">
         <defs>
-          <linearGradient id="tideFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.55" />
-            <stop offset="100%" stopColor="var(--accent-dim)" stopOpacity="0.2" />
+          <linearGradient id={`tideFill-${uid}`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="var(--paper)" stopOpacity="0.25" />
+            <stop offset="18%" stopColor="var(--accent)" stopOpacity="0.7" />
+            <stop offset="100%" stopColor="var(--accent-dim)" stopOpacity="0.18" />
           </linearGradient>
+          <linearGradient id={`tideSky-${uid}`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="var(--ink-soft)" stopOpacity="0.9" />
+            <stop offset="100%" stopColor="var(--ink)" stopOpacity="1" />
+          </linearGradient>
+          <filter id={`tideBlur-${uid}`} x="-5%" y="-5%" width="110%" height="120%">
+            <feGaussianBlur stdDeviation="0.6" />
+          </filter>
         </defs>
+        <rect width="100" height="100" fill={`url(#tideSky-${uid})`} />
         <motion.path
           d={wave}
-          fill="url(#tideFill)"
+          fill={`url(#tideFill-${uid})`}
+          filter={`url(#tideBlur-${uid})`}
           initial={false}
-          animate={reduce ? undefined : { opacity: [0.85, 1, 0.85] }}
+          animate={reduce ? undefined : { opacity: [0.88, 1, 0.88] }}
           transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
+        />
+        {/* Specular crest line */}
+        <motion.path
+          d={wave.replace(/ L 100 100 L 0 100 Z$/, "")}
+          fill="none"
+          stroke="var(--paper)"
+          strokeWidth={0.4}
+          opacity={0.35}
         />
         {foam.map((f) => (
           <motion.rect
@@ -102,14 +122,14 @@ export function BaseFeeTide({
             x={f.x - f.w / 2}
             y={f.y}
             width={f.w}
-            height={1.1}
-            rx={0.5}
+            height={1.3}
+            rx={0.6}
             fill="var(--paper)"
-            opacity={0.28}
+            opacity={0.32}
             animate={
               reduce
                 ? undefined
-                : { opacity: [0.15, 0.35, 0.15], y: [f.y, f.y - 1.2, f.y] }
+                : { opacity: [0.15, 0.45, 0.15], y: [f.y, f.y - 1.4, f.y] }
             }
             transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
           />
@@ -129,7 +149,7 @@ export function BaseFeeTide({
     return (
       <div className="flex w-full flex-col items-center gap-5">
         {body}
-        <p className="mono text-5xl font-medium text-paper md:text-7xl">
+        <p className="instrument-stage-reading mono text-5xl font-medium text-paper md:text-7xl">
           {formatFee(latestBase ?? feeFastest, "gwei")}
         </p>
         <p className="text-xs uppercase tracking-[0.2em] text-paper-muted">

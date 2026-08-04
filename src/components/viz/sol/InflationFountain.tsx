@@ -1,6 +1,7 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
+import { useAppReducedMotion } from "@/lib/settings/use-app-reduced-motion";
 import { useMemo } from "react";
 import { InstrumentFrame } from "@/components/viz/InstrumentFrame";
 import { formatInteger, formatPlainPercent } from "@/lib/format";
@@ -20,7 +21,7 @@ export function InflationFountain({
   const left = useDashboardStore((s) => s.live.retargetBlocks);
   const label = useDashboardStore((s) => s.live.forgeLabel);
   const boardPulse = useDashboardStore((s) => s.boardPulse);
-  const reduce = useReducedMotion();
+  const reduce = useAppReducedMotion();
 
   const level = Math.max(0.15, Math.min(0.9, progress / 100));
   // Spray density from inflation rate (~5-8% typical → mid spray)
@@ -50,7 +51,9 @@ export function InflationFountain({
 
   const fountain = (
     <div
-      className="relative overflow-hidden rounded-[12px] border border-line bg-ink"
+      className={`relative overflow-hidden rounded-[12px] border border-line/80 bg-ink shadow-[0_0_36px_color-mix(in_oklab,var(--accent)_10%,transparent)] ${
+        reduce ? "" : "instrument-live-glow"
+      }`}
       style={{ width: w, height: h }}
       role="img"
       aria-label={`Inflation fountain. Epoch ${progress.toFixed(0)} percent. Inflation ${inflation?.toFixed(1) ?? "unknown"} percent.`}
@@ -108,7 +111,7 @@ export function InflationFountain({
     return (
       <div className="flex flex-col items-center gap-6">
         {fountain}
-        <p className="mono text-5xl font-medium text-paper md:text-7xl">
+        <p className="instrument-stage-reading mono text-5xl font-medium text-paper md:text-7xl">
           {formatPlainPercent(progress, 1)}
         </p>
         <p className="text-xs uppercase tracking-[0.2em] text-paper-muted">

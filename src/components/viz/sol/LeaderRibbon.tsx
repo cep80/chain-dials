@@ -1,6 +1,7 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
+import { useAppReducedMotion } from "@/lib/settings/use-app-reduced-motion";
 import { useCallback, useMemo, useState, type MouseEvent } from "react";
 import { InstrumentFrame } from "@/components/viz/InstrumentFrame";
 import { formatHash, formatInteger } from "@/lib/format";
@@ -18,7 +19,7 @@ export function LeaderRibbon({
   const tipHash = useDashboardStore((s) => s.live.tipHash);
   const height = useDashboardStore((s) => s.live.blockHeight);
   const boardPulse = useDashboardStore((s) => s.boardPulse);
-  const reduce = useReducedMotion();
+  const reduce = useAppReducedMotion();
   const [copied, setCopied] = useState(false);
 
   const chars = useMemo(() => {
@@ -48,7 +49,9 @@ export function LeaderRibbon({
     <button
       type="button"
       onClick={copy}
-      className="relative overflow-hidden rounded-[10px] border border-line bg-ink outline-none focus-visible:ring-2 focus-visible:ring-accent"
+      className={`relative overflow-hidden rounded-[12px] border border-line/80 bg-ink outline-none focus-visible:ring-2 focus-visible:ring-accent shadow-[0_0_36px_color-mix(in_oklab,var(--accent)_12%,transparent)] ${
+        reduce ? "" : "instrument-live-glow"
+      }`}
       style={{ width: w, height: h }}
       aria-label="Leader ribbon. Click to copy blockhash."
       title="Click to copy blockhash"

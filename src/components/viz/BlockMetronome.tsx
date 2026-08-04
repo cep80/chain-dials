@@ -1,17 +1,26 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { useEffect, useId, useState } from "react";
 import { useChainOptional } from "@/lib/chains/context";
 import { formatDuration } from "@/lib/format";
+import { useAppReducedMotion } from "@/lib/settings/use-app-reduced-motion";
 import { useDashboardStore } from "@/lib/store";
-import { metronomeTone } from "@/lib/viz-scale";
+import {
+  instrumentCanvasSize,
+  materialGlowOpacity,
+  materialStrokeWeight,
+  metronomeHandDegrees,
+  metronomeTone,
+  resolveDisplayMode,
+  ringDashLength,
+} from "@/lib/viz-scale";
 import { InstrumentFrame } from "@/components/viz/InstrumentFrame";
 
 const DEFAULT_TARGET = 600;
-const SIZE = 140;
-const CX = SIZE / 2;
-const CY = SIZE / 2;
+const VB = 140;
+const CX = VB / 2;
+const CY = VB / 2;
 const R = 52;
 
 /** Round SVG coords so Node SSR and browser trig agree bit-for-bit. */
@@ -19,16 +28,17 @@ function px(n: number): number {
   return Math.round(n * 1000) / 1000;
 }
 
-const TICKS = Array.from({ length: 12 }, (_, i) => {
-  const a = -Math.PI / 2 + (i / 12) * Math.PI * 2;
-  const outer = R + 4;
-  const inner = i % 3 === 0 ? R - 8 : R - 4;
+const TICKS = Array.from({ length: 60 }, (_, i) => {
+  const a = -Math.PI / 2 + (i / 60) * Math.PI * 2;
+  const major = i % 5 === 0;
+  const outer = R + (major ? 6 : 3);
+  const inner = major ? R - 10 : R - 4;
   return {
     x1: px(CX + Math.cos(a) * inner),
     y1: px(CY + Math.sin(a) * inner),
     x2: px(CX + Math.cos(a) * outer),
     y2: px(CY + Math.sin(a) * outer),
-    major: i % 3 === 0,
+    major,
   };
 });
 
@@ -52,10 +62,11 @@ export function BlockMetronome({
   const chain = useChainOptional();
   const target = chain?.targetBlockSeconds ?? DEFAULT_TARGET;
   const cadence = chain?.cadenceLabel ?? "block";
-  const reduce = useReducedMotion();
+  const reduce = useAppReducedMotion();
+  const uid = useId().replace(/:/g, "");
+  const mode = resolveDisplayMode({ compact, large, stage });
+  const size = instrumentCanvasSize(mode, 140);
 
-  // Local clock so the dial keeps moving even when the store tick is quiet,
-  // and so we don't freeze the hand after the target mark.
   const [since, setSince] = useState<number | null>(null);
 
   useEffect(() => {
@@ -67,20 +78,24 @@ export function BlockMetronome({
       setSince(Math.max(0, (Date.now() - tipTimestamp) / 1000));
     };
     tick();
-    // Sub-second cadence keeps the hand visibly alive
     const id = window.setInterval(tick, reduce ? 1000 : 250);
     return () => window.clearInterval(id);
   }, [tipTimestamp, reduce, boardPulse]);
 
   const raw = since != null ? since / target : 0;
-  // Hand keeps sweeping past target (uncapped degrees - no freeze at full circle)
   const lap = raw % 1;
   const laps = Math.floor(raw);
   const tone = metronomeTone(since, target);
-  const angleDeg = raw * 360;
+  const angleDeg = metronomeHandDegrees(since, target);
   const overshoot = raw >= 1;
-  const arcLen = (overshoot ? 1 : lap) * 2 * Math.PI * R;
+  const arcLen = ringDashLength(overshoot ? 1 : lap, R);
   const circ = 2 * Math.PI * R;
+  const glow = materialGlowOpacity(overshoot ? 0.85 : Math.min(1, raw));
+  const strokeW = materialStrokeWeight(overshoot ? 0.9 : lap, mode);
+
+  const faceGrad = `metro-face-${uid}`;
+  const ringGlow = `metro-glow-${uid}`;
+  const hubGrad = `metro-hub-${uid}`;
 
   const reading = formatDuration(since);
   const targetLabel =
@@ -95,27 +110,60 @@ export function BlockMetronome({
 
   const dial = (
     <div
-      className="relative"
-      style={{
-        width: stage ? 300 : large ? 180 : compact ? 100 : SIZE,
-        height: stage ? 300 : large ? 180 : compact ? 100 : SIZE,
-      }}
+      className={`relative ${reduce ? "" : "instrument-live-glow"}`}
+      style={{ width: size, height: size }}
       role="img"
       aria-label={aria}
     >
-      <svg
-        viewBox={`0 0 ${SIZE} ${SIZE}`}
-        className="h-full w-full"
-        aria-hidden
-      >
+      <svg viewBox={`0 0 ${VB} ${VB}`} className="h-full w-full" aria-hidden>
+        <defs>
+          <radialGradient id={faceGrad} cx="42%" cy="38%" r="62%">
+            <stop offset="0%" stopColor="var(--ink-soft)" stopOpacity="1" />
+            <stop offset="55%" stopColor="var(--ink)" stopOpacity="1" />
+            <stop offset="100%" stopColor="var(--ink)" stopOpacity="1" />
+          </radialGradient>
+          <radialGradient id={ringGlow} cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor={TONE_STROKE[tone]} stopOpacity={glow} />
+            <stop offset="70%" stopColor={TONE_STROKE[tone]} stopOpacity={glow * 0.25} />
+            <stop offset="100%" stopColor={TONE_STROKE[tone]} stopOpacity="0" />
+          </radialGradient>
+          <radialGradient id={hubGrad} cx="40%" cy="35%" r="65%">
+            <stop offset="0%" stopColor="var(--paper)" stopOpacity="0.95" />
+            <stop offset="45%" stopColor={TONE_STROKE[tone]} stopOpacity="1" />
+            <stop offset="100%" stopColor="var(--accent-dim)" stopOpacity="0.9" />
+          </radialGradient>
+          <filter id={`${uid}-soft`} x="-40%" y="-40%" width="180%" height="180%">
+            <feGaussianBlur stdDeviation="2.2" result="b" />
+            <feMerge>
+              <feMergeNode in="b" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+
+        {/* Outer ambient bloom */}
+        <circle cx={CX} cy={CY} r={R + 16} fill={`url(#${ringGlow})`} opacity={0.55} />
+
+        {/* Bezel */}
         <circle
           cx={CX}
           cy={CY}
-          r={R + 8}
-          fill="var(--ink)"
-          stroke="var(--line)"
-          strokeWidth={1}
+          r={R + 10}
+          fill={`url(#${faceGrad})`}
+          stroke="var(--line-strong)"
+          strokeWidth={1.25}
         />
+        <circle
+          cx={CX}
+          cy={CY}
+          r={R + 10}
+          fill="none"
+          stroke="var(--paper)"
+          strokeWidth={0.5}
+          opacity={0.08}
+        />
+
+        {/* Track */}
         <circle
           cx={CX}
           cy={CY}
@@ -124,7 +172,22 @@ export function BlockMetronome({
           stroke="var(--line-strong)"
           strokeWidth={1.5}
           strokeDasharray="2 3"
-          opacity={0.5}
+          opacity={0.45}
+        />
+
+        {/* Progress arc with soft glow */}
+        <circle
+          cx={CX}
+          cy={CY}
+          r={R}
+          fill="none"
+          stroke={TONE_STROKE[tone]}
+          strokeWidth={strokeW + 2}
+          strokeLinecap="round"
+          strokeDasharray={`${arcLen} ${circ}`}
+          transform={`rotate(-90 ${CX} ${CY})`}
+          opacity={0.25}
+          filter={`url(#${uid}-soft)`}
         />
         <circle
           cx={CX}
@@ -132,12 +195,13 @@ export function BlockMetronome({
           r={R}
           fill="none"
           stroke={TONE_STROKE[tone]}
-          strokeWidth={3}
+          strokeWidth={strokeW}
           strokeLinecap="round"
           strokeDasharray={`${arcLen} ${circ}`}
           transform={`rotate(-90 ${CX} ${CY})`}
-          opacity={0.9}
+          opacity={0.95}
         />
+
         {overshoot && (
           <circle
             cx={CX}
@@ -147,9 +211,10 @@ export function BlockMetronome({
             stroke="var(--down)"
             strokeWidth={2}
             strokeDasharray="4 4"
-            opacity={0.55}
+            opacity={0.6}
           />
         )}
+
         {TICKS.map((t, i) => (
           <line
             key={i}
@@ -158,15 +223,15 @@ export function BlockMetronome({
             x2={t.x2}
             y2={t.y2}
             stroke={t.major ? "var(--paper-muted)" : "var(--line)"}
-            strokeWidth={t.major ? 1.5 : 1}
+            strokeWidth={t.major ? 1.6 : 0.7}
+            opacity={t.major ? 0.9 : 0.55}
           />
         ))}
-        {/* Rotate the hand as a group - continuous, no spring freeze past 10m */}
+
         <g
           style={{
             transformOrigin: `${CX}px ${CY}px`,
             transform: `rotate(${angleDeg}deg)`,
-            // Skip easing on block reset (large rewind); smooth otherwise
             transition:
               reduce || (since != null && since < 1.5)
                 ? undefined
@@ -175,53 +240,75 @@ export function BlockMetronome({
         >
           <line
             x1={CX}
-            y1={CY}
+            y1={CY + 8}
             x2={CX}
-            y2={CY - (R - 10)}
+            y2={CY - (R - 12)}
             stroke={TONE_STROKE[tone]}
-            strokeWidth={2}
+            strokeWidth={2.4}
             strokeLinecap="round"
+            opacity={0.95}
+          />
+          <circle
+            cx={CX}
+            cy={CY - (R - 12)}
+            r={2.4}
+            fill={TONE_STROKE[tone]}
+            filter={`url(#${uid}-soft)`}
           />
         </g>
-        <circle cx={CX} cy={CY} r={3.5} fill={TONE_STROKE[tone]} />
-        <text
-          x={CX}
-          y={CY - R + 16}
-          textAnchor="middle"
-          fill="var(--paper-muted)"
-          fontSize="8"
-          fontFamily="var(--font-mono)"
-        >
-          0
-        </text>
-        <text
-          x={CX + R - 12}
-          y={CY + 3}
-          textAnchor="middle"
-          fill="var(--paper-muted)"
-          fontSize="8"
-          fontFamily="var(--font-mono)"
-        >
-          5
-        </text>
-        <text
-          x={CX}
-          y={CY + R - 8}
-          textAnchor="middle"
-          fill="var(--paper-muted)"
-          fontSize="8"
-          fontFamily="var(--font-mono)"
-        >
-          {target >= 60 ? `${Math.round(target / 60)}m` : target >= 1 ? `${target}s` : "slot"}
-        </text>
+
+        <circle cx={CX} cy={CY} r={6.5} fill={`url(#${hubGrad})`} />
+        <circle cx={CX} cy={CY} r={2.2} fill="var(--ink)" opacity={0.85} />
+
+        {!compact && (
+          <>
+            <text
+              x={CX}
+              y={CY - R + 18}
+              textAnchor="middle"
+              fill="var(--paper-muted)"
+              fontSize="7.5"
+              fontFamily="var(--font-mono)"
+              opacity={0.85}
+            >
+              0
+            </text>
+            <text
+              x={CX + R - 14}
+              y={CY + 3}
+              textAnchor="middle"
+              fill="var(--paper-muted)"
+              fontSize="7.5"
+              fontFamily="var(--font-mono)"
+              opacity={0.85}
+            >
+              ¼
+            </text>
+            <text
+              x={CX}
+              y={CY + R - 10}
+              textAnchor="middle"
+              fill="var(--paper-muted)"
+              fontSize="7.5"
+              fontFamily="var(--font-mono)"
+              opacity={0.85}
+            >
+              {target >= 60
+                ? `${Math.round(target / 60)}m`
+                : target >= 1
+                  ? `${target}s`
+                  : "slot"}
+            </text>
+          </>
+        )}
       </svg>
       {!reduce && boardPulse > 0 && (
         <motion.div
           key={boardPulse}
           className="pointer-events-none absolute inset-0 rounded-full border border-accent"
-          initial={{ opacity: 0.7, scale: 0.85 }}
-          animate={{ opacity: 0, scale: 1.15 }}
-          transition={{ duration: 0.85, ease: "easeOut" }}
+          initial={{ opacity: 0.75, scale: 0.82 }}
+          animate={{ opacity: 0, scale: 1.18 }}
+          transition={{ duration: 0.9, ease: "easeOut" }}
         />
       )}
     </div>
@@ -233,7 +320,7 @@ export function BlockMetronome({
     return (
       <div className="flex flex-col items-center gap-6">
         {dial}
-        <p className="mono text-5xl font-medium tracking-tight text-paper md:text-7xl">
+        <p className="instrument-stage-reading mono text-5xl font-medium tracking-tight text-paper md:text-7xl">
           {reading}
         </p>
         <p className="text-xs uppercase tracking-[0.2em] text-paper-muted">

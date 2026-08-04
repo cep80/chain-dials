@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 import { BlockMetronome } from "@/components/viz/BlockMetronome";
 import { HashrateForge } from "@/components/viz/HashrateForge";
 import { IssuanceHourglass } from "@/components/viz/IssuanceHourglass";
@@ -22,6 +22,7 @@ import { PriorityJets } from "@/components/viz/sol/PriorityJets";
 import { StakeReef } from "@/components/viz/sol/StakeReef";
 import { TurbineTach } from "@/components/viz/sol/TurbineTach";
 import { useChainOptional } from "@/lib/chains/context";
+import { useAppReducedMotion } from "@/lib/settings/use-app-reduced-motion";
 
 function BtcGrid({ large }: { large: boolean }) {
   return (
@@ -111,37 +112,51 @@ function HypeGrid({ large }: { large: boolean }) {
   );
 }
 
-export function Observatory({ large = false }: { large?: boolean }) {
-  const reduce = useReducedMotion();
+export function Observatory({
+  large = false,
+  wall = false,
+}: {
+  large?: boolean;
+  wall?: boolean;
+}) {
+  const reduce = useAppReducedMotion();
   const chain = useChainOptional();
   const id = chain?.id ?? "btc";
-  const title = chain?.observatoryTitle ?? "Observatory";
-  const blurb =
-    chain?.observatoryBlurb ??
-    "Block timing, mempool weather, tip face, halvings, and hashrate. Expand an instrument to go fullscreen.";
 
   return (
-    <section aria-labelledby="observatory-heading" className="mt-8">
-      <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <p className="text-[10px] uppercase tracking-[0.2em] text-accent">
-            Observatory
-          </p>
-          <h2
-            id="observatory-heading"
-            className="text-2xl font-bold tracking-tight text-paper md:text-3xl"
-          >
-            {chain?.observatoryTitle ?? "Instruments"}
-          </h2>
-          <p className="mt-1 max-w-xl text-sm text-paper-muted">
-            {chain?.observatoryBlurb ??
-              "Cadence, mempool, tip glyph, halvings, and hashrate. Open one to expand."}
-          </p>
+    <section
+      aria-labelledby="observatory-heading"
+      className={wall ? "mt-0" : "mt-8"}
+    >
+      {!wall && (
+        <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <p className="text-[10px] uppercase tracking-[0.2em] text-accent">
+              Observatory
+            </p>
+            <h2
+              id="observatory-heading"
+              className="text-2xl font-bold tracking-tight text-paper md:text-3xl"
+            >
+              {chain?.observatoryTitle ?? "Instruments"}
+            </h2>
+            <p className="mt-1 max-w-xl text-sm text-paper-muted">
+              {chain?.observatoryBlurb ??
+                "Cadence, mempool, tip glyph, halvings, and hashrate. Open one to expand."}
+            </p>
+          </div>
         </div>
-      </div>
+      )}
+      {wall && (
+        <h2 id="observatory-heading" className="sr-only">
+          {chain?.observatoryTitle ?? "Instruments"}
+        </h2>
+      )}
 
       <motion.div
-        className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6"
+        className={`observatory-grid grid gap-3 sm:grid-cols-2 xl:grid-cols-6 ${
+          large ? "gap-3.5 xl:gap-4" : ""
+        }`}
         initial={reduce ? false : { opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: "easeOut" }}

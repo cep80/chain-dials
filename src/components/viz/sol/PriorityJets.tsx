@@ -1,10 +1,12 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
-import { useMemo, useState, type MouseEvent } from "react";
+import { motion } from "framer-motion";
+import { useAppReducedMotion } from "@/lib/settings/use-app-reduced-motion";
+import { useId, useMemo, useState, type MouseEvent } from "react";
 import { InstrumentFrame } from "@/components/viz/InstrumentFrame";
 import { formatFee, formatInteger } from "@/lib/format";
 import { useDashboardStore } from "@/lib/store";
+import { svgDefId } from "@/lib/viz-scale";
 import type { AtmosphereTx } from "@/types/metrics";
 
 export function PriorityJets({
@@ -21,7 +23,10 @@ export function PriorityJets({
   const feeFastest = useDashboardStore((s) => s.live.feeFastest);
   const count = useDashboardStore((s) => s.live.mempoolCount);
   const now = useDashboardStore((s) => s.now);
-  const reduce = useReducedMotion();
+  const reduce = useAppReducedMotion();
+  const uid = useId();
+  const padId = svgDefId("jet-pad", uid);
+  const barId = svgDefId("jet-bar", uid);
   const [picked, setPicked] = useState<AtmosphereTx | null>(null);
 
   const jets = useMemo(() => {
@@ -61,23 +66,36 @@ export function PriorityJets({
 
   const body = (
     <div
-      className="relative overflow-hidden rounded-[10px] border border-line bg-ink"
+      className={`relative overflow-hidden rounded-[12px] border border-line/80 bg-ink shadow-[0_0_40px_color-mix(in_oklab,var(--accent)_8%,transparent)] ${
+        reduce ? "" : "instrument-live-glow"
+      }`}
       style={{ width: w, height: h }}
       role="img"
       aria-label={`Priority fee samples. Top ${formatFee(feeFastest, "µLamports/CU")}.`}
       onClick={clearPick}
     >
       <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="h-full w-full">
+        <defs>
+          <linearGradient id={padId} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="var(--ink-soft)" stopOpacity="0.85" />
+            <stop offset="100%" stopColor="var(--ink)" stopOpacity="1" />
+          </linearGradient>
+          <linearGradient id={barId} x1="0" y1="1" x2="0" y2="0">
+            <stop offset="0%" stopColor="var(--accent-dim)" stopOpacity="0.55" />
+            <stop offset="100%" stopColor="var(--accent)" stopOpacity="0.95" />
+          </linearGradient>
+        </defs>
+        <rect width="100" height="100" fill={`url(#${padId})`} />
         {jets.map((j) => (
           <g key={j.txid} data-jet>
             <motion.rect
-              x={j.x - 1.6}
-              width={3.2}
+              x={j.x - 1.8}
+              width={3.6}
               y={100 - j.h}
               height={j.h}
-              rx={1.2}
-              fill="var(--accent)"
-              opacity={0.55 + (j.fresh ? 0.35 : 0.1)}
+              rx={1.4}
+              fill={`url(#${barId})`}
+              opacity={0.6 + (j.fresh ? 0.35 : 0.12)}
               className="cursor-pointer"
               onClick={(e) => {
                 e.stopPropagation();
@@ -142,7 +160,7 @@ export function PriorityJets({
             Select a jet for the fee sample · empty clears
           </p>
         )}
-        <p className="mono text-5xl font-medium text-paper md:text-7xl">
+        <p className="instrument-stage-reading mono text-5xl font-medium text-paper md:text-7xl">
           {formatFee(feeFastest, "µLamports/CU")}
         </p>
         <p className="text-xs uppercase tracking-[0.2em] text-paper-muted">

@@ -176,3 +176,241 @@ html[data-density="compact"] .pulse-chip {
   padding-top: 0.45rem;
   padding-bottom: 0.45rem;
 }
+
+/* ── AAA instrument glass + TV / wall materials ───────────────────────── */
+
+.instrument-frame {
+  border-radius: 16px;
+  border: 1px solid color-mix(in oklab, var(--line) 88%, var(--accent) 12%);
+  background:
+    linear-gradient(
+      165deg,
+      color-mix(in oklab, var(--ink-elevated) 92%, var(--accent) 8%) 0%,
+      var(--ink-elevated) 42%,
+      color-mix(in oklab, var(--ink) 88%, var(--ink-soft) 12%) 100%
+    );
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--accent) 6%, transparent),
+    0 1px 0 color-mix(in oklab, var(--paper) 6%, transparent) inset,
+    0 -20px 40px color-mix(in oklab, var(--ink) 55%, transparent) inset,
+    0 18px 48px rgba(0, 0, 0, 0.45),
+    0 0 60px color-mix(in oklab, var(--accent) 4%, transparent);
+  transition:
+    border-color 0.35s ease,
+    box-shadow 0.45s ease,
+    transform 0.35s ease;
+}
+
+.instrument-frame:hover {
+  border-color: color-mix(in oklab, var(--accent) 42%, var(--line));
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--accent) 14%, transparent),
+    0 1px 0 color-mix(in oklab, var(--paper) 8%, transparent) inset,
+    0 -24px 48px color-mix(in oklab, var(--ink) 50%, transparent) inset,
+    0 22px 56px rgba(0, 0, 0, 0.5),
+    0 0 80px color-mix(in oklab, var(--accent) 10%, transparent);
+}
+
+.instrument-frame--large {
+  border-radius: 18px;
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--accent) 10%, transparent),
+    0 1px 0 color-mix(in oklab, var(--paper) 8%, transparent) inset,
+    0 -28px 56px color-mix(in oklab, var(--ink) 50%, transparent) inset,
+    0 24px 64px rgba(0, 0, 0, 0.55),
+    0 0 100px color-mix(in oklab, var(--accent) 8%, transparent);
+}
+
+.instrument-frame-sheen {
+  background:
+    linear-gradient(
+      125deg,
+      color-mix(in oklab, var(--paper) 9%, transparent) 0%,
+      transparent 38%,
+      transparent 62%,
+      color-mix(in oklab, var(--accent) 5%, transparent) 100%
+    );
+  opacity: 0.9;
+  mix-blend-mode: soft-light;
+}
+
+.instrument-frame-vignette {
+  background: radial-gradient(
+    ellipse 85% 75% at 50% 42%,
+    transparent 30%,
+    color-mix(in oklab, var(--ink) 55%, transparent) 100%
+  );
+  opacity: 0.55;
+}
+
+.instrument-frame-header {
+  border-bottom: 1px solid color-mix(in oklab, var(--line) 75%, transparent);
+  padding: 0.7rem 1rem;
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklab, var(--ink) 35%, transparent),
+    transparent
+  );
+}
+
+.instrument-frame--large .instrument-frame-header {
+  padding: 0.9rem 1.15rem;
+}
+
+.instrument-frame-kicker {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  text-shadow: 0 0 18px color-mix(in oklab, var(--accent) 45%, transparent);
+}
+
+.instrument-frame-subtitle {
+  font-size: 0.75rem;
+  color: var(--paper-muted);
+}
+
+.instrument-frame--large .instrument-frame-subtitle {
+  font-size: 0.8125rem;
+}
+
+.instrument-frame-reading {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  text-shadow: 0 0 20px color-mix(in oklab, var(--accent) 18%, transparent);
+}
+
+.instrument-frame-reading--large {
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  text-shadow:
+    0 0 28px color-mix(in oklab, var(--accent) 28%, transparent),
+    0 1px 0 rgba(0, 0, 0, 0.4);
+}
+
+.instrument-frame-body {
+  min-height: 168px;
+  padding: 1rem;
+}
+
+.instrument-frame-body--large {
+  min-height: 260px;
+  padding: 1.35rem 1.25rem 1.5rem;
+}
+
+.instrument-stage-well {
+  background:
+    radial-gradient(
+      ellipse 70% 55% at 50% 48%,
+      color-mix(in oklab, var(--accent) 8%, transparent),
+      transparent 68%
+    ),
+    radial-gradient(
+      ellipse 90% 80% at 50% 55%,
+      color-mix(in oklab, var(--ink-soft) 40%, transparent),
+      transparent 72%
+    );
+  box-shadow: 0 0 40px color-mix(in oklab, var(--accent) 4%, transparent) inset;
+}
+
+/* Wall / TV theater */
+.wall-theater {
+  position: relative;
+  overflow: hidden;
+  border-radius: 20px;
+  border: 1px solid color-mix(in oklab, var(--line) 80%, var(--accent) 20%);
+  background:
+    radial-gradient(
+      ellipse 90% 60% at 50% -10%,
+      color-mix(in oklab, var(--accent) 14%, transparent),
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse 50% 40% at 100% 100%,
+      color-mix(in oklab, var(--accent) 6%, transparent),
+      transparent 50%
+    ),
+    linear-gradient(180deg, var(--ink-elevated), var(--ink));
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--accent) 8%, transparent),
+    0 32px 80px rgba(0, 0, 0, 0.55),
+    0 0 120px color-mix(in oklab, var(--accent) 6%, transparent);
+  padding: 1.75rem 1.5rem 2rem;
+}
+
+@media (min-width: 768px) {
+  .wall-theater {
+    padding: 2.5rem 2.5rem 2.75rem;
+  }
+}
+
+.wall-theater-title {
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  text-align: center;
+  color: var(--paper);
+  text-shadow:
+    0 0 40px color-mix(in oklab, var(--accent) 35%, transparent),
+    0 2px 0 rgba(0, 0, 0, 0.35);
+}
+
+.wall-theater .instrument-frame-body--large {
+  min-height: 280px;
+}
+
+.wall-theater .observatory-grid {
+  gap: 0.875rem;
+}
+
+@media (min-width: 1280px) {
+  .wall-theater .observatory-grid {
+    gap: 1rem;
+  }
+}
+
+/* Fullscreen stage presence */
+.instrument-stage-panel {
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--accent) 12%, transparent),
+    0 40px 100px rgba(0, 0, 0, 0.65),
+    0 0 140px color-mix(in oklab, var(--accent) 10%, transparent);
+}
+
+.instrument-stage-reading {
+  font-variant-numeric: tabular-nums;
+  text-shadow:
+    0 0 48px color-mix(in oklab, var(--accent) 32%, transparent),
+    0 2px 0 rgba(0, 0, 0, 0.4);
+}
+
+/* Soft ambient pulse for live dials (respects reduced-motion CSS) */
+@keyframes instrumentAmbientGlow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 6px color-mix(in oklab, var(--accent) 25%, transparent));
+  }
+  50% {
+    filter: drop-shadow(0 0 16px color-mix(in oklab, var(--accent) 55%, transparent));
+  }
+}
+
+.instrument-live-glow {
+  animation: instrumentAmbientGlow 3.2s ease-in-out infinite;
+}
+
+html[data-motion="reduce"] .instrument-live-glow {
+  animation: none;
+  filter: drop-shadow(0 0 8px color-mix(in oklab, var(--accent) 30%, transparent));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .instrument-live-glow {
+    animation: none;
+    filter: drop-shadow(0 0 8px color-mix(in oklab, var(--accent) 30%, transparent));
+  }
+}

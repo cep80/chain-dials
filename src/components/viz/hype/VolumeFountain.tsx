@@ -1,6 +1,7 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
+import { useAppReducedMotion } from "@/lib/settings/use-app-reduced-motion";
 import { useMemo } from "react";
 import { InstrumentFrame } from "@/components/viz/InstrumentFrame";
 import { formatPlainPercent } from "@/lib/format";
@@ -20,7 +21,7 @@ export function VolumeFountain({
   const dayVlmB = useDashboardStore((s) => s.live.inflationRate);
   const label = useDashboardStore((s) => s.live.forgeLabel);
   const boardPulse = useDashboardStore((s) => s.boardPulse);
-  const reduce = useReducedMotion();
+  const reduce = useAppReducedMotion();
 
   const level =
     supply != null ? Math.max(0.12, Math.min(0.88, supply / 100)) : 0.35;
@@ -44,7 +45,9 @@ export function VolumeFountain({
 
   const fountain = (
     <div
-      className="relative overflow-hidden rounded-[12px] border border-line bg-ink"
+      className={`relative overflow-hidden rounded-[12px] border border-line/80 bg-ink shadow-[0_0_36px_color-mix(in_oklab,var(--accent)_10%,transparent)] ${
+        reduce ? "" : "instrument-live-glow"
+      }`}
       style={{ width: w, height: h }}
       role="img"
       aria-label={`Volume fountain. Circulating supply ${supply != null ? `${supply.toFixed(0)} percent of reported max` : "unavailable"}. Day volume ${dayVlmB?.toFixed(1) ?? "unknown"} billion.`}
@@ -104,7 +107,7 @@ export function VolumeFountain({
     return (
       <div className="flex flex-col items-center gap-6">
         {fountain}
-        <p className="mono text-5xl font-medium text-paper md:text-7xl">
+        <p className="instrument-stage-reading mono text-5xl font-medium text-paper md:text-7xl">
           {dayVlmB != null ? `$${dayVlmB.toFixed(1)}B` : "—"}
         </p>
         <p className="text-xs uppercase tracking-[0.2em] text-paper-muted">

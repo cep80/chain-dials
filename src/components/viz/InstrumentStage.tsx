@@ -1,6 +1,7 @@
 "use client";
 
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
+import { useAppReducedMotion } from "@/lib/settings/use-app-reduced-motion";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { BlockMetronome } from "@/components/viz/BlockMetronome";
@@ -121,7 +122,7 @@ export function InstrumentStage() {
   const close = useInstrumentStage((s) => s.close);
   const next = useInstrumentStage((s) => s.next);
   const prev = useInstrumentStage((s) => s.prev);
-  const reduce = useReducedMotion();
+  const reduce = useAppReducedMotion();
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
   const [browserFs, setBrowserFs] = useState(false);
@@ -245,7 +246,7 @@ export function InstrumentStage() {
 
   // Accent-tinted stage wash from CSS vars set by AppShell
   const stageWash =
-    "radial-gradient(ellipse 70% 50% at 50% 20%, color-mix(in oklab, var(--accent) 18%, transparent), transparent 55%), var(--ink)";
+    "radial-gradient(ellipse 75% 55% at 50% 12%, color-mix(in oklab, var(--accent) 22%, transparent), transparent 58%), radial-gradient(ellipse 50% 40% at 80% 90%, color-mix(in oklab, var(--accent) 8%, transparent), transparent 50%), var(--ink)";
 
   if (!canPortal) return null;
 
@@ -272,7 +273,7 @@ export function InstrumentStage() {
             aria-modal="true"
             aria-labelledby={titleId}
             tabIndex={-1}
-            className="relative z-[1] m-0 flex h-full w-full flex-col outline-none focus-visible:ring-2 focus-visible:ring-accent md:m-4 md:h-[calc(100%-2rem)] md:max-w-6xl md:rounded-[20px] md:border md:border-line md:bg-ink-elevated"
+            className="instrument-stage-panel relative z-[1] m-0 flex h-full w-full flex-col outline-none focus-visible:ring-2 focus-visible:ring-accent md:m-4 md:h-[calc(100%-2rem)] md:max-w-6xl md:rounded-[22px] md:border md:border-line md:bg-ink-elevated"
             initial={reduce ? false : { opacity: 0, y: 24, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={reduce ? undefined : { opacity: 0, y: 12, scale: 0.99 }}

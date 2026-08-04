@@ -1,10 +1,12 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
-import { useMemo } from "react";
+import { motion } from "framer-motion";
+import { useAppReducedMotion } from "@/lib/settings/use-app-reduced-motion";
+import { useId, useMemo } from "react";
 import { InstrumentFrame } from "@/components/viz/InstrumentFrame";
 import { formatPlainPercent } from "@/lib/format";
 import { useDashboardStore } from "@/lib/store";
+import { svgDefId } from "@/lib/viz-scale";
 
 function starSeed(i: number) {
   const x = Math.sin(i * 12.9898 + 78.233) * 43758.5453;
@@ -24,7 +26,9 @@ export function ValidatorConstellation({
   const label = useDashboardStore((s) => s.live.forgeLabel);
   const epoch = useDashboardStore((s) => s.live.retargetProgress);
   const boardPulse = useDashboardStore((s) => s.boardPulse);
-  const reduce = useReducedMotion();
+  const reduce = useAppReducedMotion();
+  const uid = useId();
+  const skyId = svgDefId("constell-sky", uid);
 
   const n = compact ? 18 : stage ? 48 : 32;
   const stars = useMemo(
@@ -57,12 +61,21 @@ export function ValidatorConstellation({
 
   const sky = (
     <div
-      className="relative overflow-hidden rounded-full border border-line bg-ink"
+      className={`relative overflow-hidden rounded-full border border-line/80 bg-ink shadow-[0_0_36px_color-mix(in_oklab,var(--accent)_12%,transparent)] ${
+        reduce ? "" : "instrument-live-glow"
+      }`}
       style={{ width: size, height: size }}
       role="img"
       aria-label={`Validator constellation. ${label ?? `${Math.round(score * 100)}% heat`}.`}
     >
       <svg viewBox="0 0 100 100" className="h-full w-full">
+        <defs>
+          <radialGradient id={skyId} cx="50%" cy="45%" r="55%">
+            <stop offset="0%" stopColor="var(--ink-soft)" stopOpacity="0.95" />
+            <stop offset="100%" stopColor="var(--ink)" stopOpacity="1" />
+          </radialGradient>
+        </defs>
+        <circle cx={50} cy={50} r={49} fill={`url(#${skyId})`} />
         {links.map((l, i) => (
           <line
             key={i}
@@ -71,8 +84,8 @@ export function ValidatorConstellation({
             x2={l.x2}
             y2={l.y2}
             stroke="var(--accent)"
-            strokeWidth={0.3}
-            opacity={0.25 + score * 0.35}
+            strokeWidth={0.45}
+            opacity={0.3 + score * 0.4}
           />
         ))}
         {stars.map((s, i) => (

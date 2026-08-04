@@ -1,6 +1,5 @@
 "use client";
 
-import { useReducedMotion } from "framer-motion";
 import {
   useCallback,
   useEffect,
@@ -21,7 +20,8 @@ import { useChainOptional } from "@/lib/chains/context";
 import { useDocumentVisible } from "@/lib/use-document-visible";
 import { useDashboardStore } from "@/lib/store";
 import { useInstrumentStage } from "@/lib/instrument-stage";
-import { clamp } from "@/lib/viz-scale";
+import { useAppReducedMotion } from "@/lib/settings/use-app-reduced-motion";
+import { clamp, densityMoteBudget } from "@/lib/viz-scale";
 import { InstrumentFrame } from "@/components/viz/InstrumentFrame";
 import type { AtmosphereTx } from "@/types/metrics";
 
@@ -354,7 +354,7 @@ export function MempoolAtmosphere({
   const boardPulse = useDashboardStore((s) => s.boardPulse);
   const connection = useDashboardStore((s) => s.connection);
   const chain = useChainOptional();
-  const reduce = useReducedMotion();
+  const reduce = useAppReducedMotion();
   const visible = useDocumentVisible();
   const stageOpen = useInstrumentStage((s) => s.active);
   const openStage = useInstrumentStage((s) => s.open);
@@ -435,9 +435,11 @@ export function MempoolAtmosphere({
       .join("|");
     if (key === histKeyRef.current && densityRef.current.length) return;
     histKeyRef.current = key;
-    const budget = reduce
-      ? 0
-      : Math.round(clamp(40 + intensity * 100, 40, stage ? 180 : 120));
+    const budget = densityMoteBudget({
+      intensity,
+      stage,
+      reduceMotion: reduce,
+    });
     densityRef.current = buildDensity(
       feeHistogram,
       w,
@@ -477,27 +479,34 @@ export function MempoolAtmosphere({
     ro.observe(canvas);
 
     const drawBands = (w: number, h: number) => {
+      // Deep atmosphere backdrop
+      const sky = ctx.createLinearGradient(0, 0, 0, h);
+      sky.addColorStop(0, "rgba(255,92,92,0.09)");
+      sky.addColorStop(0.35, "rgba(247,147,26,0.07)");
+      sky.addColorStop(0.65, "rgba(230,184,77,0.04)");
+      sky.addColorStop(1, "rgba(12,14,20,0.35)");
+      ctx.fillStyle = sky;
+      ctx.fillRect(0, 0, w, h);
+
       for (let i = 0; i < 4; i++) {
         const y0 = (i / 4) * h;
-        ctx.fillStyle =
-          i === 0
-            ? "rgba(255,92,92,0.06)"
-            : i === 1
-              ? "rgba(247,147,26,0.05)"
-              : i === 2
-                ? "rgba(230,184,77,0.04)"
-                : "rgba(168,161,149,0.03)";
-        ctx.fillRect(0, y0, w, h / 4);
-        ctx.strokeStyle = "rgba(42,49,64,0.45)";
+        ctx.strokeStyle = "rgba(42,49,64,0.4)";
         ctx.beginPath();
         ctx.moveTo(0, y0);
         ctx.lineTo(w, y0);
         ctx.stroke();
       }
-      ctx.fillStyle = "rgba(247,147,26,0.45)";
+      // Soft horizon glow
+      const horizon = ctx.createRadialGradient(w * 0.5, h * 0.15, 0, w * 0.5, h * 0.15, w * 0.55);
+      horizon.addColorStop(0, "rgba(247,147,26,0.08)");
+      horizon.addColorStop(1, "rgba(247,147,26,0)");
+      ctx.fillStyle = horizon;
+      ctx.fillRect(0, 0, w, h);
+
+      ctx.fillStyle = "rgba(247,147,26,0.55)";
       ctx.font = "9px var(--font-mono), ui-monospace, monospace";
       ctx.fillText("high fee ↑", 8, 14);
-      ctx.fillStyle = "rgba(168,161,149,0.55)";
+      ctx.fillStyle = "rgba(168,161,149,0.6)";
       ctx.fillText("low fee ↓", 8, h - 8);
     };
 
@@ -505,19 +514,41 @@ export function MempoolAtmosphere({
       if (p.alpha <= 0.01) return;
       const rgb = BAND_COLORS[p.band];
       const glow = selected || hover || p.pulse > 0.2;
+      // Soft multi-stop bloom for TV depth
       if (glow) {
+        const g = ctx.createRadialGradient(
+          p.x,
+          p.y,
+          0,
+          p.x,
+          p.y,
+          p.r + 8 + p.pulse * 8,
+        );
+        g.addColorStop(0, rgba(rgb, 0.45 * p.alpha));
+        g.addColorStop(0.45, rgba(rgb, 0.18 * p.alpha));
+        g.addColorStop(1, rgba(rgb, 0));
         ctx.beginPath();
-        ctx.fillStyle = rgba(rgb, 0.22 * p.alpha);
-        ctx.arc(p.x, p.y, p.r + 3 + p.pulse * 4, 0, Math.PI * 2);
+        ctx.fillStyle = g;
+        ctx.arc(p.x, p.y, p.r + 8 + p.pulse * 8, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        ctx.beginPath();
+        ctx.fillStyle = rgba(rgb, 0.16 * p.alpha);
+        ctx.arc(p.x, p.y, p.r + 3.5, 0, Math.PI * 2);
         ctx.fill();
       }
       ctx.beginPath();
-      ctx.fillStyle = rgba(rgb, (selected ? 0.95 : 0.78) * p.alpha);
-      ctx.arc(p.x, p.y, selected ? p.r + 1.5 : p.r, 0, Math.PI * 2);
+      ctx.fillStyle = rgba(rgb, (selected ? 0.98 : 0.84) * p.alpha);
+      ctx.arc(p.x, p.y, selected ? p.r + 1.6 : p.r, 0, Math.PI * 2);
+      ctx.fill();
+      // Specular core
+      ctx.beginPath();
+      ctx.fillStyle = rgba([255, 248, 235], 0.28 * p.alpha);
+      ctx.arc(p.x - p.r * 0.25, p.y - p.r * 0.28, Math.max(0.8, p.r * 0.35), 0, Math.PI * 2);
       ctx.fill();
       if (selected) {
-        ctx.strokeStyle = rgba([247, 147, 26], 0.9 * p.alpha);
-        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = rgba([247, 147, 26], 0.95 * p.alpha);
+        ctx.lineWidth = 1.8;
         ctx.stroke();
       }
     };

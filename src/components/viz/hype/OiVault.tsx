@@ -1,6 +1,7 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
+import { useAppReducedMotion } from "@/lib/settings/use-app-reduced-motion";
 import { useMemo } from "react";
 import { InstrumentFrame } from "@/components/viz/InstrumentFrame";
 import { formatPlainPercent } from "@/lib/format";
@@ -24,7 +25,7 @@ export function OiVault({
   const label = useDashboardStore((s) => s.live.forgeLabel);
   const gasMood = useDashboardStore((s) => s.live.mempoolPressure);
   const boardPulse = useDashboardStore((s) => s.boardPulse);
-  const reduce = useReducedMotion();
+  const reduce = useAppReducedMotion();
 
   const n = compact ? 6 : stage ? 14 : 10;
   const bars = useMemo(
@@ -46,7 +47,9 @@ export function OiVault({
 
   const vault = (
     <div
-      className="relative overflow-hidden rounded-[14px] border border-line bg-ink"
+      className={`relative overflow-hidden rounded-[14px] border border-line/80 bg-ink shadow-[0_0_36px_color-mix(in_oklab,var(--accent)_12%,transparent)] ${
+        reduce ? "" : "instrument-live-glow"
+      }`}
       style={{ width: size, height: size }}
       role="img"
       aria-label={`OI vault. ${label ?? `${Math.round(score * 100)}% heat`}.`}

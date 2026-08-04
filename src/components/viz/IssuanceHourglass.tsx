@@ -1,10 +1,12 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 import { useEffect, useId, useMemo, useState } from "react";
 import { useChainOptional } from "@/lib/chains/context";
 import { formatBtc, formatInteger, formatPlainPercent } from "@/lib/format";
+import { useAppReducedMotion } from "@/lib/settings/use-app-reduced-motion";
 import { getMetricNumeric, useDashboardStore } from "@/lib/store";
+import { particleBudget, resolveDisplayMode } from "@/lib/viz-scale";
 import { InstrumentFrame } from "@/components/viz/InstrumentFrame";
 
 const W = 100;
@@ -29,8 +31,9 @@ export function IssuanceHourglass({
   const now = useDashboardStore((s) => s.now);
   const boardPulse = useDashboardStore((s) => s.boardPulse);
   const chain = useChainOptional();
-  const reduce = useReducedMotion();
+  const reduce = useAppReducedMotion();
   const uid = useId().replace(/:/g, "");
+  const mode = resolveDisplayMode({ compact, large, stage });
   const [grainT, setGrainT] = useState(0);
   const [mounted, setMounted] = useState(false);
 
@@ -73,7 +76,13 @@ export function IssuanceHourglass({
   }, [boardPulse, reduce]);
 
   const grains = useMemo(() => {
-    const n = compact ? 4 : stage ? 14 : 9;
+    const n = particleBudget({
+      intensity: Math.max(0.25, epochRemaining / 100),
+      mode,
+      reduceMotion: false,
+      base: 10,
+      max: stage ? 22 : large ? 16 : compact ? 5 : 12,
+    });
     return Array.from({ length: n }, (_, i) => {
       const r = grainSeed(i);
       const r2 = grainSeed(i + 17);
@@ -84,7 +93,7 @@ export function IssuanceHourglass({
         size: 0.7 + r2 * 0.9,
       };
     });
-  }, [compact, stage]);
+  }, [mode, stage, large, compact, epochRemaining]);
 
   const aria = `Issuance hourglass. Current subsidy epoch ${halvingProgress.toFixed(1)} percent complete. ${
     blocksLeft != null ? `${Math.round(blocksLeft)} blocks to next halving. ` : ""
@@ -92,7 +101,7 @@ export function IssuanceHourglass({
 
   const glass = (
     <div
-      className="relative"
+      className={`relative ${reduce ? "" : "instrument-live-glow"}`}
       style={{
         width: stage ? 180 : large ? 130 : compact ? 72 : 110,
         height: stage ? 252 : large ? 182 : compact ? 100 : 154,
@@ -109,29 +118,44 @@ export function IssuanceHourglass({
             <polygon points="48,72 52,72 82,128 18,128" />
           </clipPath>
           <linearGradient id={sandGrad} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.95" />
-            <stop offset="100%" stopColor="var(--accent-dim)" stopOpacity="0.85" />
+            <stop offset="0%" stopColor="var(--paper)" stopOpacity="0.55" />
+            <stop offset="35%" stopColor="var(--accent)" stopOpacity="0.98" />
+            <stop offset="100%" stopColor="var(--accent-dim)" stopOpacity="0.9" />
           </linearGradient>
+          <linearGradient id={`${uid}-glass`} x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="var(--paper)" stopOpacity="0.12" />
+            <stop offset="50%" stopColor="var(--ink)" stopOpacity="0.4" />
+            <stop offset="100%" stopColor="var(--accent)" stopOpacity="0.08" />
+          </linearGradient>
+          <filter id={`${uid}-sand`} x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="0.6" result="b" />
+            <feMerge>
+              <feMergeNode in="b" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
         </defs>
 
         <polygon
           points="14,8 86,8 54,70 86,132 14,132 46,70"
-          fill="var(--ink)"
+          fill={`url(#${uid}-glass)`}
           stroke="var(--line-strong)"
-          strokeWidth={1.5}
+          strokeWidth={1.7}
           strokeLinejoin="round"
         />
         <polygon
           points="18,12 82,12 52,68 48,68"
           fill="none"
-          stroke="var(--line)"
-          strokeWidth={0.8}
+          stroke="var(--paper)"
+          strokeWidth={0.6}
+          opacity={0.2}
         />
         <polygon
           points="48,72 52,72 82,128 18,128"
           fill="none"
-          stroke="var(--line)"
-          strokeWidth={0.8}
+          stroke="var(--paper)"
+          strokeWidth={0.6}
+          opacity={0.2}
         />
 
         {/* Remaining until next halving (top chamber) */}
@@ -140,7 +164,8 @@ export function IssuanceHourglass({
             x={18}
             width={64}
             fill={`url(#${sandGrad})`}
-            opacity={0.85}
+            opacity={0.92}
+            filter={`url(#${uid}-sand)`}
             initial={false}
             animate={{
               y: 12 + (1 - topFill) * 56,
@@ -279,7 +304,7 @@ export function IssuanceHourglass({
     return (
       <div className="flex flex-col items-center gap-6">
         {glass}
-        <p className="mono text-5xl font-medium text-paper md:text-7xl">
+        <p className="instrument-stage-reading mono text-5xl font-medium text-paper md:text-7xl">
           {formatPlainPercent(halvingProgress, 1)}
         </p>
         <p className="text-xs uppercase tracking-[0.2em] text-paper-muted">

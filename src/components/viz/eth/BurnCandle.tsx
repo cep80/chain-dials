@@ -1,6 +1,7 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
+import { useAppReducedMotion } from "@/lib/settings/use-app-reduced-motion";
 import { InstrumentFrame } from "@/components/viz/InstrumentFrame";
 import { formatPlainPercent } from "@/lib/format";
 import { useDashboardStore } from "@/lib/store";
@@ -18,7 +19,7 @@ export function BurnCandle({
   const supply = useDashboardStore((s) => s.live.supplyProgress);
   const burnEth = useDashboardStore((s) => s.live.burnEthPerBlock);
   const boardPulse = useDashboardStore((s) => s.boardPulse);
-  const reduce = useReducedMotion();
+  const reduce = useAppReducedMotion();
 
   const flame = Math.max(0.12, Math.min(1, burn / 100));
   const wax =
@@ -34,25 +35,33 @@ export function BurnCandle({
 
   const candle = (
     <div
-      className="relative flex items-end justify-center"
+      className={`relative flex items-end justify-center ${reduce ? "" : "instrument-live-glow"}`}
       style={{ width: w, height: h }}
       role="img"
       aria-label={`Burn candle. About ${burnLabel} burned in the latest block. Supply clock ${supply != null ? `${supply.toFixed(0)} percent` : "unavailable"}.`}
     >
+      <div
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2"
+        style={{
+          background:
+            "radial-gradient(ellipse 60% 50% at 50% 100%, color-mix(in oklab, var(--accent) 18%, transparent), transparent 70%)",
+        }}
+        aria-hidden
+      />
       <motion.div
         className="absolute z-[2]"
         style={{
           bottom: `${wax * 100 * 0.72 + 18}%`,
-          width: compact ? 18 : 28,
-          height: compact ? 28 : 44,
+          width: compact ? 18 : 30,
+          height: compact ? 30 : 48,
         }}
         animate={
           reduce
             ? undefined
             : {
-                scaleY: [0.9, 1.15, 0.95, 1.1, 0.9],
-                scaleX: [1, 0.92, 1.05, 0.95, 1],
-                opacity: [0.75, 1, 0.85, 1, 0.75],
+                scaleY: [0.9, 1.18, 0.95, 1.12, 0.9],
+                scaleX: [1, 0.9, 1.06, 0.94, 1],
+                opacity: [0.78, 1, 0.88, 1, 0.78],
               }
         }
         transition={{ duration: 1.1 + (1 - flame), repeat: Infinity, ease: "easeInOut" }}
@@ -60,24 +69,34 @@ export function BurnCandle({
         <div
           className="h-full w-full rounded-[50%_50%_50%_50%/60%_60%_40%_40%]"
           style={{
-            background: `radial-gradient(circle at 50% 70%, #fff6 0%, var(--accent) ${40 + flame * 30}%, transparent 70%)`,
-            filter: `drop-shadow(0 0 ${6 + flame * 10}px var(--accent))`,
-            transform: `scale(${0.7 + flame * 0.55})`,
+            background: `radial-gradient(circle at 50% 70%, rgba(255,255,255,0.85) 0%, var(--accent) ${35 + flame * 32}%, transparent 72%)`,
+            filter: `drop-shadow(0 0 ${8 + flame * 14}px var(--accent)) drop-shadow(0 0 ${4 + flame * 6}px rgba(255,220,160,0.5))`,
+            transform: `scale(${0.72 + flame * 0.58})`,
           }}
         />
       </motion.div>
 
       <div
-        className="relative w-[55%] overflow-hidden rounded-b-[6px] border border-line-strong bg-ink-elevated"
-        style={{ height: `${wax * 72}%` }}
+        className="relative w-[55%] overflow-hidden rounded-b-[8px] border border-line-strong"
+        style={{
+          height: `${wax * 72}%`,
+          background:
+            "linear-gradient(180deg, color-mix(in oklab, var(--ink-elevated) 90%, var(--paper) 10%), var(--ink-elevated))",
+          boxShadow:
+            "0 0 20px color-mix(in oklab, var(--accent) 12%, transparent), inset 0 1px 0 color-mix(in oklab, var(--paper) 8%, transparent)",
+        }}
       >
         <motion.div
-          className="absolute inset-x-0 bottom-0 bg-accent/30"
-          style={{ height: `${flame * 100}%` }}
-          animate={reduce ? undefined : { opacity: [0.35, 0.55, 0.35] }}
+          className="absolute inset-x-0 bottom-0"
+          style={{
+            height: `${flame * 100}%`,
+            background:
+              "linear-gradient(180deg, color-mix(in oklab, var(--accent) 55%, transparent), color-mix(in oklab, var(--accent-dim) 40%, transparent))",
+          }}
+          animate={reduce ? undefined : { opacity: [0.4, 0.7, 0.4] }}
           transition={{ duration: 2.4, repeat: Infinity }}
         />
-        <div className="absolute left-1/2 top-0 h-3 w-[2px] -translate-x-1/2 bg-paper-muted" />
+        <div className="absolute left-1/2 top-0 h-3.5 w-[2px] -translate-x-1/2 bg-paper-muted shadow-[0_0_6px_var(--accent)]" />
       </div>
 
       {!reduce && boardPulse > 0 && (
@@ -97,7 +116,7 @@ export function BurnCandle({
     return (
       <div className="flex flex-col items-center gap-6">
         {candle}
-        <p className="mono text-5xl font-medium text-paper md:text-7xl">
+        <p className="instrument-stage-reading mono text-5xl font-medium text-paper md:text-7xl">
           {burnLabel}
         </p>
         <p className="text-xs uppercase tracking-[0.2em] text-paper-muted">

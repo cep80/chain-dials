@@ -1,10 +1,15 @@
 "use client";
 
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { useCallback, useMemo, useState, type MouseEvent } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { useCallback, useId, useMemo, useState, type MouseEvent } from "react";
 import { arcPath, buildSigil } from "@/lib/hash-sigil";
 import { formatHash, formatInteger } from "@/lib/format";
+import { useAppReducedMotion } from "@/lib/settings/use-app-reduced-motion";
 import { useDashboardStore } from "@/lib/store";
+import {
+  instrumentCanvasSize,
+  resolveDisplayMode,
+} from "@/lib/viz-scale";
 import { InstrumentFrame } from "@/components/viz/InstrumentFrame";
 
 const SIZE = 120;
@@ -21,11 +26,13 @@ export function TipSigil({
   const tipHash = useDashboardStore((s) => s.live.tipHash);
   const height = useDashboardStore((s) => s.live.blockHeight);
   const boardPulse = useDashboardStore((s) => s.boardPulse);
-  const reduce = useReducedMotion();
+  const reduce = useAppReducedMotion();
+  const uid = useId().replace(/:/g, "");
   const [copied, setCopied] = useState(false);
 
   const geom = useMemo(() => buildSigil(tipHash, SIZE), [tipHash]);
-  const displaySize = stage ? 280 : large ? 168 : compact ? 72 : 128;
+  const mode = resolveDisplayMode({ compact, large, stage });
+  const displaySize = instrumentCanvasSize(mode, 128);
 
   const copy = useCallback(
     async (e?: MouseEvent) => {
@@ -50,7 +57,9 @@ export function TipSigil({
     <button
       type="button"
       onClick={copy}
-      className="group relative rounded-full outline-none focus-visible:ring-2 focus-visible:ring-accent"
+      className={`group relative rounded-full outline-none focus-visible:ring-2 focus-visible:ring-accent ${
+        reduce ? "" : "instrument-live-glow"
+      }`}
       style={{ width: displaySize, height: displaySize }}
       aria-label={aria}
       title="Click to copy the tip hash"
@@ -66,13 +75,47 @@ export function TipSigil({
           transition={{ duration: 0.55, ease: "easeOut" }}
           aria-hidden
         >
+          <defs>
+            <radialGradient id={`sigil-face-${uid}`} cx="40%" cy="35%" r="65%">
+              <stop offset="0%" stopColor="var(--ink-soft)" />
+              <stop offset="70%" stopColor="var(--ink)" />
+              <stop offset="100%" stopColor="var(--ink)" />
+            </radialGradient>
+            <radialGradient id={`sigil-bloom-${uid}`} cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.35" />
+              <stop offset="100%" stopColor="var(--accent)" stopOpacity="0" />
+            </radialGradient>
+            <filter id={`sigil-soft-${uid}`} x="-30%" y="-30%" width="160%" height="160%">
+              <feGaussianBlur stdDeviation="1.4" result="b" />
+              <feMerge>
+                <feMergeNode in="b" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
           <circle
             cx={SIZE / 2}
             cy={SIZE / 2}
-            r={SIZE / 2 - 2}
-            fill="var(--ink)"
+            r={SIZE / 2 - 1}
+            fill={`url(#sigil-bloom-${uid})`}
+            opacity={0.7}
+          />
+          <circle
+            cx={SIZE / 2}
+            cy={SIZE / 2}
+            r={SIZE / 2 - 3}
+            fill={`url(#sigil-face-${uid})`}
             stroke="var(--line-strong)"
-            strokeWidth={1}
+            strokeWidth={1.25}
+          />
+          <circle
+            cx={SIZE / 2}
+            cy={SIZE / 2}
+            r={SIZE / 2 - 3}
+            fill="none"
+            stroke="var(--paper)"
+            strokeWidth={0.5}
+            opacity={0.1}
           />
 
           {/* Slow idle spin of ring + spoke layer */}
@@ -93,8 +136,8 @@ export function TipSigil({
                 r={r}
                 fill="none"
                 stroke="var(--line)"
-                strokeWidth={0.6}
-                opacity={0.5}
+                strokeWidth={0.75}
+                opacity={0.55}
               />
             ))}
             {geom.segments
@@ -107,9 +150,10 @@ export function TipSigil({
                   x2={s.x2}
                   y2={s.y2}
                   stroke={s.accent ? "var(--accent)" : "var(--paper-muted)"}
-                  strokeWidth={s.weight}
+                  strokeWidth={s.weight * 1.15}
                   strokeLinecap="round"
-                  opacity={s.type === "chord" ? 0.65 : 0.85}
+                  opacity={s.type === "chord" ? 0.7 : 0.9}
+                  filter={s.accent ? `url(#sigil-soft-${uid})` : undefined}
                 />
               ))}
           </motion.g>
@@ -133,9 +177,10 @@ export function TipSigil({
                     d={arcPath(s.x1, s.y1, s.r, s.start, s.end)}
                     fill="none"
                     stroke={s.accent ? "var(--accent)" : "var(--paper-muted)"}
-                    strokeWidth={s.weight}
+                    strokeWidth={s.weight * 1.2}
                     strokeLinecap="round"
-                    opacity={0.9}
+                    opacity={0.95}
+                    filter={s.accent ? `url(#sigil-soft-${uid})` : undefined}
                   />
                 ) : null,
               )}
@@ -162,8 +207,9 @@ export function TipSigil({
                   key={`d-${i}`}
                   cx={s.x1}
                   cy={s.y1}
-                  r={s.r ?? 1.5}
+                  r={(s.r ?? 1.5) * 1.15}
                   fill={s.accent ? "var(--accent)" : "var(--paper-muted)"}
+                  filter={s.accent ? `url(#sigil-soft-${uid})` : undefined}
                 />
               ))}
           </motion.g>
@@ -203,7 +249,7 @@ export function TipSigil({
       <div className="flex flex-col items-center gap-6">
         {glyph}
         <div className="text-center">
-          <p className="mono text-lg text-paper md:text-2xl">
+          <p className="instrument-stage-reading mono text-lg text-paper md:text-2xl">
             {copied ? "Got it, on your clipboard" : formatHash(tipHash)}
           </p>
           {height != null && (

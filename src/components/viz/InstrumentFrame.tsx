@@ -68,30 +68,39 @@ export function InstrumentFrame({
 
   const titleNode = instrumentId ? (
     <Hint tip={INSTRUMENT_TIP[instrumentId]} chainId={chain?.id} as="div">
-      <p className="text-[10px] uppercase tracking-[0.18em] text-accent underline decoration-dotted decoration-accent/40 underline-offset-2">
+      <p className="instrument-frame-kicker underline decoration-dotted decoration-accent/40 underline-offset-2">
         {title}
       </p>
     </Hint>
   ) : (
-    <p className="text-[10px] uppercase tracking-[0.18em] text-accent">{title}</p>
+    <p className="instrument-frame-kicker">{title}</p>
   );
 
   return (
     <article
-      className={`group/frame relative flex flex-col overflow-hidden rounded-[14px] border border-line bg-ink-elevated/75 transition hover:border-accent/40 ${className}`}
+      className={`instrument-frame group/frame relative flex flex-col overflow-hidden ${
+        large ? "instrument-frame--large" : ""
+      } ${className}`}
     >
-      <header className="flex items-start justify-between gap-3 border-b border-line/80 px-3.5 py-2.5">
+      {/* Specular edge + depth layers (CSS paints the glass) */}
+      <div className="instrument-frame-sheen pointer-events-none absolute inset-0" aria-hidden />
+      <div className="instrument-frame-vignette pointer-events-none absolute inset-0" aria-hidden />
+
+      <header className="instrument-frame-header relative z-[1] flex items-start justify-between gap-3">
         <div className="min-w-0">
           {titleNode}
-          <p className="mt-0.5 truncate text-xs text-paper-muted" title={narrative ?? subtitle}>
+          <p
+            className="instrument-frame-subtitle mt-0.5 truncate"
+            title={narrative ?? subtitle}
+          >
             {subtitle}
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
           {reading != null && (
             <p
-              className={`mono text-right text-paper ${
-                large ? "text-sm" : "text-xs"
+              className={`instrument-frame-reading mono text-right text-paper ${
+                large ? "instrument-frame-reading--large" : ""
               }`}
             >
               {reading}
@@ -102,7 +111,7 @@ export function InstrumentFrame({
               <button
                 type="button"
                 onClick={expand}
-                className="inline-flex min-h-10 items-center gap-1.5 rounded-md border border-line px-2.5 text-paper-muted transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                className="instrument-expand-btn inline-flex min-h-10 items-center gap-1.5 rounded-md border border-line/80 bg-ink/40 px-2.5 text-paper-muted backdrop-blur-sm transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                 aria-label={`Open ${title} fullscreen`}
               >
                 <span className="text-[10px] font-semibold uppercase tracking-wider">
@@ -115,11 +124,15 @@ export function InstrumentFrame({
         </div>
       </header>
       <div
-        className={`instrument-frame-body relative flex flex-1 items-center justify-center ${
-          large ? "min-h-[220px] p-5" : "min-h-[160px] p-4"
+        className={`instrument-frame-body relative z-[1] flex flex-1 items-center justify-center ${
+          large ? "instrument-frame-body--large" : ""
         }`}
       >
-        {children}
+        {/* Soft stage well under the canvas */}
+        <div className="instrument-stage-well pointer-events-none absolute inset-3 rounded-[12px]" aria-hidden />
+        <div className="relative z-[1] flex h-full w-full items-center justify-center">
+          {children}
+        </div>
       </div>
     </article>
   );
