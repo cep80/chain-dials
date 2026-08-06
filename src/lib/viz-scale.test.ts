@@ -137,7 +137,7 @@ describe("viz-scale pure mapping helpers", () => {
       reduceMotion: false,
     });
     expect(denseStage).toBeGreaterThan(denseBoard);
-    expect(denseStage).toBeLessThanOrEqual(200);
+    expect(denseStage).toBeLessThanOrEqual(280);
   });
 
   it("tideHeight and signedTideHeight map fee/funding values", () => {

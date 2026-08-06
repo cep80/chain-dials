@@ -47,6 +47,9 @@ export class MempoolWs {
           data: ["blocks", "stats", "mempool-blocks"],
         }),
       );
+      // Live tip sample arrives via want-stats `transactions`.
+      // Txids deltas prune dots when txs are mined / evicted.
+      ws.send(JSON.stringify({ "track-mempool-txids": true }));
       if (this.pingTimer) clearInterval(this.pingTimer);
       this.pingTimer = setInterval(() => {
         if (ws.readyState === WebSocket.OPEN) {

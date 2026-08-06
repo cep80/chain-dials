@@ -65,9 +65,10 @@ export function PriceChart({
 
   const padL = 8;
   const padR = 56;
-  const padT = 14;
-  const padB = 26;
-  const volH = points.some((p) => (p.volume ?? 0) > 0) && !useCandles ? 40 : 0;
+  const padT = height < 180 ? 10 : 14;
+  const padB = height < 180 ? 20 : 26;
+  const showVol = points.some((p) => (p.volume ?? 0) > 0) && !useCandles;
+  const volH = !showVol ? 0 : height < 180 ? 22 : 40;
   const chartH = height - volH;
   const innerW = Math.max(40, width - padL - padR);
   const plotH = Math.max(40, chartH - padT - padB);

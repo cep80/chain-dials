@@ -1,17 +1,11 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/auth";
+import { ALERT_KINDS } from "@/lib/alerts/kinds";
 import { prisma } from "@/lib/db";
 import { isProActive } from "@/lib/pro";
 
 export const dynamic = "force-dynamic";
-
-const ALERT_KINDS = [
-  "fee_hot",
-  "tip_quiet",
-  "mempool_stuffed",
-  "price_move",
-] as const;
 
 const ruleSchema = z.object({
   id: z.string().optional(),

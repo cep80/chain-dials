@@ -31,5 +31,6 @@ export function isProEnabled(): boolean {
   return process.env.NEXT_PUBLIC_PRO_FORCE === "true";
 }
 
-export const PRO_PRICE_USD = 6;
-export const PRO_PRICE_LABEL = "$6/mo";
+/** Display only — keep Stripe Price amount in Dashboard in sync. */
+export const PRO_PRICE_USD = 3;
+export const PRO_PRICE_LABEL = "$3/mo";

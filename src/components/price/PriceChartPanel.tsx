@@ -15,7 +15,6 @@ import {
   formatUsdSmart,
 } from "@/lib/format";
 import {
-  FREE_PRICE_RANGES,
   PRICE_RANGE_ORDER,
   type PriceHistoryPayload,
   type PriceRangeId,
@@ -23,8 +22,8 @@ import {
 import { useSettingsStore } from "@/lib/settings/store";
 import { useAppReducedMotion } from "@/lib/settings/use-app-reduced-motion";
 import { useDashboardStore } from "@/lib/store";
-import { useProAccess } from "@/hooks/useProAccess";
-import Link from "next/link";
+
+const CHART_H = 148;
 
 function priceSourceLabel(data: PriceHistoryPayload | null) {
   if (!data) return null;
@@ -40,12 +39,11 @@ export function PriceChartPanel() {
   const reduce = useAppReducedMotion();
   const defaultPriceRange = useSettingsStore((s) => s.defaultPriceRange);
   const hydrated = useSettingsStore((s) => s.hydrated);
-  const { pro } = useProAccess();
   const [rangeOverride, setRangeOverride] = useState<PriceRangeId | null>(null);
   const [mode, setMode] = useState<ChartMode>("line");
-  const requested = rangeOverride ?? (hydrated ? defaultPriceRange : "7D");
+  const [expanded, setExpanded] = useState(false);
   const range: PriceRangeId =
-    !pro && !FREE_PRICE_RANGES.includes(requested) ? "7D" : requested;
+    rangeOverride ?? (hydrated ? defaultPriceRange : "7D");
   const { data, loading, error, reload } = usePriceHistory(chain.id, range);
   const { data: shortForecastData, loading: shortForecastLoading } =
     usePriceHistory(chain.id, "7D");
@@ -75,74 +73,76 @@ export function PriceChartPanel() {
   return (
     <motion.section
       aria-labelledby="price-chart-heading"
-      className="mt-8 overflow-hidden rounded-[14px] border border-line bg-ink-elevated/60"
-      initial={reduce ? false : { opacity: 0, y: 10 }}
+      className="price-spot-rail mt-8 overflow-hidden rounded-[12px] border border-line/70 bg-ink-elevated/35"
+      initial={reduce ? false : { opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: "easeOut" }}
+      transition={{ duration: 0.35, ease: "easeOut" }}
     >
-      <div className="flex flex-col gap-4 border-b border-line/80 px-4 py-4 md:flex-row md:items-start md:justify-between md:px-5">
+      <div className="flex flex-col gap-3 px-3 py-3 md:flex-row md:items-center md:justify-between md:gap-4 md:px-4">
         <div className="min-w-0">
-          <p className="text-[10px] uppercase tracking-[0.18em] text-paper-muted">
-            Spot · USD
-          </p>
-          <h2
-            id="price-chart-heading"
-            className="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1"
-          >
-            <span className="text-2xl font-bold tracking-tight text-paper md:text-3xl">
-              {chain.ticker}
-            </span>
-            <span className="mono text-2xl font-medium text-paper md:text-3xl">
-              {formatUsdSmart(close)}
-            </span>
-            {stats ? (
-              <span
-                className="mono text-sm font-medium"
-                style={{
-                  color:
-                    positive == null
-                      ? "var(--paper-muted)"
-                      : positive
-                        ? "var(--up)"
-                        : "var(--down)",
-                }}
-              >
-                {formatPercent(stats.changePct)} · {range}
+          <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
+            <p className="text-[10px] uppercase tracking-[0.18em] text-paper-muted">
+              Spot tape · USD
+            </p>
+            <h2
+              id="price-chart-heading"
+              className="flex flex-wrap items-baseline gap-x-2.5 gap-y-0.5"
+            >
+              <span className="text-sm font-semibold tracking-tight text-paper">
+                {chain.ticker}
               </span>
-            ) : null}
-          </h2>
+              <span className="mono text-xl font-medium tracking-tight text-paper md:text-2xl">
+                {formatUsdSmart(close)}
+              </span>
+              {stats ? (
+                <span
+                  className="mono text-xs font-medium"
+                  style={{
+                    color:
+                      positive == null
+                        ? "var(--paper-muted)"
+                        : positive
+                          ? "var(--up)"
+                          : "var(--down)",
+                  }}
+                >
+                  {formatPercent(stats.changePct)} · {range}
+                </span>
+              ) : null}
+            </h2>
+          </div>
           {stats ? (
-            <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-paper-muted">
+            <p className="mt-1.5 flex flex-wrap gap-x-3 gap-y-0.5 text-[11px] text-paper-muted">
               <span>
-                Open{" "}
-                <span className="mono text-paper/90">
+                O{" "}
+                <span className="mono text-paper/85">
                   {formatUsdSmart(stats.open)}
                 </span>
               </span>
               <span>
-                High{" "}
-                <span className="mono text-paper/90">
+                H{" "}
+                <span className="mono text-paper/85">
                   {formatUsdSmart(stats.high)}
                 </span>
               </span>
               <span>
-                Low{" "}
-                <span className="mono text-paper/90">
+                L{" "}
+                <span className="mono text-paper/85">
                   {formatUsdSmart(stats.low)}
                 </span>
               </span>
               {stats.volumeSum != null ? (
                 <span>
-                  Vol{" "}
-                  <span className="mono text-paper/90">
+                  V{" "}
+                  <span className="mono text-paper/85">
                     {formatCompactUsd(stats.volumeSum)}
                   </span>
                 </span>
               ) : null}
             </p>
           ) : (
-            <p className="mt-2 text-xs text-paper-muted">
-              Historical USD path for this board. Scrub the chart for a reading.
+            <p className="mt-1.5 text-[11px] text-paper-muted">
+              Path under the dials. Scrub for a reading.
             </p>
           )}
         </div>
@@ -156,44 +156,36 @@ export function PriceChartPanel() {
             >
               {PRICE_RANGE_ORDER.map((id) => {
                 const on = id === range;
-                const locked = !pro && !FREE_PRICE_RANGES.includes(id);
                 return (
                   <button
                     key={id}
                     type="button"
                     role="tab"
                     aria-selected={on}
-                    title={locked ? "Pro unlocks longer ranges" : undefined}
-                    onClick={() => {
-                      if (locked) return;
-                      setRangeOverride(id);
-                    }}
-                    className={`min-h-9 rounded-md px-2.5 text-xs font-medium transition ${
+                    onClick={() => setRangeOverride(id)}
+                    className={`min-h-8 rounded-md px-2 text-[11px] font-medium transition ${
                       on
                         ? "bg-accent text-ink"
-                        : locked
-                          ? "border border-line/60 text-paper-muted/50"
-                          : "border border-line text-paper-muted hover:border-accent/50 hover:text-paper"
+                        : "border border-line/80 text-paper-muted hover:border-accent/50 hover:text-paper"
                     }`}
                   >
                     {id}
-                    {locked ? " · Pro" : ""}
                   </button>
                 );
               })}
             </div>
           </Hint>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-1.5">
             <Hint tip="chart.mode" as="div">
               <div
                 role="group"
                 aria-label="Chart style"
-                className="flex overflow-hidden rounded-md border border-line"
+                className="flex overflow-hidden rounded-md border border-line/80"
               >
                 <button
                   type="button"
                   onClick={() => setMode("line")}
-                  className={`min-h-9 px-3 text-xs transition ${
+                  className={`min-h-8 px-2.5 text-[11px] transition ${
                     activeMode === "line"
                       ? "bg-ink-soft text-paper"
                       : "text-paper-muted hover:text-paper"
@@ -205,7 +197,7 @@ export function PriceChartPanel() {
                   type="button"
                   disabled={!canCandle}
                   onClick={() => canCandle && setMode("candle")}
-                  className={`min-h-9 border-l border-line px-3 text-xs transition disabled:cursor-not-allowed disabled:opacity-40 ${
+                  className={`min-h-8 border-l border-line/80 px-2.5 text-[11px] transition disabled:cursor-not-allowed disabled:opacity-40 ${
                     activeMode === "candle"
                       ? "bg-ink-soft text-paper"
                       : "text-paper-muted hover:text-paper"
@@ -218,57 +210,63 @@ export function PriceChartPanel() {
             <button
               type="button"
               onClick={() => void reload()}
-              className="min-h-9 rounded-md border border-line px-3 text-xs text-paper-muted transition hover:border-accent/50 hover:text-paper"
+              className="min-h-8 rounded-md border border-line/80 px-2.5 text-[11px] text-paper-muted transition hover:border-accent/50 hover:text-paper"
             >
               Refresh
             </button>
-            {pro ? (
-              <button
-                type="button"
-                disabled={!points.length}
-                onClick={() => {
-                  const rows = ["t,price", ...points.map((p) => `${p.t},${p.price}`)];
-                  const blob = new Blob([rows.join("\n")], {
-                    type: "text/csv;charset=utf-8",
-                  });
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement("a");
-                  a.href = url;
-                  a.download = `${chain.id}-price-${range}.csv`;
-                  a.click();
-                  URL.revokeObjectURL(url);
-                }}
-                className="min-h-9 rounded-md border border-line px-3 text-xs text-paper-muted transition hover:border-accent/50 hover:text-paper disabled:opacity-40"
-              >
-                CSV
-              </button>
-            ) : (
-              <Link
-                href={`/${chain.slug}/pro`}
-                className="min-h-9 inline-flex items-center rounded-md border border-line px-3 text-xs text-paper-muted transition hover:border-accent/50 hover:text-paper"
-              >
-                CSV · Pro
-              </Link>
-            )}
+            <button
+              type="button"
+              disabled={!points.length}
+              onClick={() => {
+                const rows = [
+                  "t,price",
+                  ...points.map((p) => `${p.t},${p.price}`),
+                ];
+                const blob = new Blob([rows.join("\n")], {
+                  type: "text/csv;charset=utf-8",
+                });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `${chain.id}-price-${range}.csv`;
+                a.click();
+                URL.revokeObjectURL(url);
+              }}
+              className="min-h-8 rounded-md border border-line/80 px-2.5 text-[11px] text-paper-muted transition hover:border-accent/50 hover:text-paper disabled:opacity-40"
+            >
+              CSV
+            </button>
+            <button
+              type="button"
+              aria-expanded={expanded}
+              onClick={() => setExpanded((v) => !v)}
+              className="min-h-8 rounded-md border border-line/80 px-2.5 text-[11px] text-paper-muted transition hover:border-accent/50 hover:text-paper"
+            >
+              {expanded ? "Hide outlook" : "Outlook"}
+            </button>
           </div>
         </div>
       </div>
 
-      <div className="relative px-2 pb-2 pt-1 md:px-3">
+      <div className="relative border-t border-line/50 px-2 pb-1.5 pt-0.5 md:px-3">
         {loading && !data ? (
           <div
-            className="flex h-[280px] animate-pulse items-center justify-center rounded-lg bg-ink-soft/40 text-sm text-paper-muted"
+            className="flex animate-pulse items-center justify-center rounded-md bg-ink-soft/35 text-xs text-paper-muted"
+            style={{ height: CHART_H }}
             aria-busy
           >
             Loading history…
           </div>
         ) : error && !data ? (
-          <div className="flex h-[280px] flex-col items-center justify-center gap-3 text-sm text-paper-muted">
+          <div
+            className="flex flex-col items-center justify-center gap-2 text-xs text-paper-muted"
+            style={{ height: CHART_H }}
+          >
             <p>{error}</p>
             <button
               type="button"
               onClick={() => void reload()}
-              className="rounded-md border border-line px-3 py-2 text-xs text-paper hover:border-accent"
+              className="rounded-md border border-line px-3 py-1.5 text-[11px] text-paper hover:border-accent"
             >
               Try again
             </button>
@@ -276,12 +274,12 @@ export function PriceChartPanel() {
         ) : (
           <>
             {loading ? (
-              <div className="absolute right-4 top-3 z-10 rounded bg-ink/80 px-2 py-0.5 text-[10px] uppercase tracking-wider text-paper-muted">
+              <div className="absolute right-3 top-2 z-10 rounded bg-ink/80 px-2 py-0.5 text-[10px] uppercase tracking-wider text-paper-muted">
                 Updating…
               </div>
             ) : null}
             {error ? (
-              <div className="mb-2 px-2 text-xs text-warn">{error}</div>
+              <div className="mb-1 px-2 text-[11px] text-warn">{error}</div>
             ) : null}
             <PriceChart
               points={points}
@@ -289,25 +287,29 @@ export function PriceChartPanel() {
               mode={activeMode}
               accent={chain.accent}
               positive={positive}
+              height={CHART_H}
             />
           </>
         )}
       </div>
 
-      {data ? (
-        <PriceScenario
-          shortPoints={shortForecastData?.points ?? []}
-          longPoints={longForecastData?.points ?? []}
-          ticker={chain.ticker}
-          shortSource={shortForecastSource}
-          longSource={longForecastSource}
-          loading={shortForecastLoading || longForecastLoading}
-        />
+      {expanded ? (
+        <>
+          {data ? (
+            <PriceScenario
+              shortPoints={shortForecastData?.points ?? []}
+              longPoints={longForecastData?.points ?? []}
+              ticker={chain.ticker}
+              shortSource={shortForecastSource}
+              longSource={longForecastSource}
+              loading={shortForecastLoading || longForecastLoading}
+            />
+          ) : null}
+          <PredictionMarketCrosscheck chain={chain.id} />
+        </>
       ) : null}
 
-      <PredictionMarketCrosscheck chain={chain.id} />
-
-      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-line/80 px-4 py-2.5 text-[10px] uppercase tracking-[0.14em] text-paper-muted md:px-5">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-line/50 px-3 py-2 text-[10px] uppercase tracking-[0.14em] text-paper-muted md:px-4">
         <Hint tip="chart.source">
           <span className="underline decoration-dotted decoration-paper-muted/40 underline-offset-2">
             {sourceLabel ? `${sourceLabel} · ` : ""}

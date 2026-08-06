@@ -13,6 +13,12 @@ import type { ChainId } from "@/lib/chains/types";
 import { mempoolRest } from "@/lib/mempool-rest";
 import { MempoolWs } from "@/lib/mempool-ws";
 import {
+  mergeRecentTxs,
+  parseWsField,
+  pruneRecentTxs,
+  type RecentTxRaw,
+} from "@/lib/recent-txs";
+import {
   formatBtc,
   formatCompactUsd,
   formatDate,
@@ -30,7 +36,6 @@ import {
   satsPerDollar,
 } from "@/lib/format";
 import type {
-  AtmosphereTx,
   BlockToast,
   ConnectionStatus,
   HistoryPoint,
@@ -152,8 +157,6 @@ const emptyLive: LiveSnapshot = {
   lastWsAt: null,
 };
 
-const RECENT_TX_CAP = 64;
-
 let wsClient: MempoolWs | null = null;
 let restTimer: ReturnType<typeof setInterval> | null = null;
 let recentTimer: ReturnType<typeof setInterval> | null = null;
@@ -161,50 +164,38 @@ let tickTimer: ReturnType<typeof setInterval> | null = null;
 let historyPersistTimer: ReturnType<typeof setTimeout> | null = null;
 let startCount = 0;
 
-function mergeRecentTxs(
-  prev: AtmosphereTx[],
-  incoming: { txid: string; fee: number; vsize: number; value: number }[],
-): AtmosphereTx[] {
-  const now = Date.now();
-  const byId = new Map(prev.map((t) => [t.txid, t]));
-  const incomingIds = new Set<string>();
-  const merged: AtmosphereTx[] = [];
+function asRecentRaw(list: unknown): RecentTxRaw[] {
+  if (!Array.isArray(list)) return [];
+  return list.filter(
+    (t): t is RecentTxRaw =>
+      !!t &&
+      typeof t === "object" &&
+      typeof (t as RecentTxRaw).txid === "string" &&
+      typeof (t as RecentTxRaw).fee === "number" &&
+      typeof (t as RecentTxRaw).vsize === "number" &&
+      typeof (t as RecentTxRaw).value === "number",
+  );
+}
 
-  // Keep existing particles stable - update in previous order first
-  for (const old of prev) {
-    const raw = incoming.find((t) => t.txid === old.txid);
-    if (raw && raw.vsize) {
-      incomingIds.add(raw.txid);
-      merged.push({
-        ...old,
-        fee: raw.fee,
-        vsize: raw.vsize,
-        value: raw.value,
-        feeRate: raw.fee / raw.vsize,
-        fresh: false,
-      });
-    } else if (now - old.seenAt < 60_000) {
-      // Hold departed txs longer so the canvas can fade them out
-      merged.push({ ...old, fresh: false });
-    }
-  }
-
-  for (const raw of incoming) {
-    if (!raw.txid || !raw.vsize || incomingIds.has(raw.txid)) continue;
-    if (byId.has(raw.txid)) continue;
-    incomingIds.add(raw.txid);
-    merged.push({
-      txid: raw.txid,
-      fee: raw.fee,
-      vsize: raw.vsize,
-      value: raw.value,
-      feeRate: raw.fee / raw.vsize,
-      seenAt: now,
-      fresh: true,
-    });
-  }
-
-  return merged.slice(0, RECENT_TX_CAP);
+function applyRecentTxSample(
+  set: (fn: (s: DashboardState) => Partial<DashboardState> | DashboardState) => void,
+  incoming: RecentTxRaw[],
+) {
+  if (!incoming.length) return;
+  set((s) => {
+    const nextTxs = mergeRecentTxs(s.live.recentTxs, incoming);
+    const prevIds = s.live.recentTxs.map((t) => t.txid).join(",");
+    const nextIds = nextTxs.map((t) => t.txid).join(",");
+    const prevFresh = s.live.recentTxs.filter((t) => t.fresh).length;
+    const nextFresh = nextTxs.filter((t) => t.fresh).length;
+    if (prevIds === nextIds && prevFresh === nextFresh) return s;
+    return {
+      live: {
+        ...s.live,
+        recentTxs: nextTxs,
+      },
+    };
+  });
 }
 
 function teardown() {
@@ -407,36 +398,34 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
           mempoolRest.recentTxs(),
           mempoolRest.mempoolBlocks().catch(() => null),
         ]);
-        set((s) => {
-          const nextTxs = mergeRecentTxs(s.live.recentTxs, recent);
-          const prevIds = s.live.recentTxs.map((t) => t.txid).join(",");
-          const nextIds = nextTxs.map((t) => t.txid).join(",");
-          const txsChanged = prevIds !== nextIds;
-          const nextBlocks = projections
-            ? projections.slice(0, 8).map((b) => ({
-                nTx: b.nTx,
-                medianFee: b.medianFee,
-                totalFees: b.totalFees,
-                blockVSize: b.blockVSize,
-                feeRange: b.feeRange ?? [],
-              }))
-            : s.live.mempoolBlocks;
-          if (!txsChanged && projections == null) {
-            return s;
-          }
-          return {
+        applyRecentTxSample(set, asRecentRaw(recent));
+        if (projections) {
+          set((s) => ({
             connection:
               s.connection === "disconnected" || s.connection === "connecting"
                 ? s.connection
                 : "connected",
             live: {
               ...s.live,
-              recentTxs: txsChanged ? nextTxs : s.live.recentTxs,
-              mempoolBlocks: nextBlocks,
+              mempoolBlocks: projections.slice(0, 8).map((b) => ({
+                nTx: b.nTx,
+                medianFee: b.medianFee,
+                totalFees: b.totalFees,
+                blockVSize: b.blockVSize,
+                feeRange: b.feeRange ?? [],
+              })),
               lastRestAt: Date.now(),
             },
-          };
-        });
+          }));
+        } else {
+          set((s) => ({
+            connection:
+              s.connection === "disconnected" || s.connection === "connecting"
+                ? s.connection
+                : "connected",
+            live: { ...s.live, lastRestAt: Date.now() },
+          }));
+        }
       } catch (err) {
         console.warn("Atmosphere poll failed", err);
         set((s) => ({
@@ -585,55 +574,81 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
           connection: s.connection === "degraded" ? "connected" : s.connection,
         }));
 
-        if (msg.block) {
-          const b = msg.block as {
-            height?: number;
-            id?: string;
-            hash?: string;
-            timestamp?: number;
-          };
-          if (typeof b.height === "number") {
-            ingestBlock(b.height, b.id ?? b.hash, b.timestamp);
-          }
+        const block = parseWsField<{
+          height?: number;
+          id?: string;
+          hash?: string;
+          timestamp?: number;
+        }>(msg.block);
+        if (block && typeof block.height === "number") {
+          ingestBlock(block.height, block.id ?? block.hash, block.timestamp);
         }
 
-        // Array of blocks sometimes
-        if (Array.isArray(msg.blocks) && msg.blocks.length) {
-          const b = msg.blocks[0] as {
-            height?: number;
-            id?: string;
-            timestamp?: number;
-          };
-          if (typeof b.height === "number") {
+        const blocks = parseWsField<
+          { height?: number; id?: string; timestamp?: number }[]
+        >(msg.blocks);
+        if (Array.isArray(blocks) && blocks.length) {
+          const b = blocks[0];
+          if (b && typeof b.height === "number") {
             ingestBlock(b.height, b.id, b.timestamp);
           }
         }
 
-        if (msg.mempoolInfo) {
-          const m = msg.mempoolInfo as { size?: number; bytes?: number };
+        const mempoolInfo = parseWsField<{ size?: number; bytes?: number }>(
+          msg.mempoolInfo,
+        );
+        if (mempoolInfo && typeof mempoolInfo.size === "number") {
           // size = tx count. Prefer not to treat bytes as vsize - REST owns vsize/pressure.
-          if (typeof m.size === "number") {
-            ingestMempool(
-              m.size,
-              get().live.mempoolVsize ?? 0,
-              get().live.mempoolTotalFee ?? undefined,
-            );
-          }
+          ingestMempool(
+            mempoolInfo.size,
+            get().live.mempoolVsize ?? 0,
+            get().live.mempoolTotalFee ?? undefined,
+          );
         }
 
-        if (msg.fees) {
-          const f = msg.fees as Record<string, number>;
-          if (f.fastestFee != null) {
-            applyNumeric(set, get, "fee_fastest", f.fastestFee, {
-              feeFastest: f.fastestFee,
-              feeHalfHour: f.halfHourFee ?? get().live.feeHalfHour,
-              feeHour: f.hourFee ?? get().live.feeHour,
-              feeEconomy: f.economyFee ?? get().live.feeEconomy,
+        const fees = parseWsField<Record<string, number>>(msg.fees);
+        if (fees) {
+          if (fees.fastestFee != null) {
+            applyNumeric(set, get, "fee_fastest", fees.fastestFee, {
+              feeFastest: fees.fastestFee,
+              feeHalfHour: fees.halfHourFee ?? get().live.feeHalfHour,
+              feeHour: fees.hourFee ?? get().live.feeHour,
+              feeEconomy: fees.economyFee ?? get().live.feeEconomy,
             });
           }
-          if (f.halfHourFee != null) applyNumeric(set, get, "fee_half_hour", f.halfHourFee);
-          if (f.hourFee != null) applyNumeric(set, get, "fee_hour", f.hourFee);
-          if (f.economyFee != null) applyNumeric(set, get, "fee_economy", f.economyFee);
+          if (fees.halfHourFee != null)
+            applyNumeric(set, get, "fee_half_hour", fees.halfHourFee);
+          if (fees.hourFee != null) applyNumeric(set, get, "fee_hour", fees.hourFee);
+          if (fees.economyFee != null)
+            applyNumeric(set, get, "fee_economy", fees.economyFee);
+        }
+
+        // Rolling tip sample (~6 newest) - drives Atmosphere dots live
+        const tipTxs = asRecentRaw(parseWsField<unknown>(msg.transactions));
+        if (tipTxs.length) {
+          applyRecentTxSample(set, tipTxs);
+        }
+
+        // Prune dots when txs leave the mempool (mined / removed / replaced)
+        const delta = parseWsField<{
+          added?: string[];
+          removed?: string[];
+          mined?: string[];
+          replaced?: { replaced: string; by: string }[];
+        }>(msg["mempool-txids"]);
+        if (delta) {
+          const gone = [
+            ...(delta.removed ?? []),
+            ...(delta.mined ?? []),
+            ...(delta.replaced ?? []).map((r) => r.replaced),
+          ];
+          if (gone.length) {
+            set((s) => {
+              const next = pruneRecentTxs(s.live.recentTxs, gone);
+              if (next.length === s.live.recentTxs.length) return s;
+              return { live: { ...s.live, recentTxs: next } };
+            });
+          }
         }
       },
       (status) => {
@@ -647,7 +662,8 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
     void pollRest();
     void pollAtmosphere();
     restTimer = setInterval(() => void pollRest(), 45_000);
-    recentTimer = setInterval(() => void pollAtmosphere(), 10_000);
+    // REST backup for tip sample; WS `transactions` is the live path
+    recentTimer = setInterval(() => void pollAtmosphere(), 8_000);
     let sinceSample = 0;
     tickTimer = setInterval(() => {
       get().tick();

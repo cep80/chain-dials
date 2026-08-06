@@ -165,12 +165,17 @@ function AccountBody() {
       </div>
 
       <div className="rounded-[14px] border border-dashed border-line p-5 text-sm text-paper-muted">
-        <p className="font-semibold text-paper">What Pro unlocks</p>
+        <p className="font-semibold text-paper">What Pro is (and isn’t)</p>
         <ul className="mt-2 list-disc space-y-1 pl-5">
-          <li>Configurable alert rules (browser nudges, synced to your account)</li>
-          <li>Named saved layouts for each chain board</li>
-          <li>Longer price history ranges (30D through ALL) plus CSV export</li>
-          <li>Wall mode stays free for everyone</li>
+          <li>
+            Pro: control-room wall packs, instrument-state alerts, desk sync,
+            named layouts
+          </li>
+          <li>
+            Free: live boards, single-chain wall, full history, CSV, Trace,
+            local desks + export
+          </li>
+          <li>Stay free anytime. The dials don’t require a subscription.</li>
         </ul>
         <button
           type="button"
@@ -193,8 +198,8 @@ export default function AccountPage() {
           Your Chain Dials account
         </h1>
         <p className="mt-2 text-paper-muted">
-          Sign-in, Pro billing, and synced Pro extras. Live boards never require
-          an account.
+          Sign-in and optional Pro billing for synced alerts and layouts. Live
+          boards never require an account or payment.
         </p>
         <div className="mt-8">
           <Suspense fallback={<p className="text-paper-muted">Loading…</p>}>

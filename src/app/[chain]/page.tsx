@@ -90,9 +90,9 @@ export default function ChainBoardPage() {
 
         <PulseStrip />
 
-            <PriceChartPanel />
-
         <Observatory />
+
+        <PriceChartPanel />
 
         {chain.modules === "full" ? (
           <>

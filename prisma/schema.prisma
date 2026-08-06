@@ -27,6 +27,8 @@ model User {
   sessions Session[]
   layouts  SavedLayout[]
   alerts   AlertRule[]
+  wallPacks WallPackRecord[]
+  deskPacks DeskPackRecord[]
 }
 
 model Account {
@@ -83,7 +85,7 @@ model AlertRule {
   id        String   @id @default(cuid())
   userId    String
   chainId   String
-  /// fee_hot | tip_quiet | mempool_stuffed | price_move
+  /// fee_hot | tip_quiet | mempool_stuffed | price_move | metronome_late | atmosphere_pressure | forge_heat
   kind      String
   enabled   Boolean  @default(true)
   /// JSON threshold params
@@ -94,4 +96,35 @@ model AlertRule {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, chainId])
+}
+
+/// Pro control-room multi-chain wall pack (JSON body)
+model WallPackRecord {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  /// JSON WallPack payload
+  payload   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+/// Pro forensics desk pack (JSON body)
+model DeskPackRecord {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  chainId   String   @default("btc")
+  /// JSON ForensicsDeskPack payload
+  payload   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }

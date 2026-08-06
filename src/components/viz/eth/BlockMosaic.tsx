@@ -58,7 +58,7 @@ export function BlockMosaic({
     [tipHash],
   );
 
-  const size = stage ? 280 : large ? 168 : compact ? 72 : 128;
+  const size = stage ? 440 : large ? 168 : compact ? 72 : 128;
 
   const mosaic = tipHash ? (
     <button

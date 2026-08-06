@@ -11,20 +11,27 @@ import { useProAccess } from "@/hooks/useProAccess";
 
 const FEATURES = [
   {
-    title: "Alerts that nudge",
-    body: "Fee spikes, quiet tip, stuffed waiting room, price bands. Rules sync to your account; browser notifications fire locally.",
+    title: "What stays free",
+    body: "Live boards on every chain, single-chain wall / TV mode, full price history, CSV, instruments, Trace, and share. No ticket into the room.",
   },
   {
-    title: "Wall / TV mode",
-    body: "All five instruments, big type, fewer controls. Free for everyone. Pro doesn’t lock the wall.",
+    title: "Control room wall packs",
+    body: "Multi-chain rotation for a TV: pack BTC/ETH/SOL/HYPE walls or dials, kiosk timing, sync packs to your account.",
+    href: "/control-room",
   },
   {
-    title: "Longer memory",
-    body: "30D, 90D, 1Y, and ALL on the price chart, plus CSV export of the active range.",
+    title: "Instrument-state alerts",
+    body: "Nudge when the metronome runs late, atmosphere pressure spikes, or forge heat clears your floor — plus classic fee/tip rules.",
+    href: "alerts",
   },
   {
-    title: "Saved layouts",
-    body: "Name a layout per chain and restore it later. Synced when you’re signed in with Pro.",
+    title: "Forensics desk packs",
+    body: "Pin txs and addresses, export markdown. Local desks free; Pro syncs desks across devices.",
+    href: "/btc/desk",
+  },
+  {
+    title: "Named layouts",
+    body: "Save a favorites layout per chain and restore it later when you hop machines.",
   },
 ];
 
@@ -66,11 +73,11 @@ export default function ProPage() {
       <div className="mx-auto max-w-3xl">
         <p className="text-xs uppercase tracking-[0.22em] text-accent">Pro</p>
         <h1 className="mt-2 text-4xl font-extrabold text-paper md:text-5xl">
-          Extra dials, same free board
+          Remote, schedule, and memory
         </h1>
         <p className="mt-4 text-lg text-paper-muted">
-          {SUITE.name} keeps the live numbers free on every chain. Pro adds
-          optional extras: alerts, longer history, saved layouts.
+          {SUITE.name} keeps the show free. Pro is the control room, instrument
+          alerts, and desk memory — optional extras on top of free boards.
         </p>
 
         <div
@@ -137,6 +144,18 @@ export default function ProPage() {
               <p className="mt-2 text-sm leading-relaxed text-paper-muted">
                 {f.body}
               </p>
+              {"href" in f && f.href ? (
+                <Link
+                  href={
+                    f.href.startsWith("/")
+                      ? f.href
+                      : `/${chain.slug}/${f.href}`
+                  }
+                  className="mt-3 inline-block text-xs font-semibold text-accent hover:underline"
+                >
+                  Open →
+                </Link>
+              ) : null}
             </li>
           ))}
         </ul>

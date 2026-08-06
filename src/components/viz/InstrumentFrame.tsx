@@ -1,6 +1,7 @@
 "use client";
 
 import { Hint } from "@/components/ui/Hint";
+import { useInstrumentPreview } from "@/components/viz/instrument-preview";
 import { useChainOptional } from "@/lib/chains/context";
 import { useInstrumentStage } from "@/lib/instrument-stage";
 import type { InstrumentId } from "@/lib/instruments";
@@ -57,6 +58,7 @@ export function InstrumentFrame({
 }) {
   const open = useInstrumentStage((s) => s.open);
   const chain = useChainOptional();
+  const preview = useInstrumentPreview();
   const narrative =
     instrumentId && chain
       ? chain.instruments[instrumentId].narrative
@@ -66,21 +68,22 @@ export function InstrumentFrame({
     if (instrumentId) open(instrumentId);
   };
 
-  const titleNode = instrumentId ? (
-    <Hint tip={INSTRUMENT_TIP[instrumentId]} chainId={chain?.id} as="div">
-      <p className="instrument-frame-kicker underline decoration-dotted decoration-accent/40 underline-offset-2">
-        {title}
-      </p>
-    </Hint>
-  ) : (
-    <p className="instrument-frame-kicker">{title}</p>
-  );
+  const titleNode =
+    instrumentId && !preview ? (
+      <Hint tip={INSTRUMENT_TIP[instrumentId]} chainId={chain?.id} as="div">
+        <p className="instrument-frame-kicker underline decoration-dotted decoration-accent/40 underline-offset-2">
+          {title}
+        </p>
+      </Hint>
+    ) : (
+      <p className="instrument-frame-kicker">{title}</p>
+    );
 
   return (
     <article
       className={`instrument-frame group/frame relative flex flex-col overflow-hidden ${
         large ? "instrument-frame--large" : ""
-      } ${className}`}
+      } ${preview ? "instrument-frame--preview" : ""} ${className}`}
     >
       {/* Specular edge + depth layers (CSS paints the glass) */}
       <div className="instrument-frame-sheen pointer-events-none absolute inset-0" aria-hidden />
@@ -106,7 +109,7 @@ export function InstrumentFrame({
               {reading}
             </p>
           )}
-          {instrumentId && (
+          {instrumentId && !preview && (
             <Hint tip="instrument.expand">
               <button
                 type="button"

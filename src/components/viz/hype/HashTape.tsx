@@ -42,8 +42,8 @@ export function HashTape({
     [tipHash],
   );
 
-  const w = stage ? 480 : large ? 280 : compact ? 120 : 200;
-  const h = stage ? 88 : large ? 64 : compact ? 36 : 52;
+  const w = stage ? 720 : large ? 280 : compact ? 120 : 200;
+  const h = stage ? 128 : large ? 64 : compact ? 36 : 52;
 
   const tape = (
     <button
@@ -59,7 +59,7 @@ export function HashTape({
       <motion.div
         key={tipHash ?? "empty"}
         className="absolute inset-y-0 flex items-center gap-1 whitespace-nowrap px-2 mono text-accent"
-        style={{ fontSize: compact ? 10 : stage ? 18 : 13 }}
+        style={{ fontSize: compact ? 10 : stage ? 24 : 13 }}
         initial={reduce ? false : { x: "30%" }}
         animate={{ x: reduce ? 0 : ["15%", "-45%"] }}
         transition={

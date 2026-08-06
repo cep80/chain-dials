@@ -2,8 +2,8 @@ import Link from "next/link";
 
 export function ProGate({
   title,
-  detail = "The free board stays free. Pro adds alerts, longer history, and saved layouts.",
-  ctaLabel = "Get Pro",
+  detail = "Boards stay free. Pro is optional: cloud-synced alert rules and named layouts.",
+  ctaLabel = "See Pro",
   ctaHref = "/account",
   children,
 }: {

@@ -27,7 +27,7 @@ export const INSTRUMENT_META: Record<
     title: "Mempool Atmosphere",
     subtitle: "Unconfirmed transactions waiting for a block",
     narrative:
-      "The mist is the mempool, stacked by fee rate. Bright dots are recent sample transactions. Select one for detail, or click empty space to expand fullscreen.",
+      "The mist is the mempool, stacked by fee rate. Bright dots are a live tip sample: they fade in as new txs arrive and drop off as they leave or get mined. Select one for detail, or click empty space to expand fullscreen.",
   },
   sigil: {
     title: "Tip Sigil",

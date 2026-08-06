@@ -53,8 +53,8 @@ export function PriorityJets({
     }));
   }, [fees, hist, compact, stage, now]);
 
-  const w = stage ? 420 : large ? 260 : compact ? 120 : 200;
-  const h = stage ? 220 : large ? 150 : compact ? 72 : 120;
+  const w = stage ? 640 : large ? 260 : compact ? 120 : 200;
+  const h = stage ? 340 : large ? 150 : compact ? 72 : 120;
 
   const clearPick = (e: MouseEvent) => {
     if ((e.target as HTMLElement).closest("[data-jet]")) return;

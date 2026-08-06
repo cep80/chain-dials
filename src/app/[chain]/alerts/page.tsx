@@ -7,9 +7,14 @@ import { LocalReturnNudge } from "@/components/monetization/LocalReturnNudge";
 import { ProGate } from "@/components/monetization/ProGate";
 import { useChain } from "@/lib/chains/context";
 import { useProAccess } from "@/hooks/useProAccess";
+import {
+  ALERT_KIND_META,
+  ALERT_KINDS,
+  type AlertKind,
+} from "@/lib/alerts/kinds";
+import { evaluateAlertRule } from "@/lib/alerts/evaluate";
+import { normalizeHashrate } from "@/lib/viz-scale";
 import { useDashboardStore } from "@/lib/store";
-
-type AlertKind = "fee_hot" | "tip_quiet" | "mempool_stuffed" | "price_move";
 
 type Rule = {
   id?: string;
@@ -19,38 +24,15 @@ type Rule = {
   params: Record<string, number | string | boolean>;
 };
 
-const KIND_META: Record<
-  AlertKind,
-  { label: string; hint: string; defaultParams: Record<string, number> }
-> = {
-  fee_hot: {
-    label: "Fee hottest above threshold",
-    hint: "Fires when the hottest fee sample clears your number.",
-    defaultParams: { threshold: 50 },
-  },
-  tip_quiet: {
-    label: "Quiet tip",
-    hint: "Fires when no new tip lands for longer than N seconds.",
-    defaultParams: { seconds: 1200 },
-  },
-  mempool_stuffed: {
-    label: "Waiting room stuffed",
-    hint: "Fires when pending count exceeds your threshold.",
-    defaultParams: { count: 40000 },
-  },
-  price_move: {
-    label: "Price move",
-    hint: "Browser nudge when |change| vs session open exceeds % (local).",
-    defaultParams: { pct: 5 },
-  },
-};
-
 function defaultRules(chainId: string): Rule[] {
-  return (Object.keys(KIND_META) as AlertKind[]).map((kind) => ({
+  return ALERT_KINDS.map((kind) => ({
     chainId,
     kind,
-    enabled: kind === "fee_hot" || kind === "tip_quiet",
-    params: { ...KIND_META[kind].defaultParams },
+    enabled:
+      kind === "fee_hot" ||
+      kind === "tip_quiet" ||
+      kind === "metronome_late",
+    params: { ...ALERT_KIND_META[kind].defaultParams },
   }));
 }
 
@@ -58,6 +40,7 @@ export default function AlertsPage() {
   const chain = useChain();
   const { pro, signedIn, loading } = useProAccess();
   const live = useDashboardStore((s) => s.live);
+  const histories = useDashboardStore((s) => s.histories);
   const now = useDashboardStore((s) => s.now);
   const [rules, setRules] = useState<Rule[]>(() => defaultRules(chain.id));
   const [saving, setSaving] = useState(false);
@@ -88,12 +71,28 @@ export default function AlertsPage() {
     if (data.rules.length === 0) {
       setRules(defaultRules(chain.id));
     } else {
+      // Merge known kinds so new instrument alerts appear after upgrades
+      const byKind = new Map(data.rules.map((r) => [r.kind, r]));
       setRules(
-        data.rules.map((r) => ({
-          ...r,
-          chainId: r.chainId,
-          params: r.params ?? {},
-        })),
+        ALERT_KINDS.map((kind) => {
+          const existing = byKind.get(kind);
+          if (existing) {
+            return {
+              ...existing,
+              chainId: chain.id,
+              params: {
+                ...ALERT_KIND_META[kind].defaultParams,
+                ...(existing.params ?? {}),
+              },
+            };
+          }
+          return {
+            chainId: chain.id,
+            kind,
+            enabled: false,
+            params: { ...ALERT_KIND_META[kind].defaultParams },
+          };
+        }),
       );
     }
   }, [pro, signedIn, chain.id]);
@@ -113,50 +112,44 @@ export default function AlertsPage() {
       return true;
     };
 
-    const feeRule = rules.find((r) => r.kind === "fee_hot" && r.enabled);
-    if (feeRule && live.feeFastest != null) {
-      const thr = Number(feeRule.params.threshold ?? 50);
-      if (live.feeFastest >= thr && cool(`fee-${chain.id}`)) {
-        new Notification(`${chain.shortName} fees hot`, {
-          body: `Hottest ~${Math.round(live.feeFastest)} ${chain.feeUnit} (threshold ${thr}).`,
-          tag: `fee-${chain.id}`,
-        });
-      }
-    }
+    const forgeIntensity =
+      chain.id === "btc"
+        ? normalizeHashrate(live.hashrate, histories.hashrate ?? [])
+        : live.securityScore;
 
-    const quiet = rules.find((r) => r.kind === "tip_quiet" && r.enabled);
-    if (quiet && live.tipTimestamp != null) {
-      const secs = Number(quiet.params.seconds ?? 1200);
-      const since = (now - live.tipTimestamp) / 1000;
-      if (since > secs && cool(`quiet-${chain.id}`)) {
-        new Notification(`${chain.shortName} tip quiet`, {
-          body: `No new ${chain.tipNoun} for ~${Math.round(since)}s.`,
-          tag: `quiet-${chain.id}`,
-        });
-      }
-    }
+    const snap = {
+      feeFastest: live.feeFastest,
+      tipTimestamp: live.tipTimestamp,
+      mempoolCount: live.mempoolCount,
+      mempoolPressure: live.mempoolPressure,
+      priceUsd: live.priceUsd,
+      securityScore: live.securityScore,
+      forgeIntensity,
+    };
+    const ctx = {
+      nowMs: now,
+      targetBlockSeconds: chain.targetBlockSeconds,
+      feeUnit: chain.feeUnit,
+      tipNoun: chain.tipNoun,
+      shortName: chain.shortName,
+      sessionOpenPrice: openPrice,
+    };
 
-    const stuffed = rules.find((r) => r.kind === "mempool_stuffed" && r.enabled);
-    if (stuffed && live.mempoolCount != null) {
-      const thr = Number(stuffed.params.count ?? 40000);
-      if (live.mempoolCount >= thr && cool(`mempool-${chain.id}`)) {
-        new Notification(`${chain.shortName} waiting room stuffed`, {
-          body: `${live.mempoolCount.toLocaleString()} pending (threshold ${thr.toLocaleString()}).`,
-          tag: `mempool-${chain.id}`,
-        });
-      }
-    }
-
-    const move = rules.find((r) => r.kind === "price_move" && r.enabled);
-    if (move && openPrice != null && live.priceUsd != null) {
-      const pct = Number(move.params.pct ?? 5);
-      const change = ((live.priceUsd - openPrice) / openPrice) * 100;
-      if (Math.abs(change) >= pct && cool(`price-${chain.id}`)) {
-        new Notification(`${chain.shortName} price move`, {
-          body: `${change >= 0 ? "+" : ""}${change.toFixed(2)}% vs this session open.`,
-          tag: `price-${chain.id}`,
-        });
-      }
+    for (const rule of rules) {
+      if (!rule.enabled) continue;
+      const fire = evaluateAlertRule(
+        rule.kind,
+        rule.params,
+        snap,
+        ctx,
+        chain.id,
+      );
+      if (!fire) continue;
+      if (!cool(fire.tag)) continue;
+      new Notification(fire.title, {
+        body: fire.body,
+        tag: fire.tag,
+      });
     }
   }, [
     pro,
@@ -165,7 +158,11 @@ export default function AlertsPage() {
     live.feeFastest,
     live.tipTimestamp,
     live.mempoolCount,
+    live.mempoolPressure,
     live.priceUsd,
+    live.hashrate,
+    live.securityScore,
+    histories.hashrate,
     now,
     chain,
     openPrice,
@@ -187,7 +184,30 @@ export default function AlertsPage() {
         setMessage(data.error ?? "Save failed");
       } else {
         setMessage("Saved to your account.");
-        if (data.rules) setRules(data.rules);
+        if (data.rules) {
+          const byKind = new Map(data.rules.map((r) => [r.kind, r]));
+          setRules(
+            ALERT_KINDS.map((kind) => {
+              const existing = byKind.get(kind);
+              if (existing) {
+                return {
+                  ...existing,
+                  chainId: chain.id,
+                  params: {
+                    ...ALERT_KIND_META[kind].defaultParams,
+                    ...(existing.params ?? {}),
+                  },
+                };
+              }
+              return {
+                chainId: chain.id,
+                kind,
+                enabled: false,
+                params: { ...ALERT_KIND_META[kind].defaultParams },
+              };
+            }),
+          );
+        }
       }
     } catch {
       setMessage("Network error");
@@ -206,8 +226,8 @@ export default function AlertsPage() {
     <div className="space-y-3 rounded-[14px] border border-line bg-ink-elevated p-5 md:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-paper-muted">
-          Rules sync to your account. Nudges fire in this browser when permission
-          is granted.
+          Rules sync to your account. Instrument rules use the same language as
+          the dials (metronome, atmosphere, forge).
         </p>
         {perm !== "granted" && perm !== "unsupported" ? (
           <button
@@ -220,7 +240,7 @@ export default function AlertsPage() {
         ) : null}
       </div>
       {rules.map((rule) => {
-        const meta = KIND_META[rule.kind];
+        const meta = ALERT_KIND_META[rule.kind];
         const paramKey = Object.keys(meta.defaultParams)[0]!;
         return (
           <div
@@ -243,6 +263,11 @@ export default function AlertsPage() {
                   }}
                 />
                 {meta.label}
+                {meta.instrument ? (
+                  <span className="rounded-full border border-accent/30 px-1.5 py-0.5 text-[9px] uppercase tracking-wider text-accent">
+                    {meta.instrument}
+                  </span>
+                ) : null}
               </label>
               <p className="mt-1 text-xs text-paper-muted">{meta.hint}</p>
             </div>
@@ -250,8 +275,11 @@ export default function AlertsPage() {
               {paramKey}
               <input
                 type="number"
+                step="any"
                 className="mono w-24 rounded-[8px] border border-line bg-ink px-2 py-1 text-paper"
-                value={Number(rule.params[paramKey] ?? meta.defaultParams[paramKey])}
+                value={Number(
+                  rule.params[paramKey] ?? meta.defaultParams[paramKey],
+                )}
                 onChange={(e) => {
                   const v = Number(e.target.value);
                   setRules((prev) =>
@@ -276,7 +304,9 @@ export default function AlertsPage() {
         >
           {saving ? "Saving…" : "Save rules"}
         </button>
-        {message ? <span className="text-xs text-paper-muted">{message}</span> : null}
+        {message ? (
+          <span className="text-xs text-paper-muted">{message}</span>
+        ) : null}
       </div>
     </div>
   );
@@ -287,25 +317,29 @@ export default function AlertsPage() {
         <h1 className="text-3xl font-extrabold text-paper">Alerts</h1>
         <p className="mt-2 text-paper-muted">
           {pro
-            ? `Live rules for ${chain.name}. Saved to your account; nudged in this browser.`
-            : `Pro unlocks configurable rules for ${chain.name}. Free local fee/tip nudge still works below.`}
+            ? `Live rules for ${chain.name}, including instrument-state dials. Saved to your account.`
+            : `Synced multi-rule + instrument alerts are a Pro extra for ${chain.name}. Free local fee/tip nudge still runs below.`}
         </p>
       </div>
 
       {loading ? (
-        <p className="text-paper-muted">Checking Pro…</p>
+        <p className="text-paper-muted">Checking account…</p>
       ) : pro ? (
         editor
       ) : (
         <ProGate
-          title="Fee & tip alerts"
+          title="Instrument + synced alerts"
           detail={
             signedIn
-              ? "Upgrade to Pro to configure and sync alert rules."
-              : "Sign in and upgrade to Pro to configure synced alert rules."
+              ? "Pro: multi-rule alerts in dial language (metronome late, atmosphere pressure, forge heat) plus classic fee/tip rules."
+              : "Sign in and optionally upgrade for instrument-state and synced alert rules. Boards stay free."
           }
-          ctaLabel={signedIn ? "Upgrade to Pro" : "Sign in"}
-          ctaHref={signedIn ? "/account" : "/account/signin?callbackUrl=/btc/alerts"}
+          ctaLabel={signedIn ? "See Pro" : "Sign in"}
+          ctaHref={
+            signedIn
+              ? `/${chain.slug}/pro#checkout`
+              : `/account/signin?callbackUrl=/${chain.slug}/alerts`
+          }
         >
           {editor}
         </ProGate>
@@ -314,8 +348,11 @@ export default function AlertsPage() {
       {!pro ? (
         <p className="mt-4 text-sm text-paper-muted">
           Or{" "}
-          <Link href="/btc/pro" className="text-accent hover:underline">
-            see what Pro includes
+          <Link
+            href={`/${chain.slug}/pro`}
+            className="text-accent hover:underline"
+          >
+            read what Pro actually is
           </Link>
           .
         </p>

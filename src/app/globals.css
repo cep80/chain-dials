@@ -221,6 +221,24 @@ html[data-density="compact"] .pulse-chip {
     0 0 100px color-mix(in oklab, var(--accent) 8%, transparent);
 }
 
+/* Suite-hub mini board: same glass, no expand chrome crowding the reading */
+.instrument-frame--preview.instrument-frame--large {
+  border-radius: 16px;
+}
+
+.instrument-frame--preview .instrument-frame-header {
+  padding: 0.75rem 1rem 0.65rem;
+}
+
+.instrument-frame--preview .instrument-frame-reading--large {
+  font-size: 1.25rem;
+}
+
+.instrument-frame--preview .instrument-frame-body--large {
+  min-height: 220px;
+  padding: 1rem 1rem 1.15rem;
+}
+
 .instrument-frame-sheen {
   background:
     linear-gradient(
@@ -373,12 +391,20 @@ html[data-density="compact"] .pulse-chip {
   }
 }
 
-/* Fullscreen stage presence */
+/* Fullscreen stage presence (clean edge-to-edge) */
 .instrument-stage-panel {
-  box-shadow:
-    0 0 0 1px color-mix(in oklab, var(--accent) 12%, transparent),
-    0 40px 100px rgba(0, 0, 0, 0.65),
-    0 0 140px color-mix(in oklab, var(--accent) 10%, transparent);
+  background:
+    radial-gradient(
+      ellipse 70% 50% at 50% 18%,
+      color-mix(in oklab, var(--accent) 18%, transparent),
+      transparent 58%
+    ),
+    radial-gradient(
+      ellipse 45% 35% at 85% 88%,
+      color-mix(in oklab, var(--accent) 7%, transparent),
+      transparent 50%
+    ),
+    var(--ink);
 }
 
 .instrument-stage-reading {
@@ -413,4 +439,32 @@ html[data-motion="reduce"] .instrument-live-glow {
     animation: none;
     filter: drop-shadow(0 0 8px color-mix(in oklab, var(--accent) 30%, transparent));
   }
+}
+
+/* Compact spot tape under the observatory (secondary to dials) */
+.price-spot-rail {
+  position: relative;
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in oklab, var(--accent) 7%, transparent),
+      transparent 28%
+    ),
+    color-mix(in oklab, var(--ink-elevated) 70%, transparent);
+  box-shadow: inset 0 1px 0 color-mix(in oklab, var(--paper) 4%, transparent);
+}
+
+.price-spot-rail::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 2px;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    color-mix(in oklab, var(--accent) 55%, transparent) 30%,
+    color-mix(in oklab, var(--accent) 55%, transparent) 70%,
+    transparent
+  );
+  pointer-events: none;
 }

@@ -25,8 +25,8 @@ export function BurnCandle({
   const wax =
     supply != null ? Math.max(0.2, Math.min(0.85, supply / 120)) : 0.55;
 
-  const h = stage ? 260 : large ? 190 : compact ? 100 : 154;
-  const w = stage ? 120 : large ? 100 : compact ? 56 : 80;
+  const h = stage ? 400 : large ? 190 : compact ? 100 : 154;
+  const w = stage ? 180 : large ? 100 : compact ? 56 : 80;
 
   const burnLabel =
     burnEth != null && burnEth > 0

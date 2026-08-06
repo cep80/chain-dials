@@ -126,7 +126,7 @@ export function Observatory({
   return (
     <section
       aria-labelledby="observatory-heading"
-      className={wall ? "mt-0" : "mt-8"}
+      className={wall ? "mt-0" : "mt-6"}
     >
       {!wall && (
         <div className="mb-4 flex flex-wrap items-end justify-between gap-3">

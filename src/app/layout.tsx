@@ -78,8 +78,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${syne.variable} ${plexMono.variable} h-full`}>
-      <body className="relative min-h-full">
+    // suppressHydrationWarning: extensions often inject attrs on html/body
+    // (e.g. inmaintabuse) before React hydrates; those are not app bugs.
+    <html
+      lang="en"
+      className={`${syne.variable} ${plexMono.variable} h-full`}
+      suppressHydrationWarning
+    >
+      <body className="relative min-h-full" suppressHydrationWarning>
         <NativeAppProvider>
           <AuthProvider>
             <SettingsProvider>{children}</SettingsProvider>

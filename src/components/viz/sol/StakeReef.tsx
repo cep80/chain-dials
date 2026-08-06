@@ -43,7 +43,7 @@ export function StakeReef({
     [n, score],
   );
 
-  const size = stage ? 300 : large ? 180 : compact ? 96 : 140;
+  const size = stage ? 720 : large ? 180 : compact ? 96 : 140;
   const orbit = Math.max(0, Math.min(100, epoch ?? 0)) / 100;
 
   const reef = (

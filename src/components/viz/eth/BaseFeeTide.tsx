@@ -67,8 +67,8 @@ export function BaseFeeTide({
     }));
   }, [prioritySeries, tide, compact]);
 
-  const w = stage ? 420 : large ? 260 : compact ? 120 : 200;
-  const h = stage ? 220 : large ? 150 : compact ? 72 : 120;
+  const w = stage ? 640 : large ? 260 : compact ? 120 : 200;
+  const h = stage ? 340 : large ? 150 : compact ? 72 : 120;
 
   const reading =
     latestBase != null

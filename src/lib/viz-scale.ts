@@ -64,7 +64,8 @@ export function instrumentCanvasSize(
     case "large":
       return Math.round(base * 1.35);
     case "stage":
-      return Math.round(base * 2.15);
+      // Clean fullscreen: TV-distance scale (~3.6× board base)
+      return Math.round(base * 3.6);
     default:
       return base;
   }
@@ -97,7 +98,7 @@ export function materialStrokeWeight(
   mode: InstrumentDisplayMode = "default",
 ): number {
   const base =
-    mode === "stage" ? 4.2 : mode === "large" ? 3.4 : mode === "compact" ? 2 : 2.8;
+    mode === "stage" ? 5.2 : mode === "large" ? 3.4 : mode === "compact" ? 2 : 2.8;
   return clamp(base + intensity * 1.2, 1.5, 6);
 }
 
@@ -134,8 +135,8 @@ export function densityMoteBudget(opts: {
 }): number {
   if (opts.reduceMotion) return 0;
   const intensity = clamp(opts.intensity, 0, 1);
-  const lo = opts.stage ? 60 : 40;
-  const hi = opts.stage ? 200 : 120;
+  const lo = opts.stage ? 90 : 40;
+  const hi = opts.stage ? 280 : 120;
   return Math.round(clamp(lo + intensity * (hi - lo), lo, hi));
 }
 
@@ -170,7 +171,7 @@ export function forgeCoreRadius(intensity: number, mode: InstrumentDisplayMode =
 export function readingFontPx(mode: InstrumentDisplayMode): number {
   switch (mode) {
     case "stage":
-      return 56;
+      return 72;
     case "large":
       return 18;
     case "compact":

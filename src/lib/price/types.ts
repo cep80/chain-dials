@@ -54,8 +54,11 @@ export const PRICE_RANGE_ORDER: PriceRangeId[] = [
   "ALL",
 ];
 
-/** Ranges available without Pro. */
-export const FREE_PRICE_RANGES: PriceRangeId[] = ["1H", "24H", "7D"];
+/**
+ * Chart ranges available without Pro.
+ * All ranges are free: history is public exchange data, not a paid product.
+ */
+export const FREE_PRICE_RANGES: PriceRangeId[] = [...PRICE_RANGE_ORDER];
 
 export const PRICE_RANGE_META: Record<
   PriceRangeId,

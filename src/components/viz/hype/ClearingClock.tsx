@@ -43,7 +43,7 @@ export function ClearingClock({
   const angle = -120 + ratio * 240;
   const healthy = since != null && since < TARGET * 3;
 
-  const size = stage ? 300 : large ? 180 : compact ? 96 : 140;
+  const size = stage ? 720 : large ? 180 : compact ? 96 : 140;
   const reading = formatDuration(since);
 
   const clock = (

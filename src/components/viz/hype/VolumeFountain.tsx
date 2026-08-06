@@ -38,8 +38,8 @@ export function VolumeFountain({
     [dropCount, spray],
   );
 
-  const h = stage ? 260 : large ? 190 : compact ? 100 : 154;
-  const w = stage ? 160 : large ? 120 : compact ? 64 : 100;
+  const h = stage ? 400 : large ? 190 : compact ? 100 : 154;
+  const w = stage ? 240 : large ? 120 : compact ? 64 : 100;
 
   const reading = dayVlmB != null ? `$${dayVlmB.toFixed(1)}B` : "—";
 

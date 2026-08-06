@@ -25,11 +25,22 @@ import { PriorityJets } from "@/components/viz/sol/PriorityJets";
 import { StakeReef } from "@/components/viz/sol/StakeReef";
 import { TurbineTach } from "@/components/viz/sol/TurbineTach";
 import { useInstrumentStage } from "@/lib/instrument-stage";
-import { INSTRUMENT_META, INSTRUMENT_ORDER, type InstrumentId } from "@/lib/instruments";
+import {
+  INSTRUMENT_META,
+  INSTRUMENT_ORDER,
+  type InstrumentId,
+} from "@/lib/instruments";
 import { useChainOptional } from "@/lib/chains/context";
 import { ShareBar } from "@/components/share/ShareBar";
 import { useDashboardStore } from "@/lib/store";
-import { formatDuration, formatFee, formatHash, formatPlainPercent } from "@/lib/format";
+import {
+  formatDuration,
+  formatFee,
+  formatHash,
+  formatPlainPercent,
+} from "@/lib/format";
+
+const CHROME_IDLE_MS = 2800;
 
 function StageBody({ id }: { id: InstrumentId }) {
   const chain = useChainOptional();
@@ -96,7 +107,15 @@ function StageBody({ id }: { id: InstrumentId }) {
 
 function CloseIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden fill="none" stroke="currentColor" strokeWidth="1.8">
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      aria-hidden
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+    >
       <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
     </svg>
   );
@@ -105,14 +124,38 @@ function CloseIcon() {
 function FullscreenIcon({ active }: { active: boolean }) {
   if (active) {
     return (
-      <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden fill="none" stroke="currentColor" strokeWidth="1.8">
-        <path d="M9 3v6H3M15 3v6h6M9 21v-6H3M21 15v6h-6" strokeLinecap="round" strokeLinejoin="round" />
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        aria-hidden
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      >
+        <path
+          d="M9 3v6H3M15 3v6h6M9 21v-6H3M21 15v6h-6"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
       </svg>
     );
   }
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden fill="none" stroke="currentColor" strokeWidth="1.8">
-      <path d="M9 3H3v6M15 3h6v6M9 21H3v-6M21 15v6h-6" strokeLinecap="round" strokeLinejoin="round" />
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      aria-hidden
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+    >
+      <path
+        d="M9 3H3v6M15 3h6v6M9 21H3v-6M21 15v6h-6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
@@ -125,8 +168,18 @@ export function InstrumentStage() {
   const reduce = useAppReducedMotion();
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
+  const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [browserFs, setBrowserFs] = useState(false);
+  const [chromeVisible, setChromeVisible] = useState(true);
   const canPortal = typeof document !== "undefined";
+
+  const bumpChrome = useCallback(() => {
+    setChromeVisible(true);
+    if (idleTimer.current) clearTimeout(idleTimer.current);
+    idleTimer.current = setTimeout(() => {
+      setChromeVisible(false);
+    }, CHROME_IDLE_MS);
+  }, []);
 
   const toggleBrowserFullscreen = useCallback(async () => {
     const el = panelRef.current;
@@ -147,14 +200,17 @@ export function InstrumentStage() {
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     panelRef.current?.focus();
+    bumpChrome();
     return () => {
       document.body.style.overflow = prevOverflow;
+      if (idleTimer.current) clearTimeout(idleTimer.current);
     };
-  }, [active]);
+  }, [active, bumpChrome]);
 
   useEffect(() => {
     if (!active) return;
     const onKey = (e: KeyboardEvent) => {
+      bumpChrome();
       if (e.key === "Escape") {
         e.preventDefault();
         if (document.fullscreenElement) {
@@ -180,7 +236,7 @@ export function InstrumentStage() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [active, close, next, prev, toggleBrowserFullscreen]);
+  }, [active, bumpChrome, close, next, prev, toggleBrowserFullscreen]);
 
   useEffect(() => {
     const onFs = () => setBrowserFs(Boolean(document.fullscreenElement));
@@ -219,7 +275,9 @@ export function InstrumentStage() {
         const sign = f > 0 ? "+" : "";
         return `${sign}${f.toFixed(2)} bps`;
       }
-      return live.mempoolCount != null ? String(live.mempoolCount) : formatFee(live.feeFastest, "sat/vB");
+      return live.mempoolCount != null
+        ? String(live.mempoolCount)
+        : formatFee(live.feeFastest, "sat/vB");
     }
     if (active === "sigil") return formatHash(live.tipHash);
     if (active === "issuance") {
@@ -240,64 +298,67 @@ export function InstrumentStage() {
       }
       return formatPlainPercent(live.issuanceProgress, 1);
     }
-    if (active === "forge") return live.forgeLabel ?? formatPlainPercent(live.securityScore != null ? live.securityScore * 100 : null, 0);
+    if (active === "forge")
+      return (
+        live.forgeLabel ??
+        formatPlainPercent(
+          live.securityScore != null ? live.securityScore * 100 : null,
+          0,
+        )
+      );
     return null;
   })();
 
-  // Accent-tinted stage wash from CSS vars set by AppShell
-  const stageWash =
-    "radial-gradient(ellipse 75% 55% at 50% 12%, color-mix(in oklab, var(--accent) 22%, transparent), transparent 58%), radial-gradient(ellipse 50% 40% at 80% 90%, color-mix(in oklab, var(--accent) 8%, transparent), transparent 50%), var(--ink)";
-
   if (!canPortal) return null;
+
+  const chromeOpacity = chromeVisible || reduce ? 1 : 0;
 
   return createPortal(
     <AnimatePresence>
       {active && meta && (
         <motion.div
-          className="fixed inset-0 z-[100] flex items-stretch justify-center"
+          className="fixed inset-0 z-[100]"
           initial={reduce ? false : { opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={reduce ? undefined : { opacity: 0 }}
-          transition={{ duration: 0.25 }}
+          transition={{ duration: 0.22 }}
         >
-          <button
-            type="button"
-            className="absolute inset-0 bg-ink/85 backdrop-blur-md"
-            aria-label="Close fullscreen view"
-            onClick={close}
-          />
-
           <motion.div
             ref={panelRef}
             role="dialog"
             aria-modal="true"
             aria-labelledby={titleId}
             tabIndex={-1}
-            className="instrument-stage-panel relative z-[1] m-0 flex h-full w-full flex-col outline-none focus-visible:ring-2 focus-visible:ring-accent md:m-4 md:h-[calc(100%-2rem)] md:max-w-6xl md:rounded-[22px] md:border md:border-line md:bg-ink-elevated"
-            initial={reduce ? false : { opacity: 0, y: 24, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={reduce ? undefined : { opacity: 0, y: 12, scale: 0.99 }}
-            transition={{ type: "spring", stiffness: 280, damping: 28 }}
-            style={{
-              background: stageWash,
-            }}
+            className="instrument-stage-panel instrument-stage-clean relative flex h-full w-full flex-col outline-none"
+            initial={reduce ? false : { opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={reduce ? undefined : { opacity: 0 }}
+            transition={{ duration: 0.28, ease: "easeOut" }}
+            onPointerMove={bumpChrome}
+            onClick={bumpChrome}
           >
-            <header className="flex items-start justify-between gap-4 border-b border-line/70 px-5 py-4 md:px-8 md:py-5">
-              <div className="min-w-0">
+            <header
+              className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-start justify-between gap-4 px-4 pt-[max(1rem,env(safe-area-inset-top))] transition-opacity duration-500 md:px-8 md:pt-6"
+              style={{ opacity: chromeOpacity }}
+            >
+              <div className="pointer-events-auto min-w-0">
                 <p className="text-[10px] uppercase tracking-[0.22em] text-accent">
-                  Up close
+                  {stageIndex}/{stageCount}
+                  {frameTitle ? ` · ${frameTitle}` : ""}
                 </p>
                 <h2
                   id={titleId}
-                  className="mt-1 text-2xl font-extrabold tracking-tight text-paper md:text-4xl"
+                  className="mt-1 text-xl font-bold tracking-tight text-paper md:text-3xl"
                 >
                   {meta.title}
                 </h2>
-                <p className="mt-1 text-sm text-paper-muted md:text-base">
-                  {meta.subtitle}
-                </p>
+                {stageReading ? (
+                  <p className="instrument-stage-reading mono mt-1 text-sm text-paper-muted md:text-base">
+                    {stageReading}
+                  </p>
+                ) : null}
               </div>
-              <div className="flex shrink-0 items-center gap-2">
+              <div className="pointer-events-auto flex shrink-0 items-center gap-2">
                 {chain && active && (
                   <ShareBar
                     iconOnly
@@ -313,7 +374,7 @@ export function InstrumentStage() {
                 <button
                   type="button"
                   onClick={() => void toggleBrowserFullscreen()}
-                  className="rounded-lg border border-line px-3 py-2 text-paper-muted transition hover:border-accent hover:text-accent"
+                  className="rounded-lg border border-line/70 bg-ink/50 px-3 py-2 text-paper-muted backdrop-blur-sm transition hover:border-accent hover:text-accent"
                   aria-label={
                     browserFs ? "Exit browser fullscreen" : "Browser fullscreen"
                   }
@@ -324,7 +385,7 @@ export function InstrumentStage() {
                 <button
                   type="button"
                   onClick={close}
-                  className="rounded-lg border border-line px-3 py-2 text-paper-muted transition hover:border-accent hover:text-paper"
+                  className="rounded-lg border border-line/70 bg-ink/50 px-3 py-2 text-paper-muted backdrop-blur-sm transition hover:border-accent hover:text-paper"
                   aria-label="Close"
                 >
                   <CloseIcon />
@@ -332,93 +393,104 @@ export function InstrumentStage() {
               </div>
             </header>
 
-            <div className="relative flex min-h-0 flex-1 flex-col items-center justify-center px-4 py-6 md:px-10 md:py-8">
+            <div className="relative flex min-h-0 flex-1 flex-col items-center justify-center px-3 py-16 md:px-10 md:py-20">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={active}
-                  className="flex w-full max-w-4xl flex-col items-center"
-                  initial={reduce ? false : { opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={reduce ? undefined : { opacity: 0, x: -16 }}
+                  className="flex w-full max-w-[min(96vw,1100px)] flex-col items-center"
+                  initial={reduce ? false : { opacity: 0, scale: 0.985 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={reduce ? undefined : { opacity: 0, scale: 0.99 }}
                   transition={{ duration: 0.28, ease: "easeOut" }}
                 >
                   <StageBody id={active} />
-                  <p className="mt-8 max-w-xl text-center text-sm leading-relaxed text-paper-muted md:text-base">
-                    {meta.narrative}
-                  </p>
                 </motion.div>
               </AnimatePresence>
 
-              <div className="pointer-events-none absolute inset-x-0 top-1/2 hidden -translate-y-1/2 justify-between px-3 md:flex">
+              <div
+                className="pointer-events-none absolute inset-x-0 top-1/2 hidden -translate-y-1/2 justify-between px-3 transition-opacity duration-500 md:flex md:px-4"
+                style={{ opacity: chromeOpacity }}
+              >
                 <button
                   type="button"
                   onClick={prev}
-                  className="pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border border-line bg-ink/70 text-paper-muted backdrop-blur transition hover:border-accent hover:text-accent"
+                  className="pointer-events-auto flex h-12 w-12 items-center justify-center rounded-full border border-line/60 bg-ink/55 text-paper-muted backdrop-blur-sm transition hover:border-accent hover:text-accent"
                   aria-label="Previous instrument"
                 >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
-                    <path d="M15 6l-6 6 6 6" strokeLinecap="round" strokeLinejoin="round" />
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    aria-hidden
+                  >
+                    <path
+                      d="M15 6l-6 6 6 6"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
                   </svg>
                 </button>
                 <button
                   type="button"
                   onClick={next}
-                  className="pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border border-line bg-ink/70 text-paper-muted backdrop-blur transition hover:border-accent hover:text-accent"
+                  className="pointer-events-auto flex h-12 w-12 items-center justify-center rounded-full border border-line/60 bg-ink/55 text-paper-muted backdrop-blur-sm transition hover:border-accent hover:text-accent"
                   aria-label="Next instrument"
                 >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
-                    <path d="M9 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    aria-hidden
+                  >
+                    <path
+                      d="M9 6l6 6-6 6"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
                   </svg>
                 </button>
               </div>
             </div>
 
-            <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-line/70 px-5 py-3 text-[11px] text-paper-muted md:px-8">
-              <div className="flex flex-wrap gap-3">
-                <span className="mono text-paper">
-                  {stageIndex}/{stageCount}
-                  {frameTitle ? ` · ${frameTitle}` : ""}
-                </span>
-                <span>
-                  <kbd className="mono rounded border border-line px-1.5 py-0.5 text-paper">
-                    Esc
-                  </kbd>{" "}
-                  close
-                </span>
-                <span>
-                  <kbd className="mono rounded border border-line px-1.5 py-0.5 text-paper">
-                    ←
-                  </kbd>{" "}
-                  <kbd className="mono rounded border border-line px-1.5 py-0.5 text-paper">
-                    →
-                  </kbd>{" "}
-                  switch
-                </span>
-                <span>
-                  <kbd className="mono rounded border border-line px-1.5 py-0.5 text-paper">
-                    F
-                  </kbd>{" "}
-                  fill the screen
-                </span>
-                <span>
-                  <kbd className="mono rounded border border-line px-1.5 py-0.5 text-paper">
-                    S
-                  </kbd>{" "}
-                  share
-                </span>
-              </div>
-              <div className="flex gap-2 md:hidden">
+            <footer
+              className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex flex-wrap items-center justify-between gap-3 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2 transition-opacity duration-500 md:px-8"
+              style={{ opacity: chromeOpacity }}
+            >
+              <p className="text-[11px] text-paper-muted">
+                <kbd className="mono rounded border border-line/70 px-1.5 py-0.5 text-paper">
+                  Esc
+                </kbd>{" "}
+                close ·{" "}
+                <kbd className="mono rounded border border-line/70 px-1.5 py-0.5 text-paper">
+                  ←
+                </kbd>{" "}
+                <kbd className="mono rounded border border-line/70 px-1.5 py-0.5 text-paper">
+                  →
+                </kbd>{" "}
+                switch ·{" "}
+                <kbd className="mono rounded border border-line/70 px-1.5 py-0.5 text-paper">
+                  F
+                </kbd>{" "}
+                fill screen
+              </p>
+              <div className="pointer-events-auto flex gap-2 md:hidden">
                 <button
                   type="button"
                   onClick={prev}
-                  className="rounded-full border border-line px-3 py-1.5"
+                  className="rounded-full border border-line/70 bg-ink/50 px-3 py-1.5 text-xs text-paper-muted"
                 >
                   Prev
                 </button>
                 <button
                   type="button"
                   onClick={next}
-                  className="rounded-full border border-line px-3 py-1.5"
+                  className="rounded-full border border-line/70 bg-ink/50 px-3 py-1.5 text-xs text-paper-muted"
                 >
                   Next
                 </button>

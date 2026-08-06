@@ -257,8 +257,8 @@ export function TipSigil({
               Block {formatInteger(height)}
             </p>
           )}
-          <p className="mt-3 text-xs text-paper-muted">
-            Click the glyph to copy the full hash
+          <p className="mt-3 text-[11px] uppercase tracking-[0.16em] text-paper-muted/80">
+            Click glyph to copy hash
           </p>
         </div>
       </div>

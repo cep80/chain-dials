@@ -14,7 +14,9 @@ export type TipId =
   | "nav.board"
   | "nav.alerts"
   | "nav.wall"
+  | "nav.controlRoom"
   | "nav.forensics"
+  | "nav.desk"
   | "nav.pro"
   | "nav.account"
   | "nav.settings"
@@ -95,19 +97,27 @@ const BASE: Record<TipId, TipBody> = {
   },
   "nav.alerts": {
     title: "Alerts",
-    body: "Preview of fee/tip nudges. Local browser nudges work today; full email rules are still warming up.",
+    body: "Pro: multi-rule + instrument-state nudges (metronome late, atmosphere pressure, forge heat). Free local fee/tip nudge still works.",
   },
   "nav.wall": {
     title: "Wall",
     body: "Full-size instrument layout for a TV or second screen. Free on every board.",
   },
+  "nav.controlRoom": {
+    title: "Control room",
+    body: "Pro multi-chain wall packs: rotate BTC/ETH/SOL/HYPE on a TV. Single-chain wall stays free.",
+  },
   "nav.forensics": {
     title: "Trace",
     body: "Coldcard drain watchboard: live attacker holdings, victim lookup, and hop tracing for investigators.",
   },
+  "nav.desk": {
+    title: "Desk",
+    body: "Forensics desk packs: pin txs/addresses, export markdown. Local free; Pro syncs to your account.",
+  },
   "nav.pro": {
     title: "Pro",
-    body: "Alerts, longer price history, saved layouts. Boards stay free; Pro is optional extras via Stripe.",
+    body: "Control room packs, instrument alerts, desk sync, and layouts. Boards and wall stay free.",
   },
   "nav.account": {
     title: "Account",
@@ -127,7 +137,7 @@ const BASE: Record<TipId, TipBody> = {
   },
   "instrument.expand": {
     title: "Go bigger",
-    body: "Open this instrument fullscreen.",
+    body: "Open a clean fullscreen stage. Press F to fill the display; Esc closes.",
   },
   "instrument.metronome": {
     title: "Still humming?",
@@ -135,7 +145,7 @@ const BASE: Record<TipId, TipBody> = {
   },
   "instrument.atmosphere": {
     title: "Fee weather",
-    body: "How busy or pricey the network feels right now: mempool mist, fee tide, jets, or funding.",
+    body: "Mist bands are mempool vsize by fee rate. Bright dots are recent samples you can inspect. On stage, dashed lines are live fee estimates.",
   },
   "instrument.sigil": {
     title: "Tip face",

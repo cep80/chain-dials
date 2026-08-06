@@ -218,15 +218,38 @@ export function AppShell({
                     Wall
                   </Link>
                 </Hint>
+                <Hint tip="nav.controlRoom">
+                  <Link
+                    href="/control-room"
+                    className="min-h-11 inline-flex items-center text-paper-muted transition hover:text-paper"
+                  >
+                    Room
+                    {!isProEnabled() ? (
+                      <span className="ml-1 text-[10px] uppercase tracking-wider opacity-60">
+                        Pro
+                      </span>
+                    ) : null}
+                  </Link>
+                </Hint>
                 {chain.id === "btc" ? (
-                  <Hint tip="nav.forensics">
-                    <Link
-                      href="/btc/forensics"
-                      className="min-h-11 inline-flex items-center text-paper-muted transition hover:text-paper"
-                    >
-                      Trace
-                    </Link>
-                  </Hint>
+                  <>
+                    <Hint tip="nav.forensics">
+                      <Link
+                        href="/btc/forensics"
+                        className="min-h-11 inline-flex items-center text-paper-muted transition hover:text-paper"
+                      >
+                        Trace
+                      </Link>
+                    </Hint>
+                    <Hint tip="nav.desk">
+                      <Link
+                        href="/btc/desk"
+                        className="min-h-11 inline-flex items-center text-paper-muted transition hover:text-paper"
+                      >
+                        Desk
+                      </Link>
+                    </Hint>
+                  </>
                 ) : null}
                 <Hint tip="nav.pro">
                   <Link
@@ -236,7 +259,7 @@ export function AppShell({
                     Pro
                     {!isProEnabled() ? (
                       <span className="ml-1 text-[10px] uppercase tracking-wider opacity-60">
-                        $6
+                        $3
                       </span>
                     ) : null}
                   </Link>

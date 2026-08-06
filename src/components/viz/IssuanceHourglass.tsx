@@ -103,8 +103,8 @@ export function IssuanceHourglass({
     <div
       className={`relative ${reduce ? "" : "instrument-live-glow"}`}
       style={{
-        width: stage ? 180 : large ? 130 : compact ? 72 : 110,
-        height: stage ? 252 : large ? 182 : compact ? 100 : 154,
+        width: stage ? 280 : large ? 130 : compact ? 72 : 110,
+        height: stage ? 392 : large ? 182 : compact ? 100 : 154,
       }}
       role="img"
       aria-label={aria}

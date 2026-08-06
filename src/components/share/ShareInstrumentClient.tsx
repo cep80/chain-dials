@@ -27,66 +27,69 @@ import { CHAINS } from "@/lib/chains/registry";
 import type { ChainId } from "@/lib/chains/types";
 import type { InstrumentId } from "@/lib/instruments";
 
-function InstrumentBody({
+/** Renders the live dial for a chain + instrument slot (board, share, suite hub). */
+export function InstrumentBody({
   chainId,
   instrument,
+  large = true,
 }: {
   chainId: ChainId;
   instrument: InstrumentId;
+  large?: boolean;
 }) {
   if (chainId === "eth") {
     switch (instrument) {
       case "metronome":
-        return <SlotLattice large />;
+        return <SlotLattice large={large} />;
       case "atmosphere":
-        return <BaseFeeTide large />;
+        return <BaseFeeTide large={large} />;
       case "sigil":
-        return <BlockMosaic large />;
+        return <BlockMosaic large={large} />;
       case "issuance":
-        return <BurnCandle large />;
+        return <BurnCandle large={large} />;
       case "forge":
-        return <ValidatorConstellation large />;
+        return <ValidatorConstellation large={large} />;
     }
   }
   if (chainId === "sol") {
     switch (instrument) {
       case "metronome":
-        return <TurbineTach large />;
+        return <TurbineTach large={large} />;
       case "atmosphere":
-        return <PriorityJets large />;
+        return <PriorityJets large={large} />;
       case "sigil":
-        return <LeaderRibbon large />;
+        return <LeaderRibbon large={large} />;
       case "issuance":
-        return <InflationFountain large />;
+        return <InflationFountain large={large} />;
       case "forge":
-        return <StakeReef large />;
+        return <StakeReef large={large} />;
     }
   }
   if (chainId === "hype") {
     switch (instrument) {
       case "metronome":
-        return <ClearingClock large />;
+        return <ClearingClock large={large} />;
       case "atmosphere":
-        return <FundingTide large />;
+        return <FundingTide large={large} />;
       case "sigil":
-        return <HashTape large />;
+        return <HashTape large={large} />;
       case "issuance":
-        return <VolumeFountain large />;
+        return <VolumeFountain large={large} />;
       case "forge":
-        return <OiVault large />;
+        return <OiVault large={large} />;
     }
   }
   switch (instrument) {
     case "metronome":
-      return <BlockMetronome large />;
+      return <BlockMetronome large={large} />;
     case "atmosphere":
-      return <MempoolAtmosphere large />;
+      return <MempoolAtmosphere large={large} />;
     case "sigil":
-      return <TipSigil large />;
+      return <TipSigil large={large} />;
     case "issuance":
-      return <IssuanceHourglass large />;
+      return <IssuanceHourglass large={large} />;
     case "forge":
-      return <HashrateForge large />;
+      return <HashrateForge large={large} />;
   }
 }
 
