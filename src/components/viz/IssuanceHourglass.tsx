@@ -62,17 +62,10 @@ export function IssuanceHourglass({
   const clipBottom = `hg-bottom-${uid}`;
   const sandGrad = `sand-${uid}`;
 
-  // Continuous grain clock - keeps the glass alive between block updates
-  useEffect(() => {
-    if (reduce) return;
-    const id = window.setInterval(() => setGrainT((t) => t + 1), 80);
-    return () => window.clearInterval(id);
-  }, [reduce]);
-
-  // One sand burst per block - discrete issuance, not continuous flow
+  // Sand only ticks on a new block: discrete issuance, not a fake continuous pour
   useEffect(() => {
     if (boardPulse <= 0 || reduce) return;
-    setGrainT((t) => t + 12);
+    setGrainT((t) => t + 1);
   }, [boardPulse, reduce]);
 
   const grains = useMemo(() => {
@@ -99,9 +92,15 @@ export function IssuanceHourglass({
     blocksLeft != null ? `${Math.round(blocksLeft)} blocks to next halving. ` : ""
   }${pctIssued.toFixed(2)} percent of 21 million issued.`;
 
+  const topY = 12 + (1 - topFill) * 56;
+  const topH = Math.max(0.5, topFill * 56);
+  const bottomH = Math.max(0.5, bottomFill * 56);
+  const bottomY = 128 - bottomH;
+  const bandCount = stage ? 7 : large ? 5 : 4;
+
   const glass = (
     <div
-      className={`relative ${reduce ? "" : "instrument-live-glow"}`}
+      className="relative"
       style={{
         width: stage ? 280 : large ? 130 : compact ? 72 : 110,
         height: stage ? 392 : large ? 182 : compact ? 100 : 154,
@@ -123,12 +122,16 @@ export function IssuanceHourglass({
             <stop offset="100%" stopColor="var(--accent-dim)" stopOpacity="0.9" />
           </linearGradient>
           <linearGradient id={`${uid}-glass`} x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="var(--paper)" stopOpacity="0.12" />
-            <stop offset="50%" stopColor="var(--ink)" stopOpacity="0.4" />
-            <stop offset="100%" stopColor="var(--accent)" stopOpacity="0.08" />
+            <stop offset="0%" stopColor="var(--paper)" stopOpacity="0.16" />
+            <stop offset="45%" stopColor="var(--ink)" stopOpacity="0.45" />
+            <stop offset="100%" stopColor="var(--accent)" stopOpacity="0.1" />
+          </linearGradient>
+          <linearGradient id={`${uid}-spec`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="var(--paper)" stopOpacity="0.22" />
+            <stop offset="40%" stopColor="var(--paper)" stopOpacity="0" />
           </linearGradient>
           <filter id={`${uid}-sand`} x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur stdDeviation="0.6" result="b" />
+            <feGaussianBlur stdDeviation="0.45" result="b" />
             <feMerge>
               <feMergeNode in="b" />
               <feMergeNode in="SourceGraphic" />
@@ -140,116 +143,149 @@ export function IssuanceHourglass({
           points="14,8 86,8 54,70 86,132 14,132 46,70"
           fill={`url(#${uid}-glass)`}
           stroke="var(--line-strong)"
-          strokeWidth={1.7}
+          strokeWidth={2}
           strokeLinejoin="round"
+        />
+        {/* Specular glass edge */}
+        <polygon
+          points="20,14 44,14 48,66 46,66"
+          fill={`url(#${uid}-spec)`}
+          opacity={0.55}
         />
         <polygon
           points="18,12 82,12 52,68 48,68"
           fill="none"
           stroke="var(--paper)"
-          strokeWidth={0.6}
-          opacity={0.2}
+          strokeWidth={0.7}
+          opacity={0.22}
         />
         <polygon
           points="48,72 52,72 82,128 18,128"
           fill="none"
           stroke="var(--paper)"
-          strokeWidth={0.6}
-          opacity={0.2}
+          strokeWidth={0.7}
+          opacity={0.22}
         />
 
-        {/* Remaining until next halving (top chamber) */}
+        {/* Remaining until next halving (top chamber) - banded sand */}
         <g clipPath={`url(#${clipTop})`}>
-          <motion.rect
-            x={18}
-            width={64}
-            fill={`url(#${sandGrad})`}
-            opacity={0.92}
-            filter={`url(#${uid}-sand)`}
+          <motion.g
             initial={false}
-            animate={{
-              y: 12 + (1 - topFill) * 56,
-              height: Math.max(0.5, topFill * 56),
-            }}
+            animate={{ y: topY }}
             transition={
               reduce ? { duration: 0 } : { type: "spring", stiffness: 50, damping: 20 }
             }
-          />
-          {/* Surface shimmer */}
-          {mounted && !reduce && topFill > 0.02 && (
-            <motion.ellipse
-              cx={50}
-              cy={12 + (1 - topFill) * 56 + 2}
-              rx={22}
-              ry={2.2}
-              fill="var(--accent)"
-              animate={{ opacity: [0.15, 0.4, 0.15], rx: [20, 24, 20] }}
-              transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <rect
+              x={18}
+              y={0}
+              width={64}
+              height={topH}
+              fill={`url(#${sandGrad})`}
+              opacity={0.9}
+              filter={`url(#${uid}-sand)`}
             />
-          )}
+            {Array.from({ length: bandCount }, (_, i) => {
+              const y = (topH / bandCount) * i;
+              return (
+                <rect
+                  key={`tb-${i}`}
+                  x={20}
+                  y={y}
+                  width={60}
+                  height={Math.max(0.8, topH / bandCount - 0.6)}
+                  fill="var(--ink)"
+                  opacity={0.08 + (i % 2) * 0.06}
+                />
+              );
+            })}
+            {topFill > 0.02 && (
+              <ellipse
+                cx={50}
+                cy={2}
+                rx={22}
+                ry={2}
+                fill="var(--accent)"
+                opacity={0.35}
+              />
+            )}
+          </motion.g>
         </g>
 
         {/* Epoch elapsed (bottom chamber) */}
         <g clipPath={`url(#${clipBottom})`}>
-          <motion.rect
-            x={18}
-            width={64}
-            fill={`url(#${sandGrad})`}
+          <motion.g
             initial={false}
-            animate={{
-              y: 128 - Math.max(0.5, bottomFill * 56),
-              height: Math.max(0.5, bottomFill * 56),
-            }}
+            animate={{ y: bottomY }}
             transition={
               reduce ? { duration: 0 } : { type: "spring", stiffness: 50, damping: 20 }
             }
-          />
-          {mounted && !reduce && (
-            <motion.ellipse
-              cx={50}
-              cy={128 - bottomFill * 56}
-              rx={26}
-              ry={2}
-              fill="var(--accent)"
-              animate={{ opacity: [0.1, 0.28, 0.1] }}
-              transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <rect
+              x={18}
+              y={0}
+              width={64}
+              height={bottomH}
+              fill={`url(#${sandGrad})`}
+              opacity={0.92}
             />
-          )}
+            {Array.from({ length: bandCount }, (_, i) => {
+              const y = (bottomH / bandCount) * i;
+              return (
+                <rect
+                  key={`bb-${i}`}
+                  x={20}
+                  y={y}
+                  width={60}
+                  height={Math.max(0.8, bottomH / bandCount - 0.6)}
+                  fill="var(--ink)"
+                  opacity={0.07 + (i % 2) * 0.05}
+                />
+              );
+            })}
+            <ellipse
+              cx={50}
+              cy={0}
+              rx={24}
+              ry={1.8}
+              fill="var(--accent)"
+              opacity={0.28}
+            />
+          </motion.g>
         </g>
 
-        {/* Falling grains through the neck (client-only: avoid SSR float drift) */}
+        {/* Falling grains: one burst per block pulse */}
         {mounted &&
           !reduce &&
+          grainT > 0 &&
           epochRemaining > 0.01 &&
-          grains.map((g, i) => {
-            const cycle = (grainT * g.speed * 0.08 + g.phase) % 1;
-            const y = 62 + cycle * 16;
-            const opacity =
-              cycle < 0.1 || cycle > 0.9 ? 0 : 0.55 + g.phase * 0.35;
-            return (
-              <circle
-                key={i}
-                cx={Number(g.x.toFixed(3))}
-                cy={Number(y.toFixed(3))}
-                r={Number(g.size.toFixed(3))}
-                fill="var(--accent)"
-                opacity={Number(opacity.toFixed(3))}
-              />
-            );
-          })}
+          grains.map((g, i) => (
+            <motion.circle
+              key={`${grainT}-${i}`}
+              cx={g.x}
+              r={g.size}
+              fill="var(--accent)"
+              initial={{ cy: 62, opacity: 0 }}
+              animate={{ cy: 78, opacity: [0, 0.9, 0] }}
+              transition={{
+                duration: 0.7 + g.phase * 0.35,
+                delay: g.phase * 0.12,
+                ease: "easeIn",
+              }}
+            />
+          ))}
 
-        {/* Neck drip pulse */}
-        {mounted && !reduce && epochRemaining > 0.05 && (
-          <motion.line
+        {/* Still neck bridge between blocks */}
+        {epochRemaining > 0.05 && (
+          <line
             x1={50}
             x2={50}
             y1={66}
             y2={74}
             stroke="var(--accent)"
-            strokeWidth={1.4}
+            strokeWidth={1.2}
             strokeLinecap="round"
-            animate={{ opacity: [0.25, 1, 0.25], strokeWidth: [1, 1.8, 1] }}
-            transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
+            opacity={0.35}
           />
         )}
 

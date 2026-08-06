@@ -96,6 +96,21 @@ export function BlockMetronome({
   const faceGrad = `metro-face-${uid}`;
   const ringGlow = `metro-glow-${uid}`;
   const hubGrad = `metro-hub-${uid}`;
+  const faceDark = tone === "stale" ? 0.55 : tone === "late" ? 0.25 : 0;
+  const trailCount = stage ? 7 : 5;
+  const handTrail = Array.from({ length: trailCount }, (_, i) => {
+    const t = (i + 1) / (trailCount + 1);
+    const deg = angleDeg - t * 14;
+    const rad = ((deg - 90) * Math.PI) / 180;
+    const len = R - 14;
+    return {
+      x: px(CX + Math.cos(rad) * len),
+      y: px(CY + Math.sin(rad) * len),
+      opacity: 0.12 + (1 - t) * 0.35,
+      r: 1.6 + (1 - t) * 1.4,
+    };
+  });
+  const lapMarks = Math.min(8, laps);
 
   const reading = formatDuration(since);
   const targetLabel =
@@ -151,7 +166,7 @@ export function BlockMetronome({
           r={R + 10}
           fill={`url(#${faceGrad})`}
           stroke="var(--line-strong)"
-          strokeWidth={1.25}
+          strokeWidth={1.5}
         />
         <circle
           cx={CX}
@@ -160,8 +175,18 @@ export function BlockMetronome({
           fill="none"
           stroke="var(--paper)"
           strokeWidth={0.5}
-          opacity={0.08}
+          opacity={0.1}
         />
+        {/* Late / stale vignette on the face */}
+        {faceDark > 0 && (
+          <circle
+            cx={CX}
+            cy={CY}
+            r={R + 9}
+            fill="var(--ink)"
+            opacity={faceDark}
+          />
+        )}
 
         {/* Track */}
         <circle
@@ -206,14 +231,30 @@ export function BlockMetronome({
           <circle
             cx={CX}
             cy={CY}
-            r={R}
+            r={R + 4}
             fill="none"
             stroke="var(--down)"
-            strokeWidth={2}
-            strokeDasharray="4 4"
-            opacity={0.6}
+            strokeWidth={2.2}
+            strokeDasharray="3 5"
+            opacity={0.7}
           />
         )}
+
+        {/* Overdue lap studs on the outer bezel */}
+        {lapMarks > 0 &&
+          Array.from({ length: lapMarks }, (_, i) => {
+            const a = -Math.PI / 2 + (i / Math.max(1, lapMarks)) * Math.PI * 2;
+            return (
+              <circle
+                key={`lap-${i}`}
+                cx={px(CX + Math.cos(a) * (R + 10))}
+                cy={px(CY + Math.sin(a) * (R + 10))}
+                r={stage ? 2.4 : 1.8}
+                fill="var(--down)"
+                opacity={0.75}
+              />
+            );
+          })}
 
         {TICKS.map((t, i) => (
           <line
@@ -223,10 +264,24 @@ export function BlockMetronome({
             x2={t.x2}
             y2={t.y2}
             stroke={t.major ? "var(--paper-muted)" : "var(--line)"}
-            strokeWidth={t.major ? 1.6 : 0.7}
-            opacity={t.major ? 0.9 : 0.55}
+            strokeWidth={t.major ? 1.8 : 0.75}
+            opacity={t.major ? 0.92 : 0.55}
           />
         ))}
+
+        {/* Hand residual sweep */}
+        {!reduce &&
+          since != null &&
+          handTrail.map((p, i) => (
+            <circle
+              key={`trail-${i}`}
+              cx={p.x}
+              cy={p.y}
+              r={p.r}
+              fill={TONE_STROKE[tone]}
+              opacity={p.opacity}
+            />
+          ))}
 
         <g
           style={{
@@ -240,25 +295,25 @@ export function BlockMetronome({
         >
           <line
             x1={CX}
-            y1={CY + 8}
+            y1={CY + 10}
             x2={CX}
             y2={CY - (R - 12)}
             stroke={TONE_STROKE[tone]}
-            strokeWidth={2.4}
+            strokeWidth={stage ? 3.2 : 2.6}
             strokeLinecap="round"
             opacity={0.95}
           />
           <circle
             cx={CX}
             cy={CY - (R - 12)}
-            r={2.4}
+            r={stage ? 3.2 : 2.6}
             fill={TONE_STROKE[tone]}
             filter={`url(#${uid}-soft)`}
           />
         </g>
 
-        <circle cx={CX} cy={CY} r={6.5} fill={`url(#${hubGrad})`} />
-        <circle cx={CX} cy={CY} r={2.2} fill="var(--ink)" opacity={0.85} />
+        <circle cx={CX} cy={CY} r={stage ? 8 : 6.5} fill={`url(#${hubGrad})`} />
+        <circle cx={CX} cy={CY} r={2.4} fill="var(--ink)" opacity={0.85} />
 
         {!compact && (
           <>

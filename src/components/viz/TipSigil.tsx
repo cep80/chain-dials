@@ -8,6 +8,7 @@ import { useAppReducedMotion } from "@/lib/settings/use-app-reduced-motion";
 import { useDashboardStore } from "@/lib/store";
 import {
   instrumentCanvasSize,
+  materialStrokeWeight,
   resolveDisplayMode,
 } from "@/lib/viz-scale";
 import { InstrumentFrame } from "@/components/viz/InstrumentFrame";
@@ -33,6 +34,9 @@ export function TipSigil({
   const geom = useMemo(() => buildSigil(tipHash, SIZE), [tipHash]);
   const mode = resolveDisplayMode({ compact, large, stage });
   const displaySize = instrumentCanvasSize(mode, 128);
+  const strokeScale = mode === "stage" ? 2.4 : mode === "large" ? 1.55 : 1.15;
+  const ringStroke = materialStrokeWeight(0.45, mode) * 0.35;
+  const bloomOpacity = boardPulse > 0 ? 0.55 : 0.22;
 
   const copy = useCallback(
     async (e?: MouseEvent) => {
@@ -69,24 +73,34 @@ export function TipSigil({
           key={geom.seed}
           viewBox={`0 0 ${SIZE} ${SIZE}`}
           className="h-full w-full"
-          initial={reduce ? false : { opacity: 0, rotate: -12, scale: 0.88 }}
-          animate={{ opacity: 1, rotate: 0, scale: 1 }}
-          exit={reduce ? undefined : { opacity: 0, scale: 1.06, rotate: 6 }}
-          transition={{ duration: 0.55, ease: "easeOut" }}
+          initial={reduce ? false : { opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={reduce ? undefined : { opacity: 0, scale: 1.04 }}
+          transition={{ duration: 0.45, ease: "easeOut" }}
           aria-hidden
         >
           <defs>
             <radialGradient id={`sigil-face-${uid}`} cx="40%" cy="35%" r="65%">
               <stop offset="0%" stopColor="var(--ink-soft)" />
-              <stop offset="70%" stopColor="var(--ink)" />
+              <stop offset="55%" stopColor="var(--ink)" />
               <stop offset="100%" stopColor="var(--ink)" />
             </radialGradient>
             <radialGradient id={`sigil-bloom-${uid}`} cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.35" />
+              <stop
+                offset="0%"
+                stopColor="var(--accent)"
+                stopOpacity={bloomOpacity}
+              />
               <stop offset="100%" stopColor="var(--accent)" stopOpacity="0" />
             </radialGradient>
-            <filter id={`sigil-soft-${uid}`} x="-30%" y="-30%" width="160%" height="160%">
-              <feGaussianBlur stdDeviation="1.4" result="b" />
+            <filter
+              id={`sigil-soft-${uid}`}
+              x="-35%"
+              y="-35%"
+              width="170%"
+              height="170%"
+            >
+              <feGaussianBlur stdDeviation={stage ? 2.2 : 1.4} result="b" />
               <feMerge>
                 <feMergeNode in="b" />
                 <feMergeNode in="SourceGraphic" />
@@ -98,7 +112,7 @@ export function TipSigil({
             cy={SIZE / 2}
             r={SIZE / 2 - 1}
             fill={`url(#sigil-bloom-${uid})`}
-            opacity={0.7}
+            opacity={0.85}
           />
           <circle
             cx={SIZE / 2}
@@ -106,7 +120,7 @@ export function TipSigil({
             r={SIZE / 2 - 3}
             fill={`url(#sigil-face-${uid})`}
             stroke="var(--line-strong)"
-            strokeWidth={1.25}
+            strokeWidth={stage ? 2 : 1.4}
           />
           <circle
             cx={SIZE / 2}
@@ -114,20 +128,12 @@ export function TipSigil({
             r={SIZE / 2 - 3}
             fill="none"
             stroke="var(--paper)"
-            strokeWidth={0.5}
-            opacity={0.1}
+            strokeWidth={0.6}
+            opacity={0.12}
           />
 
-          {/* Slow idle spin of ring + spoke layer */}
-          <motion.g
-            style={{ transformOrigin: `${SIZE / 2}px ${SIZE / 2}px` }}
-            animate={reduce || !tipHash ? undefined : { rotate: 360 }}
-            transition={
-              reduce || !tipHash
-                ? undefined
-                : { duration: 90, repeat: Infinity, ease: "linear" }
-            }
-          >
+          {/* Static hash geometry: mass for TV, motion only on tip change */}
+          <g>
             {geom.rings.map((r, i) => (
               <circle
                 key={i}
@@ -136,8 +142,8 @@ export function TipSigil({
                 r={r}
                 fill="none"
                 stroke="var(--line)"
-                strokeWidth={0.75}
-                opacity={0.55}
+                strokeWidth={Math.max(1, ringStroke)}
+                opacity={0.65}
               />
             ))}
             {geom.segments
@@ -150,24 +156,12 @@ export function TipSigil({
                   x2={s.x2}
                   y2={s.y2}
                   stroke={s.accent ? "var(--accent)" : "var(--paper-muted)"}
-                  strokeWidth={s.weight * 1.15}
+                  strokeWidth={s.weight * strokeScale}
                   strokeLinecap="round"
-                  opacity={s.type === "chord" ? 0.7 : 0.9}
+                  opacity={s.type === "chord" ? 0.75 : 0.95}
                   filter={s.accent ? `url(#sigil-soft-${uid})` : undefined}
                 />
               ))}
-          </motion.g>
-
-          {/* Counter-rotating accent arcs - feels alive between blocks */}
-          <motion.g
-            style={{ transformOrigin: `${SIZE / 2}px ${SIZE / 2}px` }}
-            animate={reduce || !tipHash ? undefined : { rotate: -360 }}
-            transition={
-              reduce || !tipHash
-                ? undefined
-                : { duration: 55, repeat: Infinity, ease: "linear" }
-            }
-          >
             {geom.segments
               .filter((s) => s.type === "arc")
               .map((s, i) =>
@@ -177,29 +171,13 @@ export function TipSigil({
                     d={arcPath(s.x1, s.y1, s.r, s.start, s.end)}
                     fill="none"
                     stroke={s.accent ? "var(--accent)" : "var(--paper-muted)"}
-                    strokeWidth={s.weight * 1.2}
+                    strokeWidth={s.weight * strokeScale}
                     strokeLinecap="round"
                     opacity={0.95}
                     filter={s.accent ? `url(#sigil-soft-${uid})` : undefined}
                   />
                 ) : null,
               )}
-          </motion.g>
-
-          {/* Breathing center dots */}
-          <motion.g
-            animate={
-              reduce || !tipHash
-                ? undefined
-                : { opacity: [0.65, 1, 0.65], scale: [0.96, 1.04, 0.96] }
-            }
-            style={{ transformOrigin: `${SIZE / 2}px ${SIZE / 2}px` }}
-            transition={
-              reduce || !tipHash
-                ? undefined
-                : { duration: 2.8, repeat: Infinity, ease: "easeInOut" }
-            }
-          >
             {geom.segments
               .filter((s) => s.type === "dot")
               .map((s, i) => (
@@ -207,27 +185,29 @@ export function TipSigil({
                   key={`d-${i}`}
                   cx={s.x1}
                   cy={s.y1}
-                  r={(s.r ?? 1.5) * 1.15}
+                  r={(s.r ?? 1.5) * (stage ? 1.7 : large ? 1.35 : 1.15)}
                   fill={s.accent ? "var(--accent)" : "var(--paper-muted)"}
                   filter={s.accent ? `url(#sigil-soft-${uid})` : undefined}
                 />
               ))}
-          </motion.g>
+          </g>
         </motion.svg>
       </AnimatePresence>
 
       {!reduce && boardPulse > 0 && (
         <motion.span
           key={`pulse-${boardPulse}`}
-          className="pointer-events-none absolute inset-0 rounded-full border border-accent/80"
-          initial={{ opacity: 0.9, scale: 0.85 }}
-          animate={{ opacity: 0, scale: 1.28 }}
+          className="pointer-events-none absolute inset-0 rounded-full border-2 border-accent/85"
+          initial={{ opacity: 0.95, scale: 0.82 }}
+          animate={{ opacity: 0, scale: 1.32 }}
           transition={{ duration: 1, ease: "easeOut" }}
         />
       )}
-      <span className="pointer-events-none absolute -bottom-0.5 left-1/2 -translate-x-1/2 rounded-full bg-ink-elevated px-2 py-0.5 text-[9px] text-paper-muted opacity-0 transition group-hover:opacity-100 group-focus-visible:opacity-100">
-        {copied ? "Copied" : formatHash(tipHash)}
-      </span>
+      {!stage && (
+        <span className="pointer-events-none absolute -bottom-0.5 left-1/2 -translate-x-1/2 rounded-full bg-ink-elevated px-2 py-0.5 text-[9px] text-paper-muted opacity-0 transition group-hover:opacity-100 group-focus-visible:opacity-100">
+          {copied ? "Copied" : formatHash(tipHash)}
+        </span>
+      )}
     </button>
   ) : (
     <div
@@ -249,16 +229,14 @@ export function TipSigil({
       <div className="flex flex-col items-center gap-6">
         {glyph}
         <div className="text-center">
-          <p className="instrument-stage-reading mono text-lg text-paper md:text-2xl">
+          <p className="instrument-stage-reading mono text-5xl font-medium tracking-tight text-paper md:text-7xl">
+            {height != null ? formatInteger(height) : "-"}
+          </p>
+          <p className="mt-2 mono text-sm text-paper-muted md:text-base">
             {copied ? "Got it, on your clipboard" : formatHash(tipHash)}
           </p>
-          {height != null && (
-            <p className="mt-2 text-xs uppercase tracking-[0.2em] text-paper-muted">
-              Block {formatInteger(height)}
-            </p>
-          )}
           <p className="mt-3 text-[11px] uppercase tracking-[0.16em] text-paper-muted/80">
-            Click glyph to copy hash
+            Tip height · click glyph to copy hash
           </p>
         </div>
       </div>
