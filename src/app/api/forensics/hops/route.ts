@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { normalizeBtcAddress } from "@/lib/forensics/address";
 import { buildHops } from "@/lib/forensics/hops";
+import { clientIp, rateLimit, rateLimitResponse } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
+  const limited = rateLimit(`proxy:forensics:hops:${clientIp(req)}`, 20, 60_000);
+  if (!limited.ok) return rateLimitResponse(limited.retryAfterSec);
+
   const raw = req.nextUrl.searchParams.get("address") ?? "";
   const address = normalizeBtcAddress(raw);
   if (!address) {

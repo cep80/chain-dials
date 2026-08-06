@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { isProActive } from "@/lib/pro";
+import { rateLimit } from "@/lib/rate-limit";
 
 const credentialsSchema = z.object({
   email: z.string().email(),
@@ -28,6 +29,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const parsed = credentialsSchema.safeParse(raw);
         if (!parsed.success) return null;
         const email = parsed.data.email.toLowerCase().trim();
+        const limited = rateLimit(`auth:cred:${email}`, 10, 15 * 60 * 1000);
+        if (!limited.ok) return null;
         const user = await prisma.user.findUnique({ where: { email } });
         if (!user?.passwordHash) return null;
         const ok = await bcrypt.compare(parsed.data.password, user.passwordHash);
@@ -52,7 +55,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           select: {
             proStatus: true,
             proCurrentPeriodEnd: true,
-            stripeCustomerId: true,
             name: true,
             email: true,
           },
@@ -60,7 +62,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (dbUser) {
           token.proStatus = dbUser.proStatus;
           token.proCurrentPeriodEnd = dbUser.proCurrentPeriodEnd?.toISOString() ?? null;
-          token.stripeCustomerId = dbUser.stripeCustomerId;
           token.name = dbUser.name;
           token.email = dbUser.email;
           token.pro = isProActive(dbUser.proStatus, dbUser.proCurrentPeriodEnd);
@@ -76,8 +77,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.proStatus = (token.proStatus as string) ?? "none";
         session.user.proCurrentPeriodEnd =
           (token.proCurrentPeriodEnd as string | null) ?? null;
-        session.user.stripeCustomerId =
-          (token.stripeCustomerId as string | null) ?? null;
       }
       return session;
     },

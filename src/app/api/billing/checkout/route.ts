@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { isChainId } from "@/lib/chains/registry";
 import { prisma } from "@/lib/db";
 import {
   ensureStripeCustomer,
@@ -36,7 +37,7 @@ export async function POST(req: Request) {
   let chain = "btc";
   try {
     const body = (await req.json()) as { chain?: string };
-    if (body.chain) chain = body.chain;
+    if (body.chain && isChainId(body.chain)) chain = body.chain;
   } catch {
     // empty body ok
   }

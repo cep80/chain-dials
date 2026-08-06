@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { clientIp, rateLimit, rateLimitResponse } from "@/lib/rate-limit";
 
 const UPSTREAM = "https://mempool.space/api";
 
@@ -17,9 +18,12 @@ const ALLOWED = new Set([
 ]);
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   ctx: { params: Promise<{ path: string[] }> },
 ) {
+  const limited = rateLimit(`proxy:mempool:${clientIp(req)}`, 120, 60_000);
+  if (!limited.ok) return rateLimitResponse(limited.retryAfterSec);
+
   const { path } = await ctx.params;
   const joined = path.join("/");
   if (!ALLOWED.has(joined)) {

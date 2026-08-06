@@ -8,11 +8,20 @@ export type ProStatus =
   | "canceled"
   | "trialing";
 
+/**
+ * Server-side Pro gate. `PRO_FORCE=true` only works outside production
+ * (never use NEXT_PUBLIC_* for API entitlement).
+ */
 export function isProActive(
   status: string | null | undefined,
   periodEnd?: Date | string | null,
 ): boolean {
-  if (process.env.NEXT_PUBLIC_PRO_FORCE === "true") return true;
+  if (
+    process.env.PRO_FORCE === "true" &&
+    process.env.NODE_ENV !== "production"
+  ) {
+    return true;
+  }
   if (status === "active" || status === "trialing") return true;
   if (status === "past_due") {
     if (!periodEnd) return true;
@@ -24,8 +33,8 @@ export function isProActive(
 }
 
 /**
- * @deprecated Prefer session.user.pro from Auth.js.
- * Kept for local demos when NEXT_PUBLIC_PRO_FORCE=true.
+ * Client UI demo unlock only. Does not grant API access.
+ * Prefer session.user.pro for real entitlement.
  */
 export function isProEnabled(): boolean {
   return process.env.NEXT_PUBLIC_PRO_FORCE === "true";

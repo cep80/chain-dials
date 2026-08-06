@@ -9,6 +9,55 @@ import {
 
 export const dynamic = "force-dynamic";
 
+async function resolveCheckoutUserId(
+  session: Stripe.Checkout.Session,
+): Promise<string | null> {
+  const metaUserId =
+    session.client_reference_id || session.metadata?.userId || null;
+  const customerId =
+    typeof session.customer === "string"
+      ? session.customer
+      : session.customer?.id ?? null;
+  if (!metaUserId || !customerId) return null;
+
+  const user = await prisma.user.findUnique({
+    where: { id: metaUserId },
+    select: { id: true, stripeCustomerId: true },
+  });
+  if (!user) return null;
+
+  if (user.stripeCustomerId && user.stripeCustomerId !== customerId) {
+    console.error("stripe checkout customer/user mismatch", {
+      userId: metaUserId,
+      customerId,
+      bound: user.stripeCustomerId,
+    });
+    return null;
+  }
+
+  const other = await prisma.user.findFirst({
+    where: { stripeCustomerId: customerId, NOT: { id: metaUserId } },
+    select: { id: true },
+  });
+  if (other) {
+    console.error("stripe checkout customer already bound", {
+      customerId,
+      otherUserId: other.id,
+      metaUserId,
+    });
+    return null;
+  }
+
+  if (!user.stripeCustomerId) {
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { stripeCustomerId: customerId },
+    });
+  }
+
+  return user.id;
+}
+
 export async function POST(req: Request) {
   const secret = process.env.STRIPE_WEBHOOK_SECRET?.trim();
   if (!secret) {
@@ -37,10 +86,7 @@ export async function POST(req: Request) {
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
-        const userId =
-          session.client_reference_id ||
-          session.metadata?.userId ||
-          null;
+        const userId = await resolveCheckoutUserId(session);
         const subId =
           typeof session.subscription === "string"
             ? session.subscription

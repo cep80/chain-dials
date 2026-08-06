@@ -38,16 +38,36 @@ export async function ensureStripeCustomer(user: {
   stripeCustomerId?: string | null;
 }): Promise<string> {
   if (user.stripeCustomerId) return user.stripeCustomerId;
+
+  const fresh = await prisma.user.findUnique({
+    where: { id: user.id },
+    select: { stripeCustomerId: true },
+  });
+  if (fresh?.stripeCustomerId) return fresh.stripeCustomerId;
+
   const stripe = getStripe();
   const customer = await stripe.customers.create({
     email: user.email,
     name: user.name ?? undefined,
     metadata: { userId: user.id },
   });
-  await prisma.user.update({
-    where: { id: user.id },
+
+  const claimed = await prisma.user.updateMany({
+    where: { id: user.id, stripeCustomerId: null },
     data: { stripeCustomerId: customer.id },
   });
+
+  if (claimed.count === 0) {
+    const winner = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { stripeCustomerId: true },
+    });
+    if (winner?.stripeCustomerId) {
+      // Lost the race; leave the orphan customer for Stripe cleanup later.
+      return winner.stripeCustomerId;
+    }
+  }
+
   return customer.id;
 }
 
@@ -70,10 +90,16 @@ export async function syncSubscriptionToUser(
     (subscription as unknown as { current_period_end?: number })
       .current_period_end ?? null;
 
+  const customerId =
+    typeof subscription.customer === "string"
+      ? subscription.customer
+      : subscription.customer?.id;
+
   await prisma.user.update({
     where: { id: userId },
     data: {
       stripeSubscriptionId: subscription.id,
+      ...(customerId ? { stripeCustomerId: customerId } : {}),
       proStatus,
       proCurrentPeriodEnd: periodEndSec
         ? new Date(periodEndSec * 1000)
@@ -85,16 +111,33 @@ export async function syncSubscriptionToUser(
 export async function findUserIdForSubscription(
   subscription: Stripe.Subscription,
 ): Promise<string | null> {
-  const metaUser = subscription.metadata?.userId;
-  if (metaUser) return metaUser;
   const customerId =
     typeof subscription.customer === "string"
       ? subscription.customer
       : subscription.customer?.id;
   if (!customerId) return null;
-  const user = await prisma.user.findFirst({
+
+  // Prefer durable customer binding over mutable metadata.
+  const byCustomer = await prisma.user.findFirst({
     where: { stripeCustomerId: customerId },
     select: { id: true },
   });
-  return user?.id ?? null;
+  if (byCustomer) return byCustomer.id;
+
+  const metaUser = subscription.metadata?.userId;
+  if (!metaUser) return null;
+  const byMeta = await prisma.user.findUnique({
+    where: { id: metaUser },
+    select: { id: true, stripeCustomerId: true },
+  });
+  if (!byMeta) return null;
+  if (byMeta.stripeCustomerId && byMeta.stripeCustomerId !== customerId) {
+    console.error("stripe subscription customer/user mismatch", {
+      userId: metaUser,
+      customerId,
+      bound: byMeta.stripeCustomerId,
+    });
+    return null;
+  }
+  return byMeta.id;
 }

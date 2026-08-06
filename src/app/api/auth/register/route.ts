@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
+import { clientIp, rateLimit, rateLimitResponse } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +12,16 @@ const bodySchema = z.object({
   name: z.string().trim().min(1).max(80).optional(),
 });
 
+const GENERIC_OK = {
+  ok: true as const,
+  message: "If this email is free, your account is ready. You can sign in.",
+};
+
 export async function POST(req: Request) {
+  const ip = clientIp(req);
+  const limited = rateLimit(`auth:register:${ip}`, 5, 60 * 60 * 1000);
+  if (!limited.ok) return rateLimitResponse(limited.retryAfterSec);
+
   let json: unknown;
   try {
     json = await req.json();
@@ -30,21 +40,19 @@ export async function POST(req: Request) {
   const email = parsed.data.email.toLowerCase().trim();
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
-    return NextResponse.json(
-      { error: "An account with that email already exists. Sign in instead." },
-      { status: 409 },
-    );
+    // Same shape as success so callers cannot enumerate accounts.
+    return NextResponse.json(GENERIC_OK, { status: 201 });
   }
 
   const passwordHash = await bcrypt.hash(parsed.data.password, 12);
-  const user = await prisma.user.create({
+  await prisma.user.create({
     data: {
       email,
       name: parsed.data.name ?? email.split("@")[0],
       passwordHash,
     },
-    select: { id: true, email: true, name: true },
+    select: { id: true },
   });
 
-  return NextResponse.json({ ok: true, user }, { status: 201 });
+  return NextResponse.json(GENERIC_OK, { status: 201 });
 }

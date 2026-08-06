@@ -36,7 +36,9 @@ export function SignUpForm() {
         callbackUrl: "/account",
       });
       if (signed?.error) {
-        setError("Account created, but sign-in failed. Try signing in.");
+        setError(
+          "Could not sign in with those credentials. If you already have an account, sign in instead.",
+        );
         setBusy(false);
         return;
       }

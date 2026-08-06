@@ -3,10 +3,14 @@ import { normalizeBtcAddress } from "@/lib/forensics/address";
 import { getHolder, getVictim } from "@/lib/forensics/dataset";
 import { fetchAddress } from "@/lib/forensics/mempool";
 import type { LookupHit, LookupResponse } from "@/lib/forensics/types";
+import { clientIp, rateLimit, rateLimitResponse } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
+  const limited = rateLimit(`proxy:forensics:lookup:${clientIp(req)}`, 40, 60_000);
+  if (!limited.ok) return rateLimitResponse(limited.retryAfterSec);
+
   const query = req.nextUrl.searchParams.get("address") ?? "";
   const normalized = normalizeBtcAddress(query);
 

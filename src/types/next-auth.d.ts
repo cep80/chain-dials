@@ -7,7 +7,6 @@ declare module "next-auth" {
       pro: boolean;
       proStatus: string;
       proCurrentPeriodEnd: string | null;
-      stripeCustomerId: string | null;
     };
   }
 
@@ -21,7 +20,6 @@ declare module "next-auth/jwt" {
     pro?: boolean;
     proStatus?: string;
     proCurrentPeriodEnd?: string | null;
-    stripeCustomerId?: string | null;
     proCheckedAt?: number;
   }
 }
