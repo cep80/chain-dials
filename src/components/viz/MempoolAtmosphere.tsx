@@ -962,7 +962,13 @@ export function MempoolAtmosphere({
           <p className="mono text-[9px] uppercase tracking-wider text-paper-muted/80">
             {pendingLabel ? `${pendingLabel} waiting` : "waiting…"}
             {sampleN > 0 ? ` · ${sampleN} clickable` : ""}
-            {sampleStale ? " · a bit stale" : ""}
+            {sampleStale
+              ? connection === "connecting"
+                ? " · loading"
+                : connection === "degraded"
+                  ? " · updating"
+                  : " · last known"
+              : ""}
           </p>
         </div>
       ) : null}

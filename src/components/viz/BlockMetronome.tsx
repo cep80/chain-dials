@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { useEffect, useId, useState } from "react";
 import { useChainOptional } from "@/lib/chains/context";
+import { feedCatchupLabel, isFeedCatchingUp } from "@/lib/feed-status";
 import { formatDuration } from "@/lib/format";
 import { useAppReducedMotion } from "@/lib/settings/use-app-reduced-motion";
 import { useDashboardStore } from "@/lib/store";
@@ -59,6 +60,7 @@ export function BlockMetronome({
 }) {
   const tipTimestamp = useDashboardStore((s) => s.live.tipTimestamp);
   const boardPulse = useDashboardStore((s) => s.boardPulse);
+  const connection = useDashboardStore((s) => s.connection);
   const chain = useChainOptional();
   const target = chain?.targetBlockSeconds ?? DEFAULT_TARGET;
   const cadence = chain?.cadenceLabel ?? "block";
@@ -66,6 +68,8 @@ export function BlockMetronome({
   const uid = useId().replace(/:/g, "");
   const mode = resolveDisplayMode({ compact, large, stage });
   const size = instrumentCanvasSize(mode, 140);
+  const catchingUp = isFeedCatchingUp(connection);
+  const catchupNote = feedCatchupLabel(connection);
 
   const [since, setSince] = useState<number | null>(null);
 
@@ -85,7 +89,8 @@ export function BlockMetronome({
   const raw = since != null ? since / target : 0;
   const lap = raw % 1;
   const laps = Math.floor(raw);
-  const tone = metronomeTone(since, target);
+  // While the feed is catching up, clock age is not a network lateness signal.
+  const tone = catchingUp ? "calm" : metronomeTone(since, target);
   const angleDeg = metronomeHandDegrees(since, target);
   const overshoot = raw >= 1;
   const arcLen = ringDashLength(overshoot ? 1 : lap, R);
@@ -112,7 +117,7 @@ export function BlockMetronome({
   });
   const lapMarks = Math.min(8, laps);
 
-  const reading = formatDuration(since);
+  const reading = catchingUp && since == null ? "…" : formatDuration(since);
   const targetLabel =
     target >= 60
       ? `${Math.round(target / 60)} min`
@@ -120,7 +125,11 @@ export function BlockMetronome({
         ? `${target}s`
         : `${Math.round(target * 1000)}ms`;
   const aria = `Metronome. Time since last ${cadence}: ${reading}. Target interval ${targetLabel}.${
-    laps > 0 ? ` ${laps} interval${laps === 1 ? "" : "s"} overdue.` : ""
+    catchupNote
+      ? ` Feed ${catchupNote.toLowerCase()}; reading may be outdated.`
+      : laps > 0
+        ? ` ${laps} interval${laps === 1 ? "" : "s"} overdue.`
+        : ""
   }`;
 
   const dial = (
@@ -379,8 +388,11 @@ export function BlockMetronome({
           {reading}
         </p>
         <p className="text-xs uppercase tracking-[0.2em] text-paper-muted">
-          since the last {cadence}
-          {laps > 0 ? ` · ${laps}× past the usual ${targetLabel}` : ""}
+          {catchupNote
+            ? `${catchupNote} feed · last known since ${cadence}`
+            : `since the last ${cadence}${
+                laps > 0 ? ` · ${laps}× past the usual ${targetLabel}` : ""
+              }`}
         </p>
       </div>
     );
@@ -391,9 +403,11 @@ export function BlockMetronome({
     <InstrumentFrame
       title={meta?.frameTitle ?? "Metronome"}
       subtitle={
-        laps > 0
-          ? `Still waiting · ${laps}× past the usual ${targetLabel}`
-          : (meta?.subtitle ?? `Aims for ~${targetLabel} between ${cadence}s`)
+        catchupNote
+          ? `${catchupNote} feed · showing last known tip time`
+          : laps > 0
+            ? `Still waiting · ${laps}× past the usual ${targetLabel}`
+            : (meta?.subtitle ?? `Aims for ~${targetLabel} between ${cadence}s`)
       }
       reading={reading}
       large={large}

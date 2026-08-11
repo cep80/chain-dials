@@ -31,6 +31,7 @@ import {
   type InstrumentId,
 } from "@/lib/instruments";
 import { useChainOptional } from "@/lib/chains/context";
+import { feedCatchupLabel } from "@/lib/feed-status";
 import { ShareBar } from "@/components/share/ShareBar";
 import { useDashboardStore } from "@/lib/store";
 import {
@@ -247,6 +248,8 @@ export function InstrumentStage() {
   const chain = useChainOptional();
   const live = useDashboardStore((s) => s.live);
   const now = useDashboardStore((s) => s.now);
+  const connection = useDashboardStore((s) => s.connection);
+  const catchupNote = feedCatchupLabel(connection);
   const meta = active
     ? (chain?.instruments[active] ?? INSTRUMENT_META[active])
     : null;
@@ -345,6 +348,7 @@ export function InstrumentStage() {
                 <p className="text-[10px] uppercase tracking-[0.22em] text-accent">
                   {stageIndex}/{stageCount}
                   {frameTitle ? ` · ${frameTitle}` : ""}
+                  {catchupNote ? ` · ${catchupNote}` : ""}
                 </p>
                 <h2
                   id={titleId}
@@ -355,6 +359,14 @@ export function InstrumentStage() {
                 {stageReading ? (
                   <p className="instrument-stage-reading mono mt-1 text-sm text-paper-muted md:text-base">
                     {stageReading}
+                    {catchupNote ? ` · ${catchupNote.toLowerCase()}` : ""}
+                  </p>
+                ) : catchupNote ? (
+                  <p
+                    className="mt-1 text-sm uppercase tracking-[0.14em] text-warn"
+                    role="status"
+                  >
+                    {catchupNote} feed
                   </p>
                 ) : null}
               </div>

@@ -85,11 +85,11 @@ const BASE: Record<TipId, TipBody> = {
   },
   "pulse.since_tip": {
     title: "Since tip",
-    body: "Time since the newest block (the chain tip). Amber means it’s been quiet longer than usual for this chain. On Hyperliquid this is HyperEVM block time, not the faster HyperCore L1 clock.",
+    body: "Time since the newest block (the chain tip). Amber means it’s been quiet longer than usual for this chain. Loading or Updating means the feed is catching up, so the clock may be last-known. On Hyperliquid this is HyperEVM block time, not the faster HyperCore L1 clock.",
   },
   "pulse.feed": {
     title: "Feed",
-    body: "How fresh this board’s data is. Bitcoin updates live; other chains refresh about every 15 seconds.",
+    body: "How fresh this board’s data is. Bitcoin updates live; other chains refresh about every 15 seconds. Loading or Updating means we are refreshing and instruments may briefly show last-known values.",
   },
   "nav.board": {
     title: "Board",

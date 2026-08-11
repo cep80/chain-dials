@@ -3,9 +3,11 @@
 import { Hint } from "@/components/ui/Hint";
 import { useInstrumentPreview } from "@/components/viz/instrument-preview";
 import { useChainOptional } from "@/lib/chains/context";
+import { feedCatchupLabel } from "@/lib/feed-status";
 import { useInstrumentStage } from "@/lib/instrument-stage";
 import type { InstrumentId } from "@/lib/instruments";
 import type { TipId } from "@/lib/settings/tips";
+import { useDashboardStore } from "@/lib/store";
 
 function ExpandIcon() {
   return (
@@ -59,6 +61,8 @@ export function InstrumentFrame({
   const open = useInstrumentStage((s) => s.open);
   const chain = useChainOptional();
   const preview = useInstrumentPreview();
+  const connection = useDashboardStore((s) => s.connection);
+  const catchupNote = feedCatchupLabel(connection);
   const narrative =
     instrumentId && chain
       ? chain.instruments[instrumentId].narrative
@@ -100,6 +104,14 @@ export function InstrumentFrame({
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
+          {catchupNote ? (
+            <span
+              className="rounded-md border border-warn/40 bg-warn/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-warn"
+              role="status"
+            >
+              {catchupNote}
+            </span>
+          ) : null}
           {reading != null && (
             <p
               className={`instrument-frame-reading mono text-right text-paper ${

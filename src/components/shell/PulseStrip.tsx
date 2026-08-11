@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Hint } from "@/components/ui/Hint";
 import { useChainOptional } from "@/lib/chains/context";
 import { freshnessLabel } from "@/lib/chains/registry";
+import { feedCatchupLabel, isFeedCatchingUp } from "@/lib/feed-status";
 import {
   formatDuration,
   formatFee,
@@ -18,6 +19,7 @@ function Chip({
   label,
   value,
   tense,
+  note,
   tip,
   chainId,
   feeUnit,
@@ -25,6 +27,8 @@ function Chip({
   label: string;
   value: string;
   tense?: boolean;
+  /** Shown when the value may be last-known while a refresh runs. */
+  note?: string | null;
   tip: TipId;
   chainId?: Parameters<typeof Hint>[0]["chainId"];
   feeUnit?: string;
@@ -33,13 +37,25 @@ function Chip({
     <Hint tip={tip} chainId={chainId} feeUnit={feeUnit} as="div" className="min-w-0 flex-1">
       <div
         className={`pulse-chip min-w-0 rounded-[10px] border px-3 py-2.5 md:px-4 ${
-          tense
-            ? "border-warn/50 bg-warn/10"
-            : "border-line bg-ink-elevated/80"
+          note
+            ? "border-warn/35 bg-warn/5"
+            : tense
+              ? "border-warn/50 bg-warn/10"
+              : "border-line bg-ink-elevated/80"
         }`}
       >
-        <div className="text-[10px] uppercase tracking-[0.16em] text-paper-muted underline decoration-dotted decoration-paper-muted/40 underline-offset-2">
-          {label}
+        <div className="flex items-baseline justify-between gap-2">
+          <div className="text-[10px] uppercase tracking-[0.16em] text-paper-muted underline decoration-dotted decoration-paper-muted/40 underline-offset-2">
+            {label}
+          </div>
+          {note ? (
+            <span
+              className="shrink-0 text-[9px] font-semibold uppercase tracking-[0.14em] text-warn"
+              role="status"
+            >
+              {note}
+            </span>
+          ) : null}
         </div>
         <div className="mono mt-1 truncate text-base font-medium text-paper md:text-lg">
           {value}
@@ -52,8 +68,11 @@ function Chip({
 export function PulseStrip() {
   const live = useDashboardStore((s) => s.live);
   const now = useDashboardStore((s) => s.now);
+  const connection = useDashboardStore((s) => s.connection);
   const chain = useChainOptional();
   const reduce = useAppReducedMotion();
+  const catchingUp = isFeedCatchingUp(connection);
+  const catchupNote = feedCatchupLabel(connection);
 
   const since =
     live.tipTimestamp != null ? (now - live.tipTimestamp) / 1000 : null;
@@ -64,7 +83,8 @@ export function PulseStrip() {
       : chain?.id === "eth"
         ? Math.max(target * 2.5, 20)
         : target * 1.2;
-  const tense = since != null && since > staleSlack;
+  // Amber "quiet too long" only when the feed itself is healthy.
+  const tense = !catchingUp && since != null && since > staleSlack;
   const feeUnit = chain?.feeUnit ?? "sat/vB";
   const heightLabel =
     chain?.cadenceLabel === "slot"
@@ -134,8 +154,11 @@ export function PulseStrip() {
       />
       <Chip
         label="Since tip"
-        value={formatDuration(since)}
+        value={
+          catchingUp && since == null ? "…" : formatDuration(since)
+        }
         tense={tense}
+        note={catchupNote}
         tip="pulse.since_tip"
         chainId={chain?.id}
       />
@@ -143,11 +166,12 @@ export function PulseStrip() {
         <Chip
           label="Feed"
           value={
-            chain.id === "btc"
+            catchupNote ??
+            (chain.id === "btc"
               ? freshnessLabel(chain)
               : live.feedSource
                 ? `${freshnessLabel(chain)}`
-                : freshnessLabel(chain)
+                : freshnessLabel(chain))
           }
           tip="pulse.feed"
           chainId={chain.id}
