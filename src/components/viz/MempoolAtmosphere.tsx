@@ -25,6 +25,7 @@ import {
   type HistLayer,
 } from "@/lib/atmosphere-math";
 import { useChainOptional } from "@/lib/chains/context";
+import { feedCatchupLabel } from "@/lib/feed-status";
 import { useDocumentVisible } from "@/lib/use-document-visible";
 import { useDashboardStore } from "@/lib/store";
 import { useInstrumentStage } from "@/lib/instrument-stage";
@@ -347,7 +348,9 @@ export function MempoolAtmosphere({
   const pressurePct = blocksWaiting != null ? blocksWaiting * 100 : null;
   const intensity = clamp((pressurePct ?? 40) / 200, 0.15, 1);
   const pausedByStage = !stage && stageOpen === "atmosphere";
-  const sampleStale = connection === "degraded" || connection === "disconnected";
+  const catchupNote = feedCatchupLabel(connection);
+  const sampleStale =
+    catchupNote != null || connection === "disconnected";
 
   feesRef.current = {
     fastest: feeFastest,
@@ -962,13 +965,11 @@ export function MempoolAtmosphere({
           <p className="mono text-[9px] uppercase tracking-wider text-paper-muted/80">
             {pendingLabel ? `${pendingLabel} waiting` : "waiting…"}
             {sampleN > 0 ? ` · ${sampleN} clickable` : ""}
-            {sampleStale
-              ? connection === "connecting"
-                ? " · loading"
-                : connection === "degraded"
-                  ? " · updating"
-                  : " · last known"
-              : ""}
+            {catchupNote
+              ? ` · ${catchupNote.toLowerCase()}`
+              : sampleStale
+                ? " · last known"
+                : ""}
           </p>
         </div>
       ) : null}
