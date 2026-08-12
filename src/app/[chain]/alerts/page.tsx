@@ -9,10 +9,15 @@ import { useChain } from "@/lib/chains/context";
 import { useProAccess } from "@/hooks/useProAccess";
 import {
   ALERT_KIND_META,
-  ALERT_KINDS,
+  alertKindsForChain,
   type AlertKind,
 } from "@/lib/alerts/kinds";
 import { evaluateAlertRule } from "@/lib/alerts/evaluate";
+import {
+  evaluateHypeRegime,
+  regimeLiveFromBoard,
+} from "@/lib/regime/evaluate";
+import { isRegimeId } from "@/lib/regime/types";
 import { normalizeHashrate } from "@/lib/viz-scale";
 import { useDashboardStore } from "@/lib/store";
 
@@ -25,13 +30,14 @@ type Rule = {
 };
 
 function defaultRules(chainId: string): Rule[] {
-  return ALERT_KINDS.map((kind) => ({
+  return alertKindsForChain(chainId).map((kind) => ({
     chainId,
     kind,
     enabled:
       kind === "fee_hot" ||
       kind === "tip_quiet" ||
-      kind === "metronome_late",
+      kind === "metronome_late" ||
+      kind === "regime_flip",
     params: { ...ALERT_KIND_META[kind].defaultParams },
   }));
 }
@@ -74,7 +80,7 @@ export default function AlertsPage() {
       // Merge known kinds so new instrument alerts appear after upgrades
       const byKind = new Map(data.rules.map((r) => [r.kind, r]));
       setRules(
-        ALERT_KINDS.map((kind) => {
+        alertKindsForChain(chain.id).map((kind) => {
           const existing = byKind.get(kind);
           if (existing) {
             return {
@@ -102,6 +108,7 @@ export default function AlertsPage() {
   }, [load]);
 
   const lastFire = useRef<Record<string, number>>({});
+  const lastHypeRegime = useRef<string | null>(null);
 
   useEffect(() => {
     if (!pro || perm !== "granted") return;
@@ -117,6 +124,20 @@ export default function AlertsPage() {
         ? normalizeHashrate(live.hashrate, histories.hashrate ?? [])
         : live.securityScore;
 
+    const hypeLive =
+      chain.id === "hype" ? regimeLiveFromBoard(live, now) : null;
+    const hypeReady = (hypeLive?.fundingBps.length ?? 0) > 0;
+    const hypeReading =
+      hypeLive && hypeReady
+        ? evaluateHypeRegime(
+            hypeLive,
+            {},
+            lastHypeRegime.current && isRegimeId(lastHypeRegime.current)
+              ? lastHypeRegime.current
+              : null,
+          )
+        : null;
+
     const snap = {
       feeFastest: live.feeFastest,
       tipTimestamp: live.tipTimestamp,
@@ -125,6 +146,11 @@ export default function AlertsPage() {
       priceUsd: live.priceUsd,
       securityScore: live.securityScore,
       forgeIntensity,
+      previousRegime: lastHypeRegime.current,
+      regime: hypeReading?.regime ?? null,
+      regimeConfidence: hypeReading?.confidence ?? null,
+      regimeReasons: hypeReading?.reasons ?? [],
+      regimeStance: hypeReading?.stance ?? null,
     };
     const ctx = {
       nowMs: now,
@@ -145,12 +171,14 @@ export default function AlertsPage() {
         chain.id,
       );
       if (!fire) continue;
-      if (!cool(fire.tag)) continue;
+      const coolMs = fire.kind === "regime_flip" ? 5 * 60_000 : 30 * 60_000;
+      if (!cool(fire.tag, coolMs)) continue;
       new Notification(fire.title, {
         body: fire.body,
         tag: fire.tag,
       });
     }
+    if (hypeReading) lastHypeRegime.current = hypeReading.regime;
   }, [
     pro,
     perm,
@@ -162,6 +190,9 @@ export default function AlertsPage() {
     live.priceUsd,
     live.hashrate,
     live.securityScore,
+    live.baseFeeSeries,
+    live.recentTxs,
+    live.issuanceProgress,
     histories.hashrate,
     now,
     chain,
@@ -187,7 +218,7 @@ export default function AlertsPage() {
         if (data.rules) {
           const byKind = new Map(data.rules.map((r) => [r.kind, r]));
           setRules(
-            ALERT_KINDS.map((kind) => {
+            alertKindsForChain(chain.id).map((kind) => {
               const existing = byKind.get(kind);
               if (existing) {
                 return {
@@ -227,7 +258,8 @@ export default function AlertsPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-paper-muted">
           Rules sync to your account. Instrument rules use the same language as
-          the dials (metronome, atmosphere, forge).
+          the dials (metronome, atmosphere, forge, and on Hyperliquid the
+          paper co-pilot regime).
         </p>
         {perm !== "granted" && perm !== "unsupported" ? (
           <button
@@ -300,7 +332,7 @@ export default function AlertsPage() {
           type="button"
           disabled={saving}
           onClick={() => void save()}
-          className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-ink disabled:opacity-60"
+          className="btn-cta rounded-full px-4 py-2 text-sm disabled:opacity-60"
         >
           {saving ? "Saving…" : "Save rules"}
         </button>
@@ -331,7 +363,7 @@ export default function AlertsPage() {
           title="Instrument + synced alerts"
           detail={
             signedIn
-              ? "Pro: multi-rule alerts in dial language (metronome late, atmosphere pressure, forge heat) plus classic fee/tip rules."
+              ? "Pro: multi-rule alerts in dial language (metronome late, atmosphere pressure, forge heat, HYPE regime flips) plus classic fee/tip rules."
               : "Sign in and optionally upgrade for instrument-state and synced alert rules. Boards stay free."
           }
           ctaLabel={signedIn ? "See Pro" : "Sign in"}

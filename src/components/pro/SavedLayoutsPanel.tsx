@@ -112,7 +112,7 @@ export function SavedLayoutsPanel() {
           type="button"
           disabled={busy || !name.trim()}
           onClick={() => void save()}
-          className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-ink disabled:opacity-60"
+          className="btn-cta rounded-full px-4 py-2 text-sm disabled:opacity-60"
         >
           Save current pins
         </button>

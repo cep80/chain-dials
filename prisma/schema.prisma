@@ -85,7 +85,7 @@ model AlertRule {
   id        String   @id @default(cuid())
   userId    String
   chainId   String
-  /// fee_hot | tip_quiet | mempool_stuffed | price_move | metronome_late | atmosphere_pressure | forge_heat
+  /// fee_hot | tip_quiet | mempool_stuffed | price_move | metronome_late | atmosphere_pressure | forge_heat | regime_flip
   kind      String
   enabled   Boolean  @default(true)
   /// JSON threshold params

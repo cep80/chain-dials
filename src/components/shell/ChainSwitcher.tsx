@@ -43,11 +43,7 @@ export function ChainSwitcher() {
             }`}
             style={
               on
-                ? {
-                    background: c.accent,
-                    color:
-                      id === "sol" || id === "hype" ? "#0a0c10" : undefined,
-                  }
+                ? { background: c.accent }
                 : { border: "1px solid var(--line)" }
             }
             title={`${c.name} board`}

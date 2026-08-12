@@ -26,7 +26,7 @@ function AccountBody() {
         <div className="mt-4 flex flex-wrap gap-3">
           <Link
             href="/account/signin"
-            className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-ink"
+            className="btn-cta rounded-full px-4 py-2 text-sm"
           >
             Sign in
           </Link>
@@ -131,7 +131,7 @@ function AccountBody() {
               type="button"
               disabled={busy === "portal"}
               onClick={() => void openPortal()}
-              className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-ink disabled:opacity-60"
+              className="btn-cta rounded-full px-4 py-2 text-sm disabled:opacity-60"
             >
               {busy === "portal" ? "Opening…" : "Manage billing"}
             </button>
@@ -140,7 +140,7 @@ function AccountBody() {
               type="button"
               disabled={busy === "checkout"}
               onClick={() => void startCheckout()}
-              className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-ink disabled:opacity-60"
+              className="btn-cta rounded-full px-4 py-2 text-sm disabled:opacity-60"
             >
               {busy === "checkout" ? "Starting…" : `Upgrade to Pro (${PRO_PRICE_LABEL})`}
             </button>

@@ -11,6 +11,8 @@ export const ALERT_KINDS = [
   "atmosphere_pressure",
   /** Instrument: forge heat (securityScore 0-1 or hashrate EH proxy) */
   "forge_heat",
+  /** HYPE: dial regime changed (Funding Tide / OI Vault / Volume Fountain) */
+  "regime_flip",
 ] as const;
 
 export type AlertKind = (typeof ALERT_KINDS)[number];
@@ -26,7 +28,7 @@ export const ALERT_KIND_META: Record<
     hint: string;
     defaultParams: Record<string, number>;
     /** Chain Dials instrument language */
-    instrument?: "metronome" | "atmosphere" | "forge";
+    instrument?: "metronome" | "atmosphere" | "forge" | "tide";
   }
 > = {
   fee_hot: {
@@ -67,4 +69,15 @@ export const ALERT_KIND_META: Record<
     defaultParams: { score: 0.7 },
     instrument: "forge",
   },
+  regime_flip: {
+    label: "Regime flip",
+    hint: "HYPE only. Fires when the paper co-pilot regime changes, if confidence clears your floor (0–1).",
+    defaultParams: { confidence: 0.5 },
+    instrument: "tide",
+  },
 };
+
+export function alertKindsForChain(chainId: string): AlertKind[] {
+  if (chainId === "hype") return [...ALERT_KINDS];
+  return ALERT_KINDS.filter((k) => k !== "regime_flip");
+}

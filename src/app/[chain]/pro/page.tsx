@@ -12,7 +12,7 @@ import { useProAccess } from "@/hooks/useProAccess";
 const FEATURES = [
   {
     title: "What stays free",
-    body: "Live boards on every chain, single-chain wall / TV mode, full price history, CSV, instruments, Trace, and share. No ticket into the room.",
+    body: "Live boards on every chain, single-chain wall / TV mode, full price history, CSV, instruments, Trace, share, and the Hyperliquid paper co-pilot. No ticket into the room.",
   },
   {
     title: "Control room wall packs",
@@ -21,7 +21,7 @@ const FEATURES = [
   },
   {
     title: "Instrument-state alerts",
-    body: "Nudge when the metronome runs late, atmosphere pressure spikes, or forge heat clears your floor — plus classic fee/tip rules.",
+    body: "Nudge when the metronome runs late, atmosphere pressure spikes, or forge heat clears your floor. On Hyperliquid, regime flips too. Classic fee/tip rules stay.",
     href: "alerts",
   },
   {
@@ -77,7 +77,7 @@ export default function ProPage() {
         </h1>
         <p className="mt-4 text-lg text-paper-muted">
           {SUITE.name} keeps the show free. Pro is the control room, instrument
-          alerts, and desk memory — optional extras on top of free boards.
+          alerts, and desk memory: optional extras on top of free boards.
         </p>
 
         <div
@@ -100,7 +100,7 @@ export default function ProPage() {
             {pro ? (
               <Link
                 href="/account"
-                className="rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-ink"
+                className="btn-cta rounded-full px-5 py-2.5 text-sm"
               >
                 Manage account
               </Link>
@@ -109,7 +109,7 @@ export default function ProPage() {
                 type="button"
                 disabled={busy}
                 onClick={() => void startCheckout()}
-                className="rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-ink disabled:opacity-60"
+                className="btn-cta rounded-full px-5 py-2.5 text-sm disabled:opacity-60"
               >
                 {busy
                   ? "Starting checkout…"

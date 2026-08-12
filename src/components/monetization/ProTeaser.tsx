@@ -17,12 +17,12 @@ export function ProTeaser() {
       </h3>
       <p className="mt-2 text-sm leading-relaxed text-paper-muted">
         {pro
-          ? "Wall packs, instrument alerts, desk packs, and layouts on your account. Boards stay free."
-          : "Free boards forever. Pro: multi-chain wall packs, instrument-state alerts, desk memory, and layouts."}
+          ? "Wall packs, instrument alerts, desk packs, and layouts on your account. Boards and the HYPE paper co-pilot stay free."
+          : "Free boards forever. The HYPE paper co-pilot stays local. Pro: multi-chain wall packs, instrument-state alerts, desk memory, and layouts."}
       </p>
       <Link
         href={href}
-        className="mt-4 inline-flex rounded-full bg-paper px-4 py-2 text-sm font-semibold text-ink transition hover:bg-accent hover:text-ink"
+        className="btn-cta mt-4 rounded-full px-4 py-2 text-sm"
       >
         {pro ? "Open account" : "See Pro"}
       </Link>

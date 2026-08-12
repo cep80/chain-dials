@@ -17,6 +17,12 @@ export type AlertLiveSnapshot = {
   securityScore: number | null;
   /** Optional hashrate intensity 0–1 if mapped client-side */
   forgeIntensity: number | null;
+  /** HYPE regime reading (from evaluateHypeRegime) */
+  regime?: string | null;
+  regimeConfidence?: number | null;
+  regimeReasons?: string[];
+  regimeStance?: string | null;
+  previousRegime?: string | null;
 };
 
 export type AlertEvalContext = {
@@ -144,6 +150,27 @@ export function evaluateAlertRule(
         body: `Heat score ${(score * 100).toFixed(0)}% (floor ${(floor * 100).toFixed(0)}%).`,
         tag: `forge-${chainId}`,
         pathHint: `/${chainId}?i=forge`,
+      };
+    }
+    case "regime_flip": {
+      if (chainId !== "hype") return null;
+      const regime = live.regime;
+      const prev = live.previousRegime;
+      if (!regime || !prev || prev === regime) return null;
+      const conf = live.regimeConfidence;
+      if (conf == null || !Number.isFinite(conf)) return null;
+      const floor = Number(params.confidence ?? meta.defaultParams.confidence);
+      if (!(conf >= floor)) return null;
+      const reason = (live.regimeReasons ?? [])[0];
+      const stance = live.regimeStance ? ` Stance ${live.regimeStance}.` : "";
+      return {
+        kind,
+        title: `HYPE regime ${regime.replaceAll("_", " ")}`,
+        body: `${prev.replaceAll("_", " ")} → ${regime.replaceAll("_", " ")}.${
+          reason ? ` ${reason}` : ""
+        }${stance} Paper only.`,
+        tag: `regime-${chainId}`,
+        pathHint: "/hype#regime",
       };
     }
     default:

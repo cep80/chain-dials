@@ -276,7 +276,7 @@ export default function ForensicsDeskPage() {
             type="button"
             disabled={saving || !pro}
             onClick={() => void saveCloud()}
-            className="rounded-full bg-accent px-4 py-2 text-xs font-semibold text-ink disabled:opacity-60"
+            className="btn-cta rounded-full px-4 py-2 text-xs disabled:opacity-60"
             title={pro ? "Sync to account" : "Pro required for cloud sync"}
           >
             {saving ? "Syncing…" : pro ? "Sync desks to account" : "Sync · Pro"}

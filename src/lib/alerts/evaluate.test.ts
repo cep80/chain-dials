@@ -81,4 +81,57 @@ describe("evaluateAlertRule (instrument + classic)", () => {
     expect(fire).not.toBeNull();
     expect(fire!.pathHint).toBe("/sol?i=forge");
   });
+
+  it("fires regime_flip on HYPE when the regime changes", () => {
+    const fire = evaluateAlertRule(
+      "regime_flip",
+      { confidence: 0.5 },
+      {
+        ...baseLive,
+        previousRegime: "calm",
+        regime: "crowded_long",
+        regimeConfidence: 0.72,
+        regimeReasons: ["Funding Tide high (+12.0 bps)."],
+        regimeStance: "short",
+      },
+      { ...baseCtx, shortName: "HYPE" },
+      "hype",
+    );
+    expect(fire).not.toBeNull();
+    expect(fire!.pathHint).toBe("/hype#regime");
+    expect(fire!.body).toMatch(/calm → crowded long/i);
+    expect(fire!.body).toMatch(/Paper only/i);
+  });
+
+  it("does not fire regime_flip on other chains", () => {
+    const fire = evaluateAlertRule(
+      "regime_flip",
+      { confidence: 0.5 },
+      {
+        ...baseLive,
+        previousRegime: "calm",
+        regime: "crowded_long",
+        regimeConfidence: 0.9,
+      },
+      baseCtx,
+      "btc",
+    );
+    expect(fire).toBeNull();
+  });
+
+  it("does not fire regime_flip when confidence is below the floor", () => {
+    const fire = evaluateAlertRule(
+      "regime_flip",
+      { confidence: 0.8 },
+      {
+        ...baseLive,
+        previousRegime: "calm",
+        regime: "crowded_long",
+        regimeConfidence: 0.5,
+      },
+      { ...baseCtx, shortName: "HYPE" },
+      "hype",
+    );
+    expect(fire).toBeNull();
+  });
 });

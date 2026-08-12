@@ -99,6 +99,11 @@ export function CoreTermHints() {
               value: live.forgeLabel ?? "-",
               hint: "Aggregate open interest (coin × mark) across perps.",
             },
+            {
+              term: "Paper co-pilot",
+              value: "local",
+              hint: "Below the dials: maps Funding Tide, OI Vault, and Volume Fountain to a paper stance. Not orders. Open How to use it for the weather map.",
+            },
           ]
         : [
           {

@@ -12,6 +12,7 @@ export type TipId =
   | "pulse.since_tip"
   | "pulse.feed"
   | "nav.board"
+  | "nav.regime"
   | "nav.alerts"
   | "nav.wall"
   | "nav.controlRoom"
@@ -21,6 +22,7 @@ export type TipId =
   | "nav.account"
   | "nav.settings"
   | "nav.suite"
+  | "regime.panel"
   | "status.connection"
   | "instrument.expand"
   | "instrument.metronome"
@@ -95,9 +97,13 @@ const BASE: Record<TipId, TipBody> = {
     title: "Board",
     body: "The main dials view for this chain: instruments, price, and live pulse.",
   },
+  "nav.regime": {
+    title: "Regime",
+    body: "Hyperliquid paper co-pilot: Funding Tide, OI Vault, and Volume Fountain mapped to a stance. Local simulation. Not orders.",
+  },
   "nav.alerts": {
     title: "Alerts",
-    body: "Pro: multi-rule + instrument-state nudges (metronome late, atmosphere pressure, forge heat). Free local fee/tip nudge still works.",
+    body: "Pro: multi-rule + instrument-state nudges (metronome late, atmosphere pressure, forge heat, HYPE regime flips). Free local fee/tip nudge still works.",
   },
   "nav.wall": {
     title: "Wall",
@@ -117,7 +123,11 @@ const BASE: Record<TipId, TipBody> = {
   },
   "nav.pro": {
     title: "Pro",
-    body: "Control room packs, instrument alerts, desk sync, and layouts. Boards and wall stay free.",
+    body: "Control room packs, instrument alerts, desk sync, and layouts. Boards, wall, and the HYPE paper co-pilot stay free.",
+  },
+  "regime.panel": {
+    title: "Paper co-pilot",
+    body: "A local simulation that turns Hyperliquid dial weather into a long, short, flat, or reduce stance. Paper only. It does not place orders or promise returns. Open How to use it on the HYPE board for the weather map.",
   },
   "nav.account": {
     title: "Account",

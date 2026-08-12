@@ -440,7 +440,7 @@ export function ColdcardForensics() {
           <button
             type="submit"
             disabled={lookupBusy}
-            className="min-h-11 rounded-[10px] bg-accent px-4 text-sm font-bold text-ink disabled:opacity-60"
+            className="btn-cta min-h-11 rounded-[10px] px-4 text-sm disabled:opacity-60"
           >
             {lookupBusy ? "Checking…" : "Look up"}
           </button>
@@ -543,7 +543,7 @@ export function ColdcardForensics() {
           <button
             type="submit"
             disabled={hopBusy}
-            className="min-h-11 rounded-[10px] bg-accent px-4 text-sm font-bold text-ink disabled:opacity-60"
+            className="btn-cta min-h-11 rounded-[10px] px-4 text-sm disabled:opacity-60"
           >
             {hopBusy ? "Tracing…" : "Trace spends"}
           </button>

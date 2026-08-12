@@ -273,7 +273,7 @@ export default function ControlRoomPage() {
             type="button"
             disabled={saving}
             onClick={() => void saveCloud()}
-            className="rounded-full bg-accent px-4 py-1.5 text-xs font-semibold text-ink disabled:opacity-60"
+            className="btn-cta rounded-full px-4 py-1.5 text-xs disabled:opacity-60"
           >
             {saving ? "Syncing…" : "Sync packs to account"}
           </button>
@@ -296,7 +296,7 @@ export default function ControlRoomPage() {
           </p>
           <Link
             href={wallPackBoardHref(currentSlot)}
-            className="mt-4 inline-flex rounded-full bg-paper px-5 py-2.5 text-sm font-semibold text-ink"
+            className="btn-cta mt-4 rounded-full px-5 py-2.5 text-sm"
           >
             Launch on this display
           </Link>

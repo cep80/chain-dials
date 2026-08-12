@@ -16,6 +16,7 @@ import { TipJar } from "@/components/monetization/TipJar";
 import { ProTeaser } from "@/components/monetization/ProTeaser";
 import { SavedLayoutsPanel } from "@/components/pro/SavedLayoutsPanel";
 import { Observatory } from "@/components/viz/Observatory";
+import { RegimePanel } from "@/components/regime/RegimePanel";
 import { PriceChartPanel } from "@/components/price/PriceChartPanel";
 import { freshnessLabel } from "@/lib/chains/registry";
 import { useChain } from "@/lib/chains/context";
@@ -91,6 +92,8 @@ export default function ChainBoardPage() {
         <PulseStrip />
 
         <Observatory />
+
+        {chain.id === "hype" ? <RegimePanel /> : null}
 
         <PriceChartPanel />
 

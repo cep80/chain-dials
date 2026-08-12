@@ -197,6 +197,16 @@ export function AppShell({
                     Board
                   </Link>
                 </Hint>
+                {chain.id === "hype" ? (
+                  <Hint tip="nav.regime">
+                    <Link
+                      href="/hype#regime"
+                      className="min-h-11 inline-flex items-center text-paper-muted transition hover:text-paper"
+                    >
+                      Regime
+                    </Link>
+                  </Hint>
+                ) : null}
                 <Hint tip="nav.alerts">
                   <Link
                     href={`/${chain.slug}/alerts`}

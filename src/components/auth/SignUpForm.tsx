@@ -89,7 +89,7 @@ export function SignUpForm() {
       <button
         type="submit"
         disabled={busy}
-        className="w-full rounded-full bg-accent px-4 py-2.5 text-sm font-semibold text-ink disabled:opacity-60"
+        className="btn-cta w-full rounded-full px-4 py-2.5 text-sm disabled:opacity-60"
       >
         {busy ? "Creating…" : "Create account"}
       </button>
