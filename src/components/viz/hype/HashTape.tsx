@@ -53,8 +53,8 @@ export function HashTape({
         reduce ? "" : "instrument-live-glow"
       }`}
       style={{ width: w, height: h }}
-      aria-label="Hash tape. Click to copy tip hash."
-      title="Click to copy tip hash"
+      aria-label="Hash tape. Click to copy block hash."
+      title="Click to copy block hash"
     >
       <motion.div
         key={tipHash ?? "empty"}
@@ -113,7 +113,7 @@ export function HashTape({
       subtitle={
         height != null
           ? `Block ${formatInteger(height)} ticker print`
-          : "Tip hash on exchange tape"
+          : "Block hash on exchange tape"
       }
       reading={copied ? "Copied" : formatHash(tipHash)}
       large={large}

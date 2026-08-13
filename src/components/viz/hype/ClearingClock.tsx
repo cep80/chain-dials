@@ -148,7 +148,7 @@ export function ClearingClock({
           {reading}
         </p>
         <p className="text-xs uppercase tracking-[0.2em] text-paper-muted">
-          since tip · target ~{TARGET}s
+          since block · target ~{TARGET}s
           {height != null ? ` · ${formatInteger(height)}` : ""}
         </p>
       </div>

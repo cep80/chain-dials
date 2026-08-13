@@ -37,8 +37,8 @@ export const ALERT_KIND_META: Record<
     defaultParams: { threshold: 50 },
   },
   tip_quiet: {
-    label: "Quiet tip",
-    hint: "Fires when no new tip lands for longer than N seconds.",
+    label: "Quiet block",
+    hint: "Fires when no new block (or Solana slot) lands for longer than N seconds.",
     defaultParams: { seconds: 1200 },
   },
   mempool_stuffed: {
@@ -53,7 +53,7 @@ export const ALERT_KIND_META: Record<
   },
   metronome_late: {
     label: "Metronome late",
-    hint: "Fires when time since tip exceeds target cadence × multiplier (instrument tone).",
+    hint: "Fires when time since the latest block (or slot) exceeds target cadence × multiplier (instrument tone).",
     defaultParams: { multiplier: 1.2 },
     instrument: "metronome",
   },

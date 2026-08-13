@@ -11,7 +11,7 @@ export const MODULES: ModuleDef[] = [
   {
     id: "blockchain",
     title: "Blockchain",
-    description: "Where the tip is, and how long it’s been quiet",
+    description: "Where the latest block is, and how long it’s been quiet",
     source: "mempool.space",
     metricIds: ["block_height", "time_since_block", "tip_hash"],
   },

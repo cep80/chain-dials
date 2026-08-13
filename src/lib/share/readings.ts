@@ -50,7 +50,7 @@ async function btcReading(instrument: InstrumentId): Promise<ShareReading> {
 
     switch (instrument) {
       case "metronome":
-        return { headline: since, sub: "since tip", accent };
+        return { headline: since, sub: "since block", accent };
       case "atmosphere":
         return {
           headline:
@@ -69,7 +69,7 @@ async function btcReading(instrument: InstrumentId): Promise<ShareReading> {
           sub:
             tip.height != null
               ? `block ${formatInteger(tip.height)}`
-              : "tip hash",
+              : "block hash",
           accent,
         };
       case "issuance":
@@ -101,7 +101,7 @@ async function ethReading(
     case "metronome":
       return {
         headline: fmtSince(snap.tip.timestamp),
-        sub: "since tip · lattice",
+        sub: "since block · lattice",
         accent,
       };
     case "atmosphere":
@@ -116,7 +116,7 @@ async function ethReading(
         sub:
           snap.tip.height != null
             ? `block ${formatInteger(snap.tip.height)}`
-            : "tip mosaic",
+            : "block mosaic",
         accent,
       };
     case "issuance":
@@ -195,7 +195,7 @@ async function hypeReading(
     case "metronome":
       return {
         headline: fmtSince(snap.tip.timestamp),
-        sub: "since tip · clearing clock",
+        sub: "since block · clearing clock",
         accent,
       };
     case "atmosphere":

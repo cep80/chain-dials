@@ -37,31 +37,31 @@ const INSTRUMENT_HOOKS: Record<
   btc: {
     metronome: (r) =>
       r.includes("m") || r.includes("s")
-        ? `Since tip: ${r}.`
+        ? `Since block: ${r}.`
         : `Block cadence: ${r}.`,
     atmosphere: (r) => `Mempool: ${r}.`,
-    sigil: () => `New tip glyph.`,
+    sigil: () => `New block glyph.`,
     issuance: (r) => `Halving clock: ${r} through this era.`,
     forge: (r) => `Hashrate: ${r}.`,
   },
   eth: {
-    metronome: (r) => `${r} since tip. Slot lattice.`,
+    metronome: (r) => `${r} since block. Slot lattice.`,
     atmosphere: (r) => `Base fee tide: ${r}.`,
-    sigil: () => `Fresh tip mosaic.`,
+    sigil: () => `Fresh block mosaic.`,
     issuance: (r) => `Burn candle: ${r} last block.`,
     forge: (r) => `Validator sky: ${r}.`,
   },
   sol: {
     metronome: (r) => `Tach: ${r} since slot.`,
     atmosphere: (r) => `Priority jets: ${r}.`,
-    sigil: () => `Leader ribbon: new tip hash.`,
+    sigil: () => `Leader ribbon: new block hash.`,
     issuance: (r) => `Inflation fountain: ${r}.`,
     forge: (r) => `Stake reef: ${r}.`,
   },
   hype: {
-    metronome: (r) => `Clearing clock: ${r} since tip.`,
+    metronome: (r) => `Clearing clock: ${r} since block.`,
     atmosphere: (r) => `Funding tide: ${r}.`,
-    sigil: () => `Hash tape: new tip print.`,
+    sigil: () => `Hash tape: new block print.`,
     issuance: (r) => `Volume fountain: ${r}.`,
     forge: (r) => `OI vault: ${r}.`,
   },

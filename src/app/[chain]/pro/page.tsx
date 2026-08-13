@@ -21,7 +21,7 @@ const FEATURES = [
   },
   {
     title: "Instrument-state alerts",
-    body: "Nudge when the metronome runs late, atmosphere pressure spikes, or forge heat clears your floor. On Hyperliquid, regime flips too. Classic fee/tip rules stay.",
+    body: "Nudge when the metronome runs late, atmosphere pressure spikes, or forge heat clears your floor. On Hyperliquid, regime flips too. Classic fee and quiet-block rules stay.",
     href: "alerts",
   },
   {

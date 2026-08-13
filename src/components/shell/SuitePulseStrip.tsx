@@ -94,7 +94,7 @@ export function SuitePulseStrip() {
             Compare heartbeat
           </h2>
           <p className="mt-1 text-xs text-paper-muted">
-            Since tip, hottest fee, and feed age. Hop to whichever board is
+            Since block (or slot), hottest fee, and feed age. Hop to whichever board is
             interesting right now.
           </p>
         </div>
@@ -131,7 +131,7 @@ export function SuitePulseStrip() {
                 <div className="mt-3 grid grid-cols-3 gap-2 mono text-[11px]">
                   <div>
                     <div className="text-[9px] uppercase tracking-wider text-paper-muted">
-                      Since tip
+                      {c.cadenceLabel === "slot" ? "Since slot" : "Since block"}
                     </div>
                     <div className="mt-0.5 text-paper">
                       {formatDuration(since)}

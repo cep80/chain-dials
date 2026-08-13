@@ -25,7 +25,7 @@ export const CHAINS: Record<ChainId, ChainConfig> = {
     modules: "full",
     observatoryTitle: "Instruments",
     observatoryBlurb:
-      "Block timing, mempool weather, tip face, halvings, hashrate: the quiet stuff that matters. Use expand to go fullscreen. On Atmosphere, a bright dot peeks at a tx; empty space opens a bigger view.",
+      "Block timing, mempool weather, block face, halvings, hashrate: the quiet stuff that matters. Use expand to go fullscreen. On Atmosphere, a bright dot peeks at a tx; empty space opens a bigger view.",
     instruments: {
       metronome: {
         frameTitle: "Metronome",
@@ -42,11 +42,11 @@ export const CHAINS: Record<ChainId, ChainConfig> = {
           "The mist is the whole waiting room, stacked by how much people are paying. Those bright dots? A handful of recent transactions. Click one to peek, or poke the empty space to go fullscreen.",
       },
       sigil: {
-        frameTitle: "Tip Sigil",
-        title: "Tip Sigil",
+        frameTitle: "Block Sigil",
+        title: "Block Sigil",
         subtitle: "A doodle of the latest block",
         narrative:
-          "Every block has a fingerprint (its hash). We fold that into a little glyph so the tip has a face you can recognize. New block? New doodle. Click it if you want the full hash on your clipboard.",
+          "Every block has a fingerprint (its hash). We fold that into a little glyph so the latest block has a face you can recognize. New block? New doodle. Click it if you want the full hash on your clipboard.",
       },
       issuance: {
         frameTitle: "Issuance",
@@ -85,7 +85,7 @@ export const CHAINS: Record<ChainId, ChainConfig> = {
     modules: "core",
     observatoryTitle: "Beacon room",
     observatoryBlurb:
-      "Not Bitcoin’s dials: a dimmer room with its own mood. Click Tide anywhere to stretch out (the foam’s just decor). The board refreshes about every 15s; tip updates a little faster.",
+      "Not Bitcoin’s dials: a dimmer room with its own mood. Click Tide anywhere to stretch out (the foam’s just decor). The board refreshes about every 15s; the latest block updates a little faster.",
     instruments: {
       metronome: {
         frameTitle: "Lattice",
@@ -104,9 +104,9 @@ export const CHAINS: Record<ChainId, ChainConfig> = {
       sigil: {
         frameTitle: "Mosaic",
         title: "Block Mosaic",
-        subtitle: "Tip hash as stained glass",
+        subtitle: "Block hash as stained glass",
         narrative:
-          "We shatter the tip hash into colored tiles. New block, new window. Click to copy the full hash, if you collect that sort of thing.",
+          "We shatter the latest block hash into colored tiles. New block, new window. Click to copy the full hash, if you collect that sort of thing.",
       },
       issuance: {
         frameTitle: "Candle",
@@ -166,7 +166,7 @@ export const CHAINS: Record<ChainId, ChainConfig> = {
         title: "Leader Ribbon",
         subtitle: "Blockhash on a ticker tape",
         narrative:
-          "The tip blockhash scrolls by like stadium ribbon. New slot, new parade. Click if you want to snag the full hash.",
+          "The latest blockhash scrolls by like stadium ribbon. New slot, new parade. Click if you want to snag the full hash.",
       },
       issuance: {
         frameTitle: "Fountain",
@@ -212,7 +212,7 @@ export const CHAINS: Record<ChainId, ChainConfig> = {
         title: "Clearing Clock",
         subtitle: "About one-second HyperEVM heartbeats",
         narrative:
-          "HyperEVM aims for roughly one-second blocks. The hand tracks time since the tip. Near the mark means the clearing clock is humming. This isn’t HyperCore L1, and that’s on purpose.",
+          "HyperEVM aims for roughly one-second blocks. The hand tracks time since the latest block. Near the mark means the clearing clock is humming. This isn’t HyperCore L1, and that’s on purpose.",
       },
       atmosphere: {
         frameTitle: "Tide",
@@ -224,9 +224,9 @@ export const CHAINS: Record<ChainId, ChainConfig> = {
       sigil: {
         frameTitle: "Tape",
         title: "Hash Tape",
-        subtitle: "Tip hash on a ticker",
+        subtitle: "Block hash on a ticker",
         narrative:
-          "The tip block hash scrolls like exchange tape. New block, new print. Click to copy the full hash, if you’re into that.",
+          "The latest block hash scrolls like exchange tape. New block, new print. Click to copy the full hash, if you’re into that.",
       },
       issuance: {
         frameTitle: "Fountain",

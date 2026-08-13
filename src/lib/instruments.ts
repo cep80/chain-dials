@@ -21,19 +21,19 @@ export const INSTRUMENT_META: Record<
     title: "Block Metronome",
     subtitle: "Time since the latest block",
     narrative:
-      "Bitcoin targets a new block about every ten minutes. When the hand sits near the mark, miners are on schedule. When it runs past, the network is simply taking longer between tips.",
+      "Bitcoin targets a new block about every ten minutes. When the hand sits near the mark, miners are on schedule. When it runs past, the network is simply taking longer between blocks.",
   },
   atmosphere: {
     title: "Mempool Atmosphere",
     subtitle: "Unconfirmed transactions waiting for a block",
     narrative:
-      "The mist is the mempool, stacked by fee rate. Bright dots are a live tip sample: they fade in as new txs arrive and drop off as they leave or get mined. Select one for detail, or click empty space to expand fullscreen.",
+      "The mist is the mempool, stacked by fee rate. Bright dots are a live mempool sample: they fade in as new txs arrive and drop off as they leave or get mined. Select one for detail, or click empty space to expand fullscreen.",
   },
   sigil: {
-    title: "Tip Sigil",
-    subtitle: "A glyph from the tip hash",
+    title: "Block Sigil",
+    subtitle: "A glyph from the block hash",
     narrative:
-      "Every block has a hash. We fold that fingerprint into a glyph so the tip is easy to recognize. A new block brings a new glyph. Click to copy the full hash.",
+      "Every block has a hash. We fold that fingerprint into a glyph so the latest block is easy to recognize. A new block brings a new glyph. Click to copy the full hash.",
   },
   issuance: {
     title: "Issuance Hourglass",

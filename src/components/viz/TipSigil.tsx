@@ -66,7 +66,7 @@ export function TipSigil({
       }`}
       style={{ width: displaySize, height: displaySize }}
       aria-label={aria}
-      title="Click to copy the tip hash"
+      title="Click to copy the block hash"
     >
       <AnimatePresence mode="wait">
         <motion.svg
@@ -245,11 +245,11 @@ export function TipSigil({
 
   return (
     <InstrumentFrame
-      title="Tip Sigil"
+      title="Block Sigil"
       subtitle={
         height != null
-          ? `Block ${formatInteger(height)} tip glyph`
-          : "Glyph from the tip hash"
+          ? `Block ${formatInteger(height)} glyph`
+          : "Glyph from the block hash"
       }
       reading={copied ? "Copied" : formatHash(tipHash)}
       large={large}

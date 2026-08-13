@@ -156,7 +156,7 @@ export const useAltChainStore = create<AltChainState>((set, get) => {
           blockHeight: height ?? get().live.blockHeight,
           tipHash: tip.hash ?? get().live.tipHash,
           // Always accept a real tip time; only freeze when height is unchanged
-          // and we already have a timestamp (keeps “since tip” from resetting).
+          // and we already have a timestamp (keeps “since block” from resetting).
           tipTimestamp:
             same && get().live.tipTimestamp != null
               ? get().live.tipTimestamp
@@ -232,7 +232,7 @@ export const useAltChainStore = create<AltChainState>((set, get) => {
           live: empty,
           boardPulse: 0,
         });
-        // Tip first so “since tip” isn’t empty while the heavy snapshot loads
+        // Tip first so “since block” isn’t empty while the heavy snapshot loads
         void pollTip(chainId);
         void pollPrice(chainId).then(() => pollSnapshot(chainId));
         snapTimer = setInterval(() => void pollSnapshot(chainId), 15_000);

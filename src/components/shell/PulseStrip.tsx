@@ -110,6 +110,8 @@ export function PulseStrip() {
         : chain && chain.id !== "btc"
           ? "pulse.fee_samples"
           : "pulse.mempool";
+  const sinceLabel =
+    chain?.cadenceLabel === "slot" ? "Since slot" : "Since block";
   const feeLabel =
     chain?.id === "sol"
       ? "Priority p90"
@@ -153,7 +155,7 @@ export function PulseStrip() {
         feeUnit={feeUnit}
       />
       <Chip
-        label="Since tip"
+        label={sinceLabel}
         value={
           catchingUp && since == null ? "…" : formatDuration(since)
         }

@@ -59,7 +59,7 @@ const BASE: Record<TipId, TipBody> = {
   },
   "pulse.height": {
     title: "Height",
-    body: "How many blocks have been added since the chain began. Bigger number = newer tip of the chain.",
+    body: "How many blocks have been added since the chain began. Bigger number = newer end of the chain.",
   },
   "pulse.slot": {
     title: "Slot",
@@ -86,8 +86,8 @@ const BASE: Record<TipId, TipBody> = {
     body: "A “pay this to get in soon” estimate for the active chain’s fee unit (sat/vB, gwei, µLamports…).",
   },
   "pulse.since_tip": {
-    title: "Since tip",
-    body: "Time since the newest block (the chain tip). Amber means it’s been quiet longer than usual for this chain. Loading or Updating means the feed is catching up, so the clock may be last-known. On Hyperliquid this is HyperEVM block time, not the faster HyperCore L1 clock.",
+    title: "Since block",
+    body: "Time since the newest block. Amber means it’s been quiet longer than usual for this chain. Loading or Updating means the feed is catching up, so the clock may be last-known. On Hyperliquid this is HyperEVM block time, not the faster HyperCore L1 clock.",
   },
   "pulse.feed": {
     title: "Feed",
@@ -103,7 +103,7 @@ const BASE: Record<TipId, TipBody> = {
   },
   "nav.alerts": {
     title: "Alerts",
-    body: "Pro: multi-rule + instrument-state nudges (metronome late, atmosphere pressure, forge heat, HYPE regime flips). Free local fee/tip nudge still works.",
+    body: "Pro: multi-rule + instrument-state nudges (metronome late, atmosphere pressure, forge heat, HYPE regime flips). Free local fee/quiet-block nudge still works.",
   },
   "nav.wall": {
     title: "Wall",
@@ -158,8 +158,8 @@ const BASE: Record<TipId, TipBody> = {
     body: "Mist bands are mempool vsize by fee rate. Bright dots are recent samples you can inspect. On stage, dashed lines are live fee estimates.",
   },
   "instrument.sigil": {
-    title: "Tip face",
-    body: "A visual fingerprint of the latest block hash. New tip, new doodle or tape.",
+    title: "Block face",
+    body: "A visual fingerprint of the latest block hash. New block, new doodle or tape.",
   },
   "instrument.issuance": {
     title: "Issuance",
@@ -187,7 +187,7 @@ const BASE: Record<TipId, TipBody> = {
   },
   "suite.pulse": {
     title: "Suite pulse",
-    body: "A quick tip and fee peek across every chain.",
+    body: "A quick since-block and fee peek across every chain.",
   },
   "metric.pin": {
     title: "Pin",
@@ -268,18 +268,21 @@ export function resolveTip(
   if (id === "pulse.since_tip" && ctx?.chainId === "sol") {
     return {
       ...tip,
+      title: "Since slot",
       body: "Time since the latest slot. Amber means slots look quieter than Solana’s usual pace (or the feed is a little behind).",
     };
   }
   if (id === "pulse.since_tip" && ctx?.chainId === "hype") {
     return {
       ...tip,
+      title: "Since block",
       body: "Time since the latest HyperEVM block. Amber means the clearing clock looks late.",
     };
   }
   if (id === "pulse.since_tip" && ctx?.chainId === "eth") {
     return {
       ...tip,
+      title: "Since block",
       body: "Time since the latest execution block (~12s target). Amber means it’s been quiet longer than usual.",
     };
   }

@@ -142,7 +142,7 @@ export function Observatory({
             </h2>
             <p className="mt-1 max-w-xl text-sm text-paper-muted">
               {chain?.observatoryBlurb ??
-                "Cadence, mempool, tip glyph, halvings, and hashrate. Open one to expand."}
+                "Cadence, mempool, block glyph, halvings, and hashrate. Open one to expand."}
             </p>
           </div>
         </div>

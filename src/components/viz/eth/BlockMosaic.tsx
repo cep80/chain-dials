@@ -68,8 +68,8 @@ export function BlockMosaic({
         reduce ? "" : "instrument-live-glow"
       }`}
       style={{ width: size, height: size }}
-      aria-label="Block mosaic. Click to copy tip hash."
-      title="Click to copy tip hash"
+      aria-label="Block mosaic. Click to copy block hash."
+      title="Click to copy block hash"
     >
       <AnimatePresence mode="wait">
         <motion.div
@@ -136,8 +136,8 @@ export function BlockMosaic({
       title="Mosaic"
       subtitle={
         height != null
-          ? `Block ${formatInteger(height)} tip mosaic`
-          : "Tip hash as colored tiles"
+          ? `Block ${formatInteger(height)} mosaic`
+          : "Block hash as colored tiles"
       }
       reading={copied ? "Copied" : formatHash(tipHash)}
       large={large}

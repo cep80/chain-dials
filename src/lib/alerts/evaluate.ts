@@ -76,7 +76,7 @@ export function evaluateAlertRule(
       if (!(since > secs)) return null;
       return {
         kind,
-        title: `${ctx.shortName} tip quiet`,
+        title: `${ctx.shortName} quiet ${ctx.tipNoun}`,
         body: `No new ${ctx.tipNoun} for ~${Math.round(since)}s.`,
         tag: `quiet-${chainId}`,
       };
@@ -118,7 +118,7 @@ export function evaluateAlertRule(
       return {
         kind,
         title: `${ctx.shortName} metronome ${tone === "stale" ? "stale" : "late"}`,
-        body: `${Math.round(since)}s since tip (target ~${ctx.targetBlockSeconds}s × ${mult}).`,
+        body: `${Math.round(since)}s since last ${ctx.tipNoun} (target ~${ctx.targetBlockSeconds}s × ${mult}).`,
         tag: `metro-${chainId}`,
         pathHint: `/${chainId}?i=metronome`,
       };

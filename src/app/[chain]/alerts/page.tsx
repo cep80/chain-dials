@@ -350,7 +350,7 @@ export default function AlertsPage() {
         <p className="mt-2 text-paper-muted">
           {pro
             ? `Live rules for ${chain.name}, including instrument-state dials. Saved to your account.`
-            : `Synced multi-rule + instrument alerts are a Pro extra for ${chain.name}. Free local fee/tip nudge still runs below.`}
+            : `Synced multi-rule + instrument alerts are a Pro extra for ${chain.name}. Free local fee/quiet-block nudge still runs below.`}
         </p>
       </div>
 
@@ -363,7 +363,7 @@ export default function AlertsPage() {
           title="Instrument + synced alerts"
           detail={
             signedIn
-              ? "Pro: multi-rule alerts in dial language (metronome late, atmosphere pressure, forge heat, HYPE regime flips) plus classic fee/tip rules."
+              ? "Pro: multi-rule alerts in dial language (metronome late, atmosphere pressure, forge heat, HYPE regime flips) plus classic fee and quiet-block rules."
               : "Sign in and optionally upgrade for instrument-state and synced alert rules. Boards stay free."
           }
           ctaLabel={signedIn ? "See Pro" : "Sign in"}

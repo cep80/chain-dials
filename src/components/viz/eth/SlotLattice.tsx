@@ -51,7 +51,7 @@ export function SlotLattice({
       className={`relative ${reduce ? "" : "instrument-live-glow"}`}
       style={{ width: size, height: size }}
       role="img"
-      aria-label={`Slot lattice. ${slotInEpoch != null ? `Consensus slot ${slotInEpoch + 1} of ${SLOTS}.` : "Consensus slot unavailable."} ${reading} since tip.`}
+      aria-label={`Slot lattice. ${slotInEpoch != null ? `Consensus slot ${slotInEpoch + 1} of ${SLOTS}.` : "Consensus slot unavailable."} ${reading} since block.`}
     >
       <div
         className="absolute inset-0 rounded-[12px]"
@@ -122,7 +122,7 @@ export function SlotLattice({
           {reading}
         </p>
         <p className="text-xs uppercase tracking-[0.2em] text-paper-muted">
-          since tip · slot {slotInEpoch != null ? slotInEpoch + 1 : "—"} of {SLOTS}
+          since block · slot {slotInEpoch != null ? slotInEpoch + 1 : "—"} of {SLOTS}
           {height != null ? ` · block ${formatInteger(height)}` : ""}
         </p>
         <p className="max-w-sm text-center text-[11px] text-paper-muted">

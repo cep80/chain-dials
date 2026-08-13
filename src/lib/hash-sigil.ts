@@ -32,7 +32,7 @@ function px(n: number): number {
   return Math.round(n * 1000) / 1000;
 }
 
-/** Build a unique glyph from a 64-char (or shorter) hex tip hash. */
+/** Build a unique glyph from a 64-char (or shorter) hex block hash. */
 export function buildSigil(hash: string | null | undefined, size = 100): SigilGeometry {
   const clean = (hash ?? "0").replace(/^0x/i, "").toLowerCase().padEnd(64, "0").slice(0, 64);
   const cx = size / 2;

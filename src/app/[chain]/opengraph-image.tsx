@@ -43,7 +43,7 @@ export default async function Image({
         ? ((await feesRes.json()) as { fastestFee?: number })
         : null;
       headline = since;
-      sub = `since tip · fee ${formatFee(fees?.fastestFee, "sat/vB")}`;
+      sub = `since block · fee ${formatFee(fees?.fastestFee, "sat/vB")}`;
     } else {
       const snap = await fetchChainSnapshot(chain);
       headline = formatDuration(
@@ -51,7 +51,7 @@ export default async function Image({
           ? Math.max(0, (Date.now() - snap.tip.timestamp) / 1000)
           : null,
       );
-      sub = `since tip · fee ${formatFee(snap.feeFastest, c.feeUnit)}`;
+      sub = `since block · fee ${formatFee(snap.feeFastest, c.feeUnit)}`;
     }
   } catch {
     // keep

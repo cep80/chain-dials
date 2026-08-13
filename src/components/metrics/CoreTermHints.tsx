@@ -40,7 +40,7 @@ export function CoreTermHints() {
               live.burnEthPerBlock != null
                 ? `${live.burnEthPerBlock.toFixed(3)} ETH`
                 : "-",
-            hint: "Approx base fee × gas used in the tip block.",
+            hint: "Approx base fee × gas used in the latest block.",
           },
           {
             term: "Block fullness",
@@ -82,7 +82,7 @@ export function CoreTermHints() {
               hint: "Base + priority tip from HyperEVM fee history.",
             },
             {
-              term: "Since tip",
+              term: "Since block",
               value: formatDuration(since),
               hint: "Time since last HyperEVM block.",
             },
@@ -112,7 +112,7 @@ export function CoreTermHints() {
             hint: "p90 recent prioritization-fee price per compute unit.",
           },
           {
-            term: "Since tip",
+            term: "Since slot",
             value: formatDuration(since),
             hint: "Time since last slot (block time when RPC provides it).",
           },

@@ -7,7 +7,7 @@ import { useDashboardStore } from "@/lib/store";
 const KEY = (slug: string) => `chain-dials:local-nudge:${slug}:v1`;
 
 /**
- * Pre-Pro return vector: optional browser notifications for fee spike / quiet tip.
+ * Pre-Pro return vector: optional browser notifications for fee spike / quiet block.
  * Local only. No email backend yet.
  */
 export function LocalReturnNudge() {
@@ -98,7 +98,7 @@ export function LocalReturnNudge() {
     <div className="mt-6 rounded-[14px] border border-line bg-ink-elevated/80 p-4">
       <p className="text-sm font-semibold text-paper">Local return nudge</p>
       <p className="mt-1 text-xs text-paper-muted">
-        Optional browser pings when fees spike or the tip goes quiet on{" "}
+        Optional browser pings when fees spike or the latest block goes quiet on{" "}
         {chain.name}. Stays on this device. Not email, not Pro yet.
       </p>
       <div className="mt-3 flex flex-wrap gap-2">
