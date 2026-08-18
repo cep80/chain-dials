@@ -1,12 +1,10 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { isChainId } from "@/lib/chains/registry";
-import { prisma } from "@/lib/db";
 import {
   ensureStripeCustomer,
   getStripe,
-  stripeCheckoutConfigured,
-} from "@/lib/stripe";
+  stripeCheckoutConfigured, ensureProfile } from "@/lib/stripe";
 import { requestOrigin } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
@@ -42,14 +40,12 @@ export async function POST(req: Request) {
     // empty body ok
   }
 
-  const dbUser = await prisma.user.findUnique({
-    where: { id: session.user.id },
+  const profile = await ensureProfile(session.user.id, session.user.email);
+  const customerId = await ensureStripeCustomer({
+    id: session.user.id,
+    email: session.user.email ?? profile.email ?? "",
+    stripeCustomerId: profile.stripe_customer_id,
   });
-  if (!dbUser) {
-    return NextResponse.json({ error: "User not found" }, { status: 404 });
-  }
-
-  const customerId = await ensureStripeCustomer(dbUser);
   const stripe = getStripe();
   const base = requestOrigin(req);
   const priceId = process.env.STRIPE_PRICE_ID!.trim();
@@ -60,11 +56,11 @@ export async function POST(req: Request) {
     line_items: [{ price: priceId, quantity: 1 }],
     success_url: `${base}/account?checkout=success`,
     cancel_url: `${base}/${chain}/pro?checkout=cancel`,
-    client_reference_id: dbUser.id,
+    client_reference_id: session.user.id,
     subscription_data: {
-      metadata: { userId: dbUser.id },
+      metadata: { userId: session.user.id },
     },
-    metadata: { userId: dbUser.id },
+    metadata: { userId: session.user.id },
     allow_promotion_codes: true,
   });
 

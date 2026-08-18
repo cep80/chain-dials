@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
 import { z } from "zod";
-import { prisma } from "@/lib/db";
+import { CargoError, cbAdmin, cbSignup } from "@/lib/cargobase";
 import { clientIp, rateLimit, rateLimitResponse } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
@@ -38,21 +37,36 @@ export async function POST(req: Request) {
   }
 
   const email = parsed.data.email.toLowerCase().trim();
-  const existing = await prisma.user.findUnique({ where: { email } });
-  if (existing) {
-    // Same shape as success so callers cannot enumerate accounts.
-    return NextResponse.json(GENERIC_OK, { status: 201 });
+
+  let userId: string;
+  try {
+    const session = await cbSignup(email, parsed.data.password);
+    userId = session.user.id;
+  } catch (err) {
+    // CargoBase answers 409 for a taken address. Swallowing it keeps the reply
+    // identical either way, so this endpoint cannot be used to test whether an
+    // address has an account.
+    if (err instanceof CargoError && err.status === 409) {
+      return NextResponse.json(GENERIC_OK, { status: 201 });
+    }
+    throw err;
   }
 
-  const passwordHash = await bcrypt.hash(parsed.data.password, 12);
-  await prisma.user.create({
-    data: {
-      email,
-      name: parsed.data.name ?? email.split("@")[0],
-      passwordHash,
-    },
-    select: { id: true },
-  });
+  // The profile carries entitlement, which the user must not be able to set for
+  // themselves, so it is written with the service role rather than their token.
+  try {
+    await cbAdmin("profiles", {
+      method: "POST",
+      body: {
+        user_id: userId,
+        email,
+        pro_status: "none",
+      },
+    });
+  } catch {
+    // A missing profile reads as "not Pro" and is recreated by the billing
+    // webhook on first purchase, so this is not worth failing the signup for.
+  }
 
   return NextResponse.json(GENERIC_OK, { status: 201 });
 }

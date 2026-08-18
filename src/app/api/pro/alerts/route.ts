@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { auth } from "@/auth";
 import { ALERT_KINDS } from "@/lib/alerts/kinds";
-import { prisma } from "@/lib/db";
-import { isProActive } from "@/lib/pro";
+import { cbRest } from "@/lib/cargobase";
+import { requireProUser } from "@/lib/cargobase-session";
 
 export const dynamic = "force-dynamic";
 
@@ -15,55 +14,46 @@ const ruleSchema = z.object({
   params: z.record(z.string(), z.union([z.number(), z.string(), z.boolean()])).default({}),
 });
 
-async function requireProUser() {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { error: NextResponse.json({ error: "Sign in required" }, { status: 401 }) };
-  }
-  const user = await prisma.user.findUnique({ where: { id: session.user.id } });
-  if (!user || !isProActive(user.proStatus, user.proCurrentPeriodEnd)) {
-    return {
-      error: NextResponse.json(
-        { error: "Pro subscription required for alert rules." },
-        { status: 403 },
-      ),
-    };
-  }
-  return { user };
-}
+type RuleRow = {
+  id: string;
+  chain_id: string;
+  kind: string;
+  enabled: boolean;
+  params: Record<string, unknown> | null;
+  updated_at: string;
+};
+
+const toRule = (row: RuleRow) => ({
+  id: row.id,
+  chainId: row.chain_id,
+  kind: row.kind,
+  enabled: row.enabled,
+  params: row.params ?? {},
+  updatedAt: row.updated_at,
+});
+
+const SELECT = "alert_rules?select=id,chain_id,kind,enabled,params,updated_at";
 
 export async function GET(req: Request) {
-  const gate = await requireProUser();
-  if ("error" in gate && gate.error) return gate.error;
-  const user = gate.user!;
+  const gate = await requireProUser(req, "alert rules");
+  if ("error" in gate) return gate.error;
 
-  const url = new URL(req.url);
-  const chainId = url.searchParams.get("chainId") ?? undefined;
+  const chainId = new URL(req.url).searchParams.get("chainId");
+  const query = [
+    SELECT,
+    chainId ? `chain_id=eq.${encodeURIComponent(chainId)}` : "",
+    "order=created_at.asc",
+  ]
+    .filter(Boolean)
+    .join("&");
 
-  const rules = await prisma.alertRule.findMany({
-    where: {
-      userId: user.id,
-      ...(chainId ? { chainId } : {}),
-    },
-    orderBy: { createdAt: "asc" },
-  });
-
-  return NextResponse.json({
-    rules: rules.map((r) => ({
-      id: r.id,
-      chainId: r.chainId,
-      kind: r.kind,
-      enabled: r.enabled,
-      params: JSON.parse(r.params) as Record<string, unknown>,
-      updatedAt: r.updatedAt.toISOString(),
-    })),
-  });
+  const rows = await cbRest<RuleRow[]>(query, { token: gate.user.token });
+  return NextResponse.json({ rules: rows.map(toRule) });
 }
 
 export async function PUT(req: Request) {
-  const gate = await requireProUser();
-  if ("error" in gate && gate.error) return gate.error;
-  const user = gate.user!;
+  const gate = await requireProUser(req, "alert rules");
+  if ("error" in gate) return gate.error;
 
   let json: unknown;
   try {
@@ -78,36 +68,35 @@ export async function PUT(req: Request) {
   }
 
   const chainIds = [...new Set(parsed.data.rules.map((r) => r.chainId))];
-  await prisma.$transaction(async (tx) => {
-    for (const chainId of chainIds) {
-      await tx.alertRule.deleteMany({ where: { userId: user.id, chainId } });
-    }
-    for (const rule of parsed.data.rules) {
-      await tx.alertRule.create({
-        data: {
-          userId: user.id,
-          chainId: rule.chainId,
-          kind: rule.kind,
-          enabled: rule.enabled,
-          params: JSON.stringify(rule.params ?? {}),
-        },
-      });
-    }
-  });
 
-  const rules = await prisma.alertRule.findMany({
-    where: { userId: user.id },
-    orderBy: { createdAt: "asc" },
-  });
+  // Replace this user's rules for the chains being saved. PostgREST has no
+  // multi-statement transaction, so unlike the previous Prisma version this is
+  // a delete followed by an insert: if the insert fails the chain is left with
+  // no rules and the client has to save again. Both halves are still scoped to
+  // the caller by row-level security.
+  if (chainIds.length > 0) {
+    const list = chainIds.map((c) => `"${c}"`).join(",");
+    await cbRest(`alert_rules?chain_id=in.(${encodeURIComponent(list)})`, {
+      method: "DELETE",
+      token: gate.user.token,
+    });
+  }
 
-  return NextResponse.json({
-    rules: rules.map((r) => ({
-      id: r.id,
-      chainId: r.chainId,
-      kind: r.kind,
-      enabled: r.enabled,
-      params: JSON.parse(r.params) as Record<string, unknown>,
-      updatedAt: r.updatedAt.toISOString(),
-    })),
+  if (parsed.data.rules.length > 0) {
+    await cbRest("alert_rules", {
+      method: "POST",
+      token: gate.user.token,
+      body: parsed.data.rules.map((rule) => ({
+        chain_id: rule.chainId,
+        kind: rule.kind,
+        enabled: rule.enabled,
+        params: rule.params ?? {},
+      })),
+    });
+  }
+
+  const rows = await cbRest<RuleRow[]>(`${SELECT}&order=created_at.asc`, {
+    token: gate.user.token,
   });
+  return NextResponse.json({ rules: rows.map(toRule) });
 }

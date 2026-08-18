@@ -1,11 +1,9 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { prisma } from "@/lib/db";
 import {
   ensureStripeCustomer,
   getStripe,
-  stripeCheckoutConfigured,
-} from "@/lib/stripe";
+  stripeCheckoutConfigured, ensureProfile } from "@/lib/stripe";
 import { requestOrigin } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
@@ -23,14 +21,12 @@ export async function POST(req: Request) {
     );
   }
 
-  const dbUser = await prisma.user.findUnique({
-    where: { id: session.user.id },
+  const profile = await ensureProfile(session.user.id, session.user.email);
+  const customerId = await ensureStripeCustomer({
+    id: session.user.id,
+    email: session.user.email ?? profile.email ?? "",
+    stripeCustomerId: profile.stripe_customer_id,
   });
-  if (!dbUser) {
-    return NextResponse.json({ error: "User not found" }, { status: 404 });
-  }
-
-  const customerId = await ensureStripeCustomer(dbUser);
   const stripe = getStripe();
   const base = requestOrigin(req);
 

@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { auth } from "@/auth";
-import { prisma } from "@/lib/db";
-import { isProActive } from "@/lib/pro";
+import { cbRest } from "@/lib/cargobase";
+import { requireProUser } from "@/lib/cargobase-session";
 
 export const dynamic = "force-dynamic";
 
@@ -12,54 +11,46 @@ const layoutSchema = z.object({
   favorites: z.array(z.string()).min(1).max(40),
 });
 
-async function requireProUser() {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { error: NextResponse.json({ error: "Sign in required" }, { status: 401 }) };
-  }
-  const user = await prisma.user.findUnique({ where: { id: session.user.id } });
-  if (!user || !isProActive(user.proStatus, user.proCurrentPeriodEnd)) {
-    return {
-      error: NextResponse.json(
-        { error: "Pro subscription required for saved layouts." },
-        { status: 403 },
-      ),
-    };
-  }
-  return { user };
-}
+const MAX_LAYOUTS = 20;
+
+type LayoutRow = {
+  id: string;
+  name: string;
+  chain_id: string;
+  favorites: string[];
+  updated_at: string;
+};
+
+const toLayout = (row: LayoutRow) => ({
+  id: row.id,
+  name: row.name,
+  chainId: row.chain_id,
+  favorites: row.favorites ?? [],
+  updatedAt: row.updated_at,
+});
 
 export async function GET(req: Request) {
-  const gate = await requireProUser();
-  if ("error" in gate && gate.error) return gate.error;
-  const user = gate.user!;
+  const gate = await requireProUser(req, "saved layouts");
+  if ("error" in gate) return gate.error;
 
-  const url = new URL(req.url);
-  const chainId = url.searchParams.get("chainId") ?? undefined;
+  const chainId = new URL(req.url).searchParams.get("chainId");
+  // No user_id filter: row-level security already limits this to the caller's
+  // own rows, so asking for anything else would return nothing anyway.
+  const query = [
+    "layouts?select=id,name,chain_id,favorites,updated_at",
+    chainId ? `chain_id=eq.${encodeURIComponent(chainId)}` : "",
+    "order=updated_at.desc",
+  ]
+    .filter(Boolean)
+    .join("&");
 
-  const layouts = await prisma.savedLayout.findMany({
-    where: {
-      userId: user.id,
-      ...(chainId ? { chainId } : {}),
-    },
-    orderBy: { updatedAt: "desc" },
-  });
-
-  return NextResponse.json({
-    layouts: layouts.map((l) => ({
-      id: l.id,
-      name: l.name,
-      chainId: l.chainId,
-      favorites: JSON.parse(l.favorites) as string[],
-      updatedAt: l.updatedAt.toISOString(),
-    })),
-  });
+  const rows = await cbRest<LayoutRow[]>(query, { token: gate.user.token });
+  return NextResponse.json({ layouts: rows.map(toLayout) });
 }
 
 export async function POST(req: Request) {
-  const gate = await requireProUser();
-  if ("error" in gate && gate.error) return gate.error;
-  const user = gate.user!;
+  const gate = await requireProUser(req, "saved layouts");
+  if ("error" in gate) return gate.error;
 
   let json: unknown;
   try {
@@ -73,52 +64,49 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid layout payload" }, { status: 400 });
   }
 
-  const count = await prisma.savedLayout.count({ where: { userId: user.id } });
-  if (count >= 20) {
+  const existing = await cbRest<{ id: string }[]>("layouts?select=id", {
+    token: gate.user.token,
+  });
+  if (existing.length >= MAX_LAYOUTS) {
     return NextResponse.json(
-      { error: "Layout limit reached (20). Delete one first." },
+      { error: `Layout limit reached (${MAX_LAYOUTS}). Delete one first.` },
       { status: 400 },
     );
   }
 
-  const layout = await prisma.savedLayout.create({
-    data: {
-      userId: user.id,
+  const [row] = await cbRest<LayoutRow[]>("layouts", {
+    method: "POST",
+    token: gate.user.token,
+    representation: true,
+    // user_id is left out on purpose: the column defaults to auth.uid(), so the
+    // row is owned by whoever the token says it is and cannot be forged.
+    body: {
       name: parsed.data.name,
-      chainId: parsed.data.chainId,
-      favorites: JSON.stringify(parsed.data.favorites),
+      chain_id: parsed.data.chainId,
+      favorites: parsed.data.favorites,
     },
   });
 
-  return NextResponse.json({
-    layout: {
-      id: layout.id,
-      name: layout.name,
-      chainId: layout.chainId,
-      favorites: parsed.data.favorites,
-      updatedAt: layout.updatedAt.toISOString(),
-    },
-  }, { status: 201 });
+  return NextResponse.json({ layout: toLayout(row) }, { status: 201 });
 }
 
 export async function DELETE(req: Request) {
-  const gate = await requireProUser();
-  if ("error" in gate && gate.error) return gate.error;
-  const user = gate.user!;
+  const gate = await requireProUser(req, "saved layouts");
+  if ("error" in gate) return gate.error;
 
-  const url = new URL(req.url);
-  const id = url.searchParams.get("id");
+  const id = new URL(req.url).searchParams.get("id");
   if (!id) {
     return NextResponse.json({ error: "id required" }, { status: 400 });
   }
 
-  const existing = await prisma.savedLayout.findFirst({
-    where: { id, userId: user.id },
-  });
-  if (!existing) {
+  // RLS scopes the delete to the caller, so a wrong id deletes nothing rather
+  // than someone else's layout. Representation tells us which it was.
+  const deleted = await cbRest<LayoutRow[]>(
+    `layouts?id=eq.${encodeURIComponent(id)}`,
+    { method: "DELETE", token: gate.user.token, representation: true },
+  );
+  if (deleted.length === 0) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
-
-  await prisma.savedLayout.delete({ where: { id } });
   return NextResponse.json({ ok: true });
 }
