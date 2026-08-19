@@ -39,13 +39,19 @@ describe("Pro monetization baseline (shipped free vs Pro)", () => {
     const layouts = readSrc("src/app/api/pro/layouts/route.ts");
     const walls = readSrc("src/app/api/pro/wall-packs/route.ts");
     const desks = readSrc("src/app/api/pro/desks/route.ts");
-    expect(alerts).toMatch(/isProActive/);
-    expect(alerts).toMatch(/Pro subscription required for alert rules/);
-    expect(layouts).toMatch(/isProActive/);
-    expect(layouts).toMatch(/Pro subscription required for saved layouts/);
-    expect(walls).toMatch(/isProActive/);
+    // The entitlement check lives in the shared requireProUser gate rather than
+    // being repeated per route, so assert each route goes through it and that
+    // the gate itself is the thing consulting isProActive.
+    const gate = readSrc("src/lib/cargobase-session.ts");
+    expect(gate).toMatch(/isProActive/);
+    expect(gate).toMatch(/Pro subscription required for/);
+
+    for (const route of [alerts, layouts, walls, desks]) {
+      expect(route).toMatch(/requireProUser\(/);
+    }
+    expect(alerts).toMatch(/"alert rules"/);
+    expect(layouts).toMatch(/"saved layouts"/);
     expect(walls).toMatch(/wall packs/i);
-    expect(desks).toMatch(/isProActive/);
     expect(desks).toMatch(/forensics desks/i);
   });
 

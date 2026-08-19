@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { isChainId } from "@/lib/chains/registry";
+import { freshnessHeaders, withRetryAndStale } from "@/lib/chains/resilient";
 import { fetchChainSnapshot } from "@/lib/chains/snapshot";
 
 export const dynamic = "force-dynamic";
@@ -13,8 +14,10 @@ export async function GET(
     return NextResponse.json({ error: "unknown chain" }, { status: 404 });
   }
   try {
-    const snap = await fetchChainSnapshot(chain);
-    return NextResponse.json(snap);
+    const result = await withRetryAndStale(`snapshot:${chain}`, () =>
+      fetchChainSnapshot(chain),
+    );
+    return NextResponse.json(result.data, { headers: freshnessHeaders(result) });
   } catch (e) {
     return NextResponse.json(
       { error: e instanceof Error ? e.message : "snapshot failed" },
