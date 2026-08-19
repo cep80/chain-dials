@@ -1,56 +1,33 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { auth } from "@/auth";
+import { cbRest } from "@/lib/cargobase";
+import { requireProUser } from "@/lib/cargobase-session";
 import { normalizeDeskPack } from "@/lib/forensics/desk-pack";
-import { prisma } from "@/lib/db";
-import { isProActive } from "@/lib/pro";
 
 export const dynamic = "force-dynamic";
 
-async function requireProUser() {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { error: NextResponse.json({ error: "Sign in required" }, { status: 401 }) };
-  }
-  const user = await prisma.user.findUnique({ where: { id: session.user.id } });
-  if (!user || !isProActive(user.proStatus, user.proCurrentPeriodEnd)) {
-    return {
-      error: NextResponse.json(
-        { error: "Pro subscription required for forensics desks." },
-        { status: 403 },
-      ),
-    };
-  }
-  return { user };
-}
+const MAX_DESKS = 30;
 
-export async function GET() {
-  const gate = await requireProUser();
-  if ("error" in gate && gate.error) return gate.error;
-  const user = gate.user!;
+type DeskRow = { payload: unknown };
 
-  const rows = await prisma.deskPackRecord.findMany({
-    where: { userId: user.id },
-    orderBy: { updatedAt: "desc" },
-  });
+export async function GET(req: Request) {
+  const gate = await requireProUser(req, "forensics desks");
+  if ("error" in gate) return gate.error;
 
+  const rows = await cbRest<DeskRow[]>(
+    "desk_packs?select=payload&order=updated_at.desc",
+    { token: gate.user.token },
+  );
   const desks = rows
-    .map((r) => {
-      try {
-        return normalizeDeskPack(JSON.parse(r.payload));
-      } catch {
-        return null;
-      }
-    })
-    .filter(Boolean);
+    .map((r) => normalizeDeskPack(r.payload))
+    .filter((d): d is NonNullable<typeof d> => d != null);
 
   return NextResponse.json({ desks });
 }
 
 export async function PUT(req: Request) {
-  const gate = await requireProUser();
-  if ("error" in gate && gate.error) return gate.error;
-  const user = gate.user!;
+  const gate = await requireProUser(req, "forensics desks");
+  if ("error" in gate) return gate.error;
 
   let json: unknown;
   try {
@@ -59,11 +36,7 @@ export async function PUT(req: Request) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const parsed = z
-    .object({
-      desks: z.array(z.unknown()).max(30),
-    })
-    .safeParse(json);
+  const parsed = z.object({ desks: z.array(z.unknown()).max(MAX_DESKS) }).safeParse(json);
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid desks payload" }, { status: 400 });
   }
@@ -71,21 +44,26 @@ export async function PUT(req: Request) {
   const desks = parsed.data.desks
     .map((d) => normalizeDeskPack(d))
     .filter((d): d is NonNullable<typeof d> => d != null)
-    .slice(0, 30);
+    .slice(0, MAX_DESKS);
 
-  await prisma.$transaction(async (tx) => {
-    await tx.deskPackRecord.deleteMany({ where: { userId: user.id } });
-    for (const desk of desks) {
-      await tx.deskPackRecord.create({
-        data: {
-          userId: user.id,
-          name: desk.name,
-          chainId: desk.chainId,
-          payload: JSON.stringify(desk),
-        },
-      });
-    }
+  // Replace the caller's set. Not a transaction — see the note in the alerts
+  // route — but both halves are scoped to the caller by row-level security.
+  await cbRest("desk_packs?id=not.is.null", {
+    method: "DELETE",
+    token: gate.user.token,
   });
+
+  if (desks.length > 0) {
+    await cbRest("desk_packs", {
+      method: "POST",
+      token: gate.user.token,
+      body: desks.map((desk) => ({
+        name: desk.name,
+        chain_id: desk.chainId,
+        payload: desk,
+      })),
+    });
+  }
 
   return NextResponse.json({ desks });
 }

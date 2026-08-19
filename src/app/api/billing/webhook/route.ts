@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
+import { cbAdmin } from "@/lib/cargobase";
 import type Stripe from "stripe";
-import { prisma } from "@/lib/db";
 import {
   findUserIdForSubscription,
   getStripe,
   syncSubscriptionToUser,
+  getProfile,
 } from "@/lib/stripe";
 
 export const dynamic = "force-dynamic";
@@ -20,42 +21,39 @@ async function resolveCheckoutUserId(
       : session.customer?.id ?? null;
   if (!metaUserId || !customerId) return null;
 
-  const user = await prisma.user.findUnique({
-    where: { id: metaUserId },
-    select: { id: true, stripeCustomerId: true },
-  });
-  if (!user) return null;
+  const profile = await getProfile(metaUserId);
+  if (!profile) return null;
 
-  if (user.stripeCustomerId && user.stripeCustomerId !== customerId) {
+  if (profile.stripe_customer_id && profile.stripe_customer_id !== customerId) {
     console.error("stripe checkout customer/user mismatch", {
       userId: metaUserId,
       customerId,
-      bound: user.stripeCustomerId,
+      bound: profile.stripe_customer_id,
     });
     return null;
   }
 
-  const other = await prisma.user.findFirst({
-    where: { stripeCustomerId: customerId, NOT: { id: metaUserId } },
-    select: { id: true },
-  });
-  if (other) {
+  const bound = await cbAdmin<{ user_id: string }[]>(
+    `profiles?select=user_id&stripe_customer_id=eq.${encodeURIComponent(customerId)}&user_id=neq.${encodeURIComponent(metaUserId)}&limit=1`,
+    {},
+  );
+  if (bound[0]) {
     console.error("stripe checkout customer already bound", {
       customerId,
-      otherUserId: other.id,
+      otherUserId: bound[0].user_id,
       metaUserId,
     });
     return null;
   }
 
-  if (!user.stripeCustomerId) {
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { stripeCustomerId: customerId },
+  if (!profile.stripe_customer_id) {
+    await cbAdmin(`profiles?user_id=eq.${encodeURIComponent(metaUserId)}`, {
+      method: "PATCH",
+      body: { stripe_customer_id: customerId },
     });
   }
 
-  return user.id;
+  return profile.user_id;
 }
 
 export async function POST(req: Request) {
@@ -104,12 +102,9 @@ export async function POST(req: Request) {
         const userId = await findUserIdForSubscription(sub);
         if (userId) {
           if (event.type === "customer.subscription.deleted") {
-            await prisma.user.update({
-              where: { id: userId },
-              data: {
-                proStatus: "canceled",
-                stripeSubscriptionId: sub.id,
-              },
+            await cbAdmin(`profiles?user_id=eq.${encodeURIComponent(userId)}`, {
+              method: "PATCH",
+              body: { pro_status: "canceled", stripe_subscription_id: sub.id },
             });
           } else {
             await syncSubscriptionToUser(userId, sub);

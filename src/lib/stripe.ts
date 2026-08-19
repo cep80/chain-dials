@@ -1,5 +1,5 @@
 import Stripe from "stripe";
-import { prisma } from "@/lib/db";
+import { cbAdmin } from "@/lib/cargobase";
 
 let stripeSingleton: Stripe | null = null;
 
@@ -31,6 +31,46 @@ export function stripeCheckoutConfigured(): boolean {
   );
 }
 
+export type Profile = {
+  user_id: string;
+  email: string | null;
+  stripe_customer_id: string | null;
+  stripe_subscription_id: string | null;
+  pro_status: string;
+  pro_current_period_end: string | null;
+};
+
+const PROFILE_COLS =
+  "user_id,email,stripe_customer_id,stripe_subscription_id,pro_status,pro_current_period_end";
+
+/**
+ * Billing runs with the service role: a webhook has no user session, and
+ * entitlement must not be writable by the user it belongs to. Every call here
+ * therefore has to scope itself by user_id explicitly — RLS is not doing it.
+ */
+export async function getProfile(userId: string): Promise<Profile | null> {
+  const rows = await cbAdmin<Profile[]>(
+    `profiles?select=${PROFILE_COLS}&user_id=eq.${encodeURIComponent(userId)}&limit=1`,
+    {},
+  );
+  return rows[0] ?? null;
+}
+
+/** Creates the profile row if signup did not. */
+export async function ensureProfile(
+  userId: string,
+  email?: string | null,
+): Promise<Profile> {
+  const existing = await getProfile(userId);
+  if (existing) return existing;
+  const [row] = await cbAdmin<Profile[]>("profiles", {
+    method: "POST",
+    representation: true,
+    body: { user_id: userId, email: email ?? null, pro_status: "none" },
+  });
+  return row;
+}
+
 export async function ensureStripeCustomer(user: {
   id: string;
   email: string;
@@ -39,11 +79,8 @@ export async function ensureStripeCustomer(user: {
 }): Promise<string> {
   if (user.stripeCustomerId) return user.stripeCustomerId;
 
-  const fresh = await prisma.user.findUnique({
-    where: { id: user.id },
-    select: { stripeCustomerId: true },
-  });
-  if (fresh?.stripeCustomerId) return fresh.stripeCustomerId;
+  const fresh = await ensureProfile(user.id, user.email);
+  if (fresh.stripe_customer_id) return fresh.stripe_customer_id;
 
   const stripe = getStripe();
   const customer = await stripe.customers.create({
@@ -52,19 +89,22 @@ export async function ensureStripeCustomer(user: {
     metadata: { userId: user.id },
   });
 
-  const claimed = await prisma.user.updateMany({
-    where: { id: user.id, stripeCustomerId: null },
-    data: { stripeCustomerId: customer.id },
-  });
+  // Conditional on the column still being null, so two concurrent checkouts
+  // cannot both bind a customer. The loser reads back the winner's id.
+  const claimed = await cbAdmin<Profile[]>(
+    `profiles?user_id=eq.${encodeURIComponent(user.id)}&stripe_customer_id=is.null`,
+    {
+      method: "PATCH",
+      representation: true,
+      body: { stripe_customer_id: customer.id },
+    },
+  );
 
-  if (claimed.count === 0) {
-    const winner = await prisma.user.findUnique({
-      where: { id: user.id },
-      select: { stripeCustomerId: true },
-    });
-    if (winner?.stripeCustomerId) {
+  if (claimed.length === 0) {
+    const winner = await getProfile(user.id);
+    if (winner?.stripe_customer_id) {
       // Lost the race; leave the orphan customer for Stripe cleanup later.
-      return winner.stripeCustomerId;
+      return winner.stripe_customer_id;
     }
   }
 
@@ -95,14 +135,15 @@ export async function syncSubscriptionToUser(
       ? subscription.customer
       : subscription.customer?.id;
 
-  await prisma.user.update({
-    where: { id: userId },
-    data: {
-      stripeSubscriptionId: subscription.id,
-      ...(customerId ? { stripeCustomerId: customerId } : {}),
-      proStatus,
-      proCurrentPeriodEnd: periodEndSec
-        ? new Date(periodEndSec * 1000)
+  await ensureProfile(userId);
+  await cbAdmin(`profiles?user_id=eq.${encodeURIComponent(userId)}`, {
+    method: "PATCH",
+    body: {
+      stripe_subscription_id: subscription.id,
+      ...(customerId ? { stripe_customer_id: customerId } : {}),
+      pro_status: proStatus,
+      pro_current_period_end: periodEndSec
+        ? new Date(periodEndSec * 1000).toISOString()
         : null,
     },
   });
@@ -118,26 +159,23 @@ export async function findUserIdForSubscription(
   if (!customerId) return null;
 
   // Prefer durable customer binding over mutable metadata.
-  const byCustomer = await prisma.user.findFirst({
-    where: { stripeCustomerId: customerId },
-    select: { id: true },
-  });
-  if (byCustomer) return byCustomer.id;
+  const byCustomer = await cbAdmin<Profile[]>(
+    `profiles?select=${PROFILE_COLS}&stripe_customer_id=eq.${encodeURIComponent(customerId)}&limit=1`,
+    {},
+  );
+  if (byCustomer[0]) return byCustomer[0].user_id;
 
   const metaUser = subscription.metadata?.userId;
   if (!metaUser) return null;
-  const byMeta = await prisma.user.findUnique({
-    where: { id: metaUser },
-    select: { id: true, stripeCustomerId: true },
-  });
+  const byMeta = await getProfile(metaUser);
   if (!byMeta) return null;
-  if (byMeta.stripeCustomerId && byMeta.stripeCustomerId !== customerId) {
+  if (byMeta.stripe_customer_id && byMeta.stripe_customer_id !== customerId) {
     console.error("stripe subscription customer/user mismatch", {
       userId: metaUser,
       customerId,
-      bound: byMeta.stripeCustomerId,
+      bound: byMeta.stripe_customer_id,
     });
     return null;
   }
-  return byMeta.id;
+  return byMeta.user_id;
 }
