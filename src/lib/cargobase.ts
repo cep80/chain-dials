@@ -14,6 +14,11 @@ const BASE = (process.env.CARGOBASE_URL ?? "").replace(/\/+$/, "");
 const ANON = process.env.CARGOBASE_ANON_KEY ?? "";
 const SERVICE = process.env.CARGOBASE_SERVICE_ROLE_KEY ?? "";
 
+/** Health probe target. Kept here so the origin is not re-derived elsewhere. */
+export function getApiHealthUrl(): string {
+  return `${BASE}/auth/health`;
+}
+
 export function cargobaseConfigured(): boolean {
   return Boolean(BASE && ANON);
 }
