@@ -155,7 +155,7 @@ const BASE: Record<TipId, TipBody> = {
   },
   "instrument.atmosphere": {
     title: "Fee weather",
-    body: "Mist bands are mempool vsize by fee rate. Bright dots are recent samples you can inspect. On stage, dashed lines are live fee estimates.",
+    body: "Mist bands are mempool vsize by fee rate. Bright dots are recent samples you can inspect. On capable devices the weather uses a WebGL fog backdrop. On stage, dashed lines are live fee estimates.",
   },
   "instrument.sigil": {
     title: "Block face",

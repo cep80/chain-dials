@@ -24,6 +24,11 @@ import {
   type FeeLadder,
   type HistLayer,
 } from "@/lib/atmosphere-math";
+import {
+  createAtmosphereFog,
+  fogLayersFromHist,
+  type AtmosphereFogHandle,
+} from "@/lib/atmosphere-webgl";
 import { useChainOptional } from "@/lib/chains/context";
 import { feedCatchupLabel } from "@/lib/feed-status";
 import { useDocumentVisible } from "@/lib/use-document-visible";
@@ -50,6 +55,10 @@ interface Particle {
   pulse: number;
   alpha: number;
   dying: boolean;
+  /** Slow phase for vertical bob so dots don't sit on a fee wire. */
+  bob: number;
+  /** How far (px) this sample drifts off its fee altitude. */
+  floatAmp: number;
   trail: { x: number; y: number }[];
 }
 
@@ -72,7 +81,7 @@ const BAND_COLORS = [
   [255, 92, 92],
 ] as const;
 
-const TRAIL_LEN = 7;
+const TRAIL_LEN = 5;
 
 function rgba(rgb: readonly [number, number, number], a: number): string {
   return `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${a})`;
@@ -219,18 +228,23 @@ function syncParticles(
       prev.band = band;
       prev.r = particleRadius(tx.vsize, stage);
       prev.dying = false;
+      if (prev.floatAmp == null || prev.bob == null) {
+        prev.floatAmp = (stage ? 22 : 12) + Math.random() * (stage ? 28 : 16);
+        prev.bob = Math.random() * Math.PI * 2;
+      }
       if (tx.fresh && now - tx.seenAt < 2_000) {
         prev.pulse = Math.max(prev.pulse, 0.9);
       }
     } else {
       const targetY = altitudeY(tx.feeRate, h, fees);
       const fromLeft = Math.random() < 0.5;
+      const floatAmp = (stage ? 22 : 12) + Math.random() * (stage ? 28 : 16);
       particles.push({
         txid: tx.txid,
         x: fromLeft ? -8 : w + 8,
-        y: targetY + (Math.random() - 0.5) * 8,
-        vx: (fromLeft ? 1 : -1) * (0.22 + intensity * 0.28 + Math.random() * 0.18),
-        vy: 0,
+        y: targetY + (Math.random() - 0.5) * floatAmp * 1.4,
+        vx: (fromLeft ? 1 : -1) * (0.18 + intensity * 0.22 + Math.random() * 0.2),
+        vy: (Math.random() - 0.5) * 0.35,
         r: particleRadius(tx.vsize, stage),
         band,
         feeRate: tx.feeRate,
@@ -241,6 +255,8 @@ function syncParticles(
         pulse: tx.fresh ? 0.85 : 0.3,
         alpha: 0,
         dying: false,
+        bob: Math.random() * Math.PI * 2,
+        floatAmp,
         trail: [],
       });
     }
@@ -302,6 +318,10 @@ export function MempoolAtmosphere({
   stage?: boolean;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const glCanvasRef = useRef<HTMLCanvasElement>(null);
+  const fogRef = useRef<AtmosphereFogHandle | null>(null);
+  const fogOkRef = useRef(false);
+  const timeOriginRef = useRef(0);
   const particlesRef = useRef<Particle[]>([]);
   const densityRef = useRef<DensityMote[]>([]);
   const layersRef = useRef<HistLayer[]>([]);
@@ -343,6 +363,9 @@ export function MempoolAtmosphere({
   const [hoverId, setHoverId] = useState<string | null>(null);
   const [sampleLabel, setSampleLabel] = useState(0);
   const [blockFlash, setBlockFlash] = useState(0);
+  const [fogReady, setFogReady] = useState(false);
+  /** Bumps when a lost WebGL context forces a fresh canvas remount. */
+  const [glKey, setGlKey] = useState(0);
 
   const blocksWaiting = pressureBlocks(pressure);
   const pressurePct = blocksWaiting != null ? blocksWaiting * 100 : null;
@@ -441,9 +464,43 @@ export function MempoolAtmosphere({
   }, [feeHistogram, intensity, reduce, stage]);
 
   useEffect(() => {
+    if (reduce || compact) {
+      fogRef.current?.destroy();
+      fogRef.current = null;
+      fogOkRef.current = false;
+      setFogReady(false);
+      return;
+    }
+    const glCanvas = glCanvasRef.current;
+    if (!glCanvas) return;
+
+    // Canvas already has a dead WebGL context from a prior loseContext: remount.
+    const existing = glCanvas.getContext("webgl");
+    if (existing?.isContextLost()) {
+      setGlKey((k) => k + 1);
+      return;
+    }
+
+    const fog = createAtmosphereFog(glCanvas);
+    fogRef.current = fog;
+    fogOkRef.current = !!fog;
+    setFogReady(!!fog);
+    fog?.resize();
+    timeOriginRef.current = performance.now();
+    return () => {
+      fog?.destroy();
+      if (fogRef.current === fog) {
+        fogRef.current = null;
+        fogOkRef.current = false;
+        setFogReady(false);
+      }
+    };
+  }, [reduce, compact, stage, large, glKey]);
+
+  useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d", { alpha: true });
     if (!ctx) return;
 
     let raf = 0;
@@ -461,6 +518,7 @@ export function MempoolAtmosphere({
       canvas.width = nextW;
       canvas.height = nextH;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      fogRef.current?.resize();
     };
     resize();
     const ro = new ResizeObserver(resize);
@@ -579,9 +637,9 @@ export function MempoolAtmosphere({
       for (const m of marks) {
         if (m.rate == null || !(m.rate > 0)) continue;
         const y = altitudeY(m.rate, h, fees);
-        ctx.strokeStyle = rgba(m.rgb, 0.28);
+        ctx.strokeStyle = rgba(m.rgb, 0.16);
         ctx.lineWidth = 1;
-        ctx.setLineDash([4, 5]);
+        ctx.setLineDash([3, 7]);
         ctx.beginPath();
         ctx.moveTo(0, y);
         ctx.lineTo(w, y);
@@ -589,9 +647,9 @@ export function MempoolAtmosphere({
         ctx.setLineDash([]);
         const tag = `${formatFee(m.rate, unit)} · ${m.label}`;
         const tw = ctx.measureText(tag).width;
-        ctx.fillStyle = "rgba(10,12,16,0.55)";
+        ctx.fillStyle = "rgba(10,12,16,0.45)";
         ctx.fillRect(w - tw - 16, y - 8, tw + 10, 14);
-        ctx.fillStyle = rgba(m.rgb, 0.85);
+        ctx.fillStyle = rgba(m.rgb, 0.7);
         ctx.fillText(tag, w - tw - 11, y + 3);
       }
     };
@@ -601,14 +659,14 @@ export function MempoolAtmosphere({
       const rgb = BAND_COLORS[p.band]!;
       const glow = selected || hover || p.pulse > 0.15;
 
-      // Motion trail (recent path at this fee altitude)
-      if (p.trail.length > 1) {
+      // Motion trail only when highlighted (avoids “beads on a wire”)
+      if ((selected || hover || p.pulse > 0.2) && p.trail.length > 1) {
         for (let i = 0; i < p.trail.length - 1; i++) {
           const a = p.trail[i]!;
           const b = p.trail[i + 1]!;
           const t = (i + 1) / p.trail.length;
-          ctx.strokeStyle = rgba(rgb, 0.12 * t * p.alpha);
-          ctx.lineWidth = Math.max(0.6, p.r * 0.35 * t);
+          ctx.strokeStyle = rgba(rgb, 0.1 * t * p.alpha);
+          ctx.lineWidth = Math.max(0.5, p.r * 0.28 * t);
           ctx.beginPath();
           ctx.moveTo(a.x, a.y);
           ctx.lineTo(b.x, b.y);
@@ -720,8 +778,24 @@ export function MempoolAtmosphere({
       }
 
       ctx.clearRect(0, 0, w, h);
-      drawSky(w, h, intensityNow);
-      drawVolumetricMist(w, h, fees, intensityNow, clearBreathRef.current);
+      const fog = fogRef.current;
+      const useFog = fogOkRef.current && !!fog && !reduce;
+      if (useFog) {
+        fog!.render({
+          time: (performance.now() - timeOriginRef.current) / 1000,
+          intensity: intensityNow,
+          breath: clearBreathRef.current,
+          layers: fogLayersFromHist(
+            layersRef.current,
+            h,
+            fees,
+            altitudeY,
+          ),
+        });
+      } else {
+        drawSky(w, h, intensityNow);
+        drawVolumetricMist(w, h, fees, intensityNow, clearBreathRef.current);
+      }
       drawIsobars(w, h, fees);
 
       const selected = selectedRef.current;
@@ -731,18 +805,27 @@ export function MempoolAtmosphere({
       const mist = densityRef.current;
 
       for (const m of mist) {
+        // WebGL fog owns the weather body; keep only sparse sparkle when fog is live.
+        if (useFog && m.alpha < 0.22) continue;
         m.x += m.vx;
+        m.vy += (Math.random() - 0.5) * 0.03;
+        m.vy = clamp(m.vy, -0.45, 0.45);
         m.y += m.vy;
-        m.vy *= 0.92;
+        m.vy *= 0.96;
         if (m.x < -4) m.x = w + 4;
         if (m.x > w + 4) m.x = -4;
+        // Soft band, not a wire: weak pull toward fee altitude
         const ty = altitudeY(m.feeRate, h, fees) - clearBreathRef.current * 20;
-        m.y += (ty - m.y) * 0.025;
+        m.y += (ty - m.y) * 0.008;
         m.alpha = Math.max(0.08, m.alpha - 0.0008);
         if (m.y < -10) m.y = h + 4;
+        if (m.y > h + 10) m.y = -4;
         ctx.beginPath();
-        ctx.fillStyle = rgba(BAND_COLORS[m.band]!, m.alpha);
-        ctx.arc(m.x, m.y, m.r, 0, Math.PI * 2);
+        ctx.fillStyle = rgba(
+          BAND_COLORS[m.band]!,
+          useFog ? m.alpha * 0.35 : m.alpha,
+        );
+        ctx.arc(m.x, m.y, useFog ? m.r * 0.7 : m.r, 0, Math.PI * 2);
         ctx.fill();
       }
 
@@ -758,13 +841,26 @@ export function MempoolAtmosphere({
           p.alpha = Math.min(1, p.alpha + 0.055);
         }
 
-        const targetY =
-          altitudeY(p.feeRate, h, fees) - clearBreathRef.current * 24;
+        // Bob around fee altitude so samples float in the mist, not on a string
+        if (!Number.isFinite(p.bob)) p.bob = Math.random() * Math.PI * 2;
+        if (!Number.isFinite(p.floatAmp)) {
+          p.floatAmp = (stageRef.current ? 22 : 12) + Math.random() * 20;
+        }
+        p.bob += 0.011 + intensityNow * 0.008;
+        const amp = p.floatAmp;
+        const floatY =
+          Math.sin(p.bob) * amp +
+          Math.sin(p.bob * 0.41 + 1.7) * amp * 0.4 +
+          Math.cos(p.bob * 0.17) * amp * 0.22;
+        const bandY =
+          altitudeY(p.feeRate, h, fees) - clearBreathRef.current * 24 + floatY;
         p.x += p.vx;
-        p.y += (targetY - p.y) * 0.04 + p.vy;
-        p.vy *= 0.88;
-        p.vx += (Math.random() - 0.5) * 0.018;
-        p.vx = clamp(p.vx, -drift, drift);
+        p.vy += (Math.random() - 0.5) * 0.045;
+        p.vy = clamp(p.vy, -0.55, 0.55);
+        p.y += (bandY - p.y) * 0.014 + p.vy;
+        p.vy *= 0.94;
+        p.vx += (Math.random() - 0.5) * 0.03;
+        p.vx = clamp(p.vx, -drift * 1.15, drift * 1.15);
         p.pulse = Math.max(0, p.pulse - 0.014);
         if (p.x < -10) p.x = w + 10;
         if (p.x > w + 10) p.x = -10;
@@ -835,8 +931,23 @@ export function MempoolAtmosphere({
       const h = canvas.clientHeight;
       const fees = feesRef.current;
       ctx.clearRect(0, 0, w, h);
-      drawSky(w, h, intensityRef.current);
-      drawVolumetricMist(w, h, fees, intensityRef.current, 0);
+      const fog = fogRef.current;
+      if (fogOkRef.current && fog) {
+        fog.render({
+          time: 0,
+          intensity: intensityRef.current,
+          breath: 0,
+          layers: fogLayersFromHist(
+            layersRef.current,
+            h,
+            fees,
+            altitudeY,
+          ),
+        });
+      } else {
+        drawSky(w, h, intensityRef.current);
+        drawVolumetricMist(w, h, fees, intensityRef.current, 0);
+      }
       drawIsobars(w, h, fees);
       for (const m of densityRef.current) {
         ctx.beginPath();
@@ -939,6 +1050,8 @@ export function MempoolAtmosphere({
   const pendingLabel = count != null ? formatInteger(count) : null;
   const aria = `Mempool atmosphere. ${pendingLabel ?? "Unknown"} transactions waiting. Mist shows fee density by vsize. ${sampleN} recent transactions are clickable. Empty area opens a bigger view.`;
 
+  // WebGL fog owns the sky when available; 2D canvas stays interactive on top.
+
   const body = (
     <div
       className={`relative w-full overflow-hidden rounded-[10px] border border-line/60 bg-ink ${
@@ -956,7 +1069,20 @@ export function MempoolAtmosphere({
       onPointerMove={onPointerMove}
       onPointerLeave={onPointerLeave}
     >
-      <canvas ref={canvasRef} className="h-full w-full touch-none" />
+      {!reduce && !compact ? (
+        <canvas
+          key={glKey}
+          ref={glCanvasRef}
+          className={`pointer-events-none absolute inset-0 h-full w-full ${
+            fogReady ? "opacity-100" : "opacity-0"
+          }`}
+          aria-hidden
+        />
+      ) : null}
+      <canvas
+        ref={canvasRef}
+        className="relative z-[1] h-full w-full touch-none bg-transparent"
+      />
       {!compact ? (
         <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 p-2">
           <p className="mono text-[9px] uppercase tracking-wider text-paper-muted/80">
