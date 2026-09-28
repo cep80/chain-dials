@@ -36,7 +36,10 @@ export function SavedLayoutsPanel() {
   }, [pro, signedIn, chain.id]);
 
   useEffect(() => {
-    void refresh();
+    const t = window.setTimeout(() => {
+      void refresh();
+    }, 0);
+    return () => window.clearTimeout(t);
   }, [refresh]);
 
   if (!pro) return null;

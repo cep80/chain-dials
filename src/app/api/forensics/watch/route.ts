@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { buildWatchboard } from "@/lib/forensics/watch";
+import { buildWatchboard, parseForensicsCase } from "@/lib/forensics/watch";
 import { clientIp, rateLimit, rateLimitResponse } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
@@ -14,7 +14,8 @@ export async function GET(req: NextRequest) {
     : 48;
 
   try {
-    const data = await buildWatchboard(limit);
+    const caseId = parseForensicsCase(req.nextUrl.searchParams.get("case"));
+    const data = await buildWatchboard(limit, caseId);
     return NextResponse.json(data, {
       headers: {
         "Cache-Control": "no-store",

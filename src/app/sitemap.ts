@@ -43,6 +43,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "hourly",
       priority: 0.7,
     },
+    {
+      url: `${base}/btc/forensics?case=liquid`,
+      lastModified: now,
+      changeFrequency: "hourly",
+      priority: 0.7,
+    },
+    {
+      url: `${base}/wallet`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.6,
+    },
   ];
 
   const chains = CHAIN_ORDER.flatMap((id) => {
@@ -59,6 +71,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
         lastModified: now,
         changeFrequency: "monthly" as const,
         priority: 0.4,
+      },
+      {
+        url: `${base}/${slug}/wallet`,
+        lastModified: now,
+        changeFrequency: "weekly" as const,
+        priority: 0.6,
       },
     ];
   });

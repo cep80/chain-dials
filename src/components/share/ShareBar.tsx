@@ -13,6 +13,7 @@ import {
   composeInstrumentTweet,
   composeMetricTweet,
   composeSuiteTweet,
+  composeWalletTweet,
   type SharePayload,
 } from "@/lib/share/compose";
 import {
@@ -78,7 +79,13 @@ export type ShareTarget =
       fee?: string | null;
       since?: string | null;
     }
-  | { kind: "suite" };
+  | { kind: "suite" }
+  | {
+      kind: "wallet";
+      chainId: ChainId;
+      address?: string | null;
+      reading?: string | null;
+    };
 
 function build(target: ShareTarget): SharePayload {
   switch (target.kind) {
@@ -90,6 +97,8 @@ function build(target: ShareTarget): SharePayload {
       return composeBoardTweet(target);
     case "suite":
       return composeSuiteTweet();
+    case "wallet":
+      return composeWalletTweet(target);
   }
 }
 
@@ -117,13 +126,12 @@ export function ShareBar({
 }) {
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState<"x" | "nostr" | null>(null);
-  const [nip07, setNip07] = useState(false);
+  const nip07 = open ? hasNostrExtension() : false;
   const rootRef = useRef<HTMLDivElement>(null);
   const menuId = useId();
 
   useEffect(() => {
     if (!open) return;
-    setNip07(hasNostrExtension());
     const onDoc = (e: Event) => {
       if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
     };

@@ -1,28 +1,29 @@
 "use client";
+import { BlockMetronome, HashrateForge, IssuanceHourglass, MempoolAtmosphere, TipSigil, BaseFeeTide, BlockMosaic, BurnCandle, SlotLattice, ValidatorConstellation, ClearingClock, FundingTide, HashTape, OiVault, VolumeFountain, InflationFountain, LeaderRibbon, PriorityJets, StakeReef, TurbineTach } from "@/components/viz/lazy-instruments";
 
 import Link from "next/link";
 import { AppShell } from "@/components/shell/AppShell";
 import { ShareBar } from "@/components/share/ShareBar";
-import { BlockMetronome } from "@/components/viz/BlockMetronome";
-import { HashrateForge } from "@/components/viz/HashrateForge";
-import { IssuanceHourglass } from "@/components/viz/IssuanceHourglass";
-import { MempoolAtmosphere } from "@/components/viz/MempoolAtmosphere";
-import { TipSigil } from "@/components/viz/TipSigil";
-import { BaseFeeTide } from "@/components/viz/eth/BaseFeeTide";
-import { BlockMosaic } from "@/components/viz/eth/BlockMosaic";
-import { BurnCandle } from "@/components/viz/eth/BurnCandle";
-import { SlotLattice } from "@/components/viz/eth/SlotLattice";
-import { ValidatorConstellation } from "@/components/viz/eth/ValidatorConstellation";
-import { ClearingClock } from "@/components/viz/hype/ClearingClock";
-import { FundingTide } from "@/components/viz/hype/FundingTide";
-import { HashTape } from "@/components/viz/hype/HashTape";
-import { OiVault } from "@/components/viz/hype/OiVault";
-import { VolumeFountain } from "@/components/viz/hype/VolumeFountain";
-import { InflationFountain } from "@/components/viz/sol/InflationFountain";
-import { LeaderRibbon } from "@/components/viz/sol/LeaderRibbon";
-import { PriorityJets } from "@/components/viz/sol/PriorityJets";
-import { StakeReef } from "@/components/viz/sol/StakeReef";
-import { TurbineTach } from "@/components/viz/sol/TurbineTach";
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import { CHAINS } from "@/lib/chains/registry";
 import type { ChainId } from "@/lib/chains/types";
 import type { InstrumentId } from "@/lib/instruments";

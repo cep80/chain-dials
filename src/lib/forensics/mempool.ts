@@ -1,6 +1,7 @@
 import type { DestinationKind, LiveAddressStats } from "@/lib/forensics/types";
 import { getHolder, getVictim } from "@/lib/forensics/dataset";
 import { knownEntityLabel } from "@/lib/forensics/entities";
+import { getLiquidAddress } from "@/lib/forensics/liquid";
 
 const UPSTREAM = "https://mempool.space/api";
 
@@ -141,6 +142,17 @@ export function labelDestination(
       return { kind: "tracked-collector", label: holder.label };
     }
     return { kind: "tracked-holder", label: holder.label };
+  }
+
+  const liquid = getLiquidAddress(address);
+  if (liquid) {
+    if (liquid.role === "federation-peg") {
+      return { kind: "tracked-vault", label: liquid.label };
+    }
+    if (liquid.role === "sideswap-payout") {
+      return { kind: "tracked-collector", label: liquid.label };
+    }
+    return { kind: "tracked-holder", label: liquid.label };
   }
 
   const victim = getVictim(address);

@@ -1,4 +1,5 @@
 "use client";
+import { useInstrumentActive } from "@/components/viz/InstrumentActivity";
 
 import { motion } from "framer-motion";
 import { useEffect, useId, useState } from "react";
@@ -65,26 +66,30 @@ export function BlockMetronome({
   const target = chain?.targetBlockSeconds ?? DEFAULT_TARGET;
   const cadence = chain?.cadenceLabel ?? "block";
   const reduce = useAppReducedMotion();
+  const active = useInstrumentActive();
   const uid = useId().replace(/:/g, "");
   const mode = resolveDisplayMode({ compact, large, stage });
   const size = instrumentCanvasSize(mode, 140);
   const catchingUp = isFeedCatchingUp(connection);
   const catchupNote = feedCatchupLabel(connection);
 
-  const [since, setSince] = useState<number | null>(null);
+  const [tickMs, setTickMs] = useState(() => Date.now());
 
   useEffect(() => {
-    if (tipTimestamp == null) {
-      setSince(null);
-      return;
-    }
+    if (!active) return;
+    if (tipTimestamp == null) return;
     const tick = () => {
-      setSince(Math.max(0, (Date.now() - tipTimestamp) / 1000));
+      setTickMs(Date.now());
     };
     tick();
     const id = window.setInterval(tick, reduce ? 1000 : 250);
     return () => window.clearInterval(id);
-  }, [tipTimestamp, reduce, boardPulse]);
+  }, [tipTimestamp, reduce, boardPulse, active]);
+
+  const since =
+    tipTimestamp == null
+      ? null
+      : Math.max(0, (tickMs - tipTimestamp) / 1000);
 
   const raw = since != null ? since / target : 0;
   const lap = raw % 1;

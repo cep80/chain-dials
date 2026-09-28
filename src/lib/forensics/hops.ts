@@ -5,6 +5,7 @@ import {
   type MempoolTx,
 } from "@/lib/forensics/mempool";
 import { getHolder, getVictim } from "@/lib/forensics/dataset";
+import { getLiquidAddress } from "@/lib/forensics/liquid";
 import type { HopDestination, HopSpend, HopsResponse } from "@/lib/forensics/types";
 
 function isSpendFrom(tx: MempoolTx, address: string): boolean {
@@ -35,6 +36,7 @@ export async function buildHops(
 ): Promise<HopsResponse> {
   const holder = getHolder(address);
   const victim = getVictim(address);
+  const liquid = getLiquidAddress(address);
   const [live, txs] = await Promise.all([
     fetchAddress(address).catch(() => null),
     fetchAddressTxs(address),
@@ -59,8 +61,8 @@ export async function buildHops(
   return {
     fetchedAt: Date.now(),
     address,
-    meta: holder ?? victim ?? null,
-    role: holder ? "holder" : victim ? "victim" : "unknown",
+    meta: holder ?? victim ?? liquid ?? null,
+    role: holder ? "holder" : victim ? "victim" : liquid ? "liquid" : "unknown",
     live,
     spends,
   };

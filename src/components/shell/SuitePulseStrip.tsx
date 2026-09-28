@@ -2,163 +2,39 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { CHAIN_ORDER, CHAINS, freshnessLabel } from "@/lib/chains/registry";
+import { CHAIN_ORDER, CHAINS } from "@/lib/chains/registry";
 import type { ChainId } from "@/lib/chains/types";
-import { formatDuration, formatFee, formatRelativeAge } from "@/lib/format";
+import type { TipSnapshot } from "@/lib/chains/fetch";
+import type { ChainSnapshot } from "@/lib/chains/snapshot";
+import { formatDuration, formatFee } from "@/lib/format";
+import { useJsonResource } from "@/hooks/useJsonResource";
+import { ReadingStatus } from "@/components/status/ReadingStatus";
 
-interface TipRow {
-  height: number | null;
-  timestamp: number | null;
-  source: string;
-  feeFastest: number | null;
-  fetchedAt: number;
+function PulseCard({ id }: { id: ChainId }) {
+  const c = CHAINS[id];
+  const tipMs = id === "sol" || id === "hype" ? 2500 : 5000;
+  const tip = useJsonResource<TipSnapshot>(`/api/suite/tip/${id}`, { staleMs: tipMs, pollMs: tipMs });
+  const snapshot = useJsonResource<ChainSnapshot>(id === "btc" ? null : `/api/suite/snapshot/${id}`, { staleMs: 15_000, pollMs: 15_000 });
+  const fees = useJsonResource<{ fastestFee: number }>(id === "btc" ? "/api/mempool/v1/fees/recommended" : null, { staleMs: 30_000, pollMs: 30_000 });
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const timer = setInterval(() => { if (document.visibilityState !== "hidden") setNow(Date.now()); }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+  const fee = id === "btc" ? fees.data?.fastestFee : snapshot.data?.feeFastest;
+  const feeState = id === "btc" ? fees : snapshot;
+  return (
+    <li><Link href={`/${c.slug}`} className="flex h-full flex-col gap-3 rounded-[12px] border border-line bg-ink-elevated/70 px-3.5 py-3 transition hover:border-accent/50">
+      <span className="w-fit rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-ink" style={{ background: c.accent }}>{c.shortName}</span>
+      <div><p className="text-[10px] uppercase tracking-wider text-paper-muted">Since {c.cadenceLabel === "slot" ? "slot" : "block"}</p><p className="mono text-sm text-paper">{formatDuration(tip.data?.timestamp != null ? Math.max(0, (now - tip.data.timestamp) / 1000) : null)}</p><ReadingStatus updatedAt={tip.updatedAt} loading={tip.loading} error={tip.error} staleMs={30_000} /></div>
+      <div><p className="text-[10px] uppercase tracking-wider text-paper-muted">{id === "sol" ? "Priority" : id === "btc" ? "Fee" : "Gas p90"}</p><p className="mono text-sm text-paper">{formatFee(fee ?? null, c.feeUnit)}</p><ReadingStatus updatedAt={fee != null ? feeState.updatedAt : null} loading={feeState.loading} error={feeState.error} staleMs={60_000} /></div>
+    </Link></li>
+  );
 }
 
-type TipMap = Partial<Record<ChainId, TipRow>>;
-
 export function SuitePulseStrip() {
-  const [tips, setTips] = useState<TipMap>({});
-  const [now, setNow] = useState(() => Date.now());
-
-  useEffect(() => {
-    let cancelled = false;
-    const load = async () => {
-      const next: TipMap = {};
-      await Promise.all(
-        CHAIN_ORDER.map(async (id) => {
-          try {
-            const [tipRes, snapRes] =
-              id === "btc"
-                ? [
-                    await fetch(`/api/suite/tip/${id}`, { cache: "no-store" }),
-                    null as Response | null,
-                  ]
-                : await Promise.all([
-                    fetch(`/api/suite/tip/${id}`, { cache: "no-store" }),
-                    fetch(`/api/suite/snapshot/${id}`, { cache: "no-store" }),
-                  ]);
-            if (!tipRes.ok) return;
-            const tip = (await tipRes.json()) as {
-              height: number | null;
-              timestamp: number | null;
-              source: string;
-            };
-            let feeFastest: number | null = null;
-            if (snapRes?.ok) {
-              const snap = (await snapRes.json()) as {
-                feeFastest?: number | null;
-              };
-              feeFastest = snap.feeFastest ?? null;
-            } else if (id === "btc") {
-              try {
-                const fees = await fetch("/api/mempool/v1/fees/recommended", {
-                  cache: "no-store",
-                });
-                if (fees.ok) {
-                  const body = (await fees.json()) as { fastestFee?: number };
-                  feeFastest = body.fastestFee ?? null;
-                }
-              } catch {
-                // optional
-              }
-            }
-            next[id] = {
-              height: tip.height,
-              timestamp: tip.timestamp,
-              source: tip.source,
-              feeFastest,
-              fetchedAt: Date.now(),
-            };
-          } catch {
-            // skip chain
-          }
-        }),
-      );
-      if (!cancelled) setTips(next);
-    };
-    void load();
-    const poll = window.setInterval(() => void load(), 12_000);
-    const clock = window.setInterval(() => setNow(Date.now()), 1_000);
-    return () => {
-      cancelled = true;
-      window.clearInterval(poll);
-      window.clearInterval(clock);
-    };
-  }, []);
-
-  return (
-    <section aria-label="Compare heartbeat across chains" className="mb-10">
-      <div className="mb-3 flex items-end justify-between gap-3">
-        <div>
-          <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-accent">
-            Compare heartbeat
-          </h2>
-          <p className="mt-1 text-xs text-paper-muted">
-            Since block (or slot), hottest fee, and feed age. Hop to whichever board is
-            interesting right now.
-          </p>
-        </div>
-      </div>
-      <ul className="grid gap-2 sm:grid-cols-3">
-        {CHAIN_ORDER.map((id) => {
-          const c = CHAINS[id];
-          const row = tips[id];
-          const feeLabel =
-            id === "sol"
-              ? "Priority"
-              : id === "eth" || id === "hype"
-                ? "Gas p90"
-                : "Fee";
-          const since =
-            row?.timestamp != null ? (now - row.timestamp) / 1000 : null;
-          return (
-            <li key={id}>
-              <Link
-                href={`/${c.slug}`}
-                className="flex flex-col rounded-[12px] border border-line bg-ink-elevated/70 px-3.5 py-3 transition hover:border-accent/50"
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <span
-                    className="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-ink"
-                    style={{ background: c.accent }}
-                  >
-                    {c.shortName}
-                  </span>
-                  <span className="text-[10px] uppercase tracking-wider text-paper-muted">
-                    {freshnessLabel(c)}
-                  </span>
-                </div>
-                <div className="mt-3 grid grid-cols-3 gap-2 mono text-[11px]">
-                  <div>
-                    <div className="text-[9px] uppercase tracking-wider text-paper-muted">
-                      {c.cadenceLabel === "slot" ? "Since slot" : "Since block"}
-                    </div>
-                    <div className="mt-0.5 text-paper">
-                      {formatDuration(since)}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-[9px] uppercase tracking-wider text-paper-muted">
-                      {feeLabel}
-                    </div>
-                    <div className="mt-0.5 text-paper">
-                      {formatFee(row?.feeFastest ?? null, c.feeUnit)}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-[9px] uppercase tracking-wider text-paper-muted">
-                      Updated
-                    </div>
-                    <div className="mt-0.5 text-paper">
-                      {formatRelativeAge(row?.fetchedAt)}
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
-    </section>
-  );
+  return <section aria-label="Compare heartbeat across chains" className="mb-10">
+    <div className="mb-3"><h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-accent">Compare heartbeat</h2><p className="mt-1 text-xs text-paper-muted">Network cadence and fees, each with its own freshness reading.</p></div>
+    <ul className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">{CHAIN_ORDER.map((id) => <PulseCard key={id} id={id} />)}</ul>
+  </section>;
 }

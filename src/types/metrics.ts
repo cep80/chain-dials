@@ -149,6 +149,8 @@ export interface LiveSnapshot {
   burnEthPerBlock: number | null;
   /** Snapshot / feed source label for freshness UI */
   feedSource: string | null;
+  /** Independent provider ages; another successful feed cannot refresh these. */
+  feeds?: Record<string, { updatedAt: number | null; error: string | null; loading?: boolean }>;
   lastRestAt: number | null;
   lastWsAt: number | null;
 }

@@ -20,25 +20,43 @@ export class MempoolWs {
 
   connect() {
     this.closed = false;
+    if (typeof document !== "undefined") document.addEventListener("visibilitychange", this.onVisibility);
     this.open();
   }
 
   disconnect() {
     this.closed = true;
+    if (typeof document !== "undefined") document.removeEventListener("visibilitychange", this.onVisibility);
+    this.releaseSocket();
+  }
+
+  private onVisibility = () => {
+    if (document.hidden) this.releaseSocket();
+    else this.open();
+  };
+
+  private releaseSocket() {
     if (this.reconnectTimer) clearTimeout(this.reconnectTimer);
     if (this.pingTimer) clearInterval(this.pingTimer);
-    this.ws?.close();
+    this.reconnectTimer = null;
+    this.pingTimer = null;
+    const old = this.ws;
     this.ws = null;
+    if (old) {
+      old.onopen = old.onmessage = old.onclose = old.onerror = null;
+      old.close();
+    }
     this.onStatus("disconnected");
   }
 
   private open() {
-    if (this.closed) return;
+    if (this.closed || this.ws || (typeof document !== "undefined" && document.hidden)) return;
     this.onStatus("connecting");
     const ws = new WebSocket("wss://mempool.space/api/v1/ws");
     this.ws = ws;
 
     ws.onopen = () => {
+      if (this.closed || this.ws !== ws) return;
       this.attempt = 0;
       this.onStatus("connected");
       ws.send(
@@ -59,6 +77,7 @@ export class MempoolWs {
     };
 
     ws.onmessage = (ev) => {
+      if (this.closed || this.ws !== ws) return;
       try {
         const data = JSON.parse(String(ev.data)) as Record<string, unknown>;
         this.onMessage(data);
@@ -72,6 +91,7 @@ export class MempoolWs {
     };
 
     ws.onclose = () => {
+      if (this.ws !== ws) return;
       if (this.pingTimer) clearInterval(this.pingTimer);
       this.ws = null;
       if (this.closed) {

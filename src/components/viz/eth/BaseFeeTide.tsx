@@ -18,7 +18,6 @@ export function BaseFeeTide({
   stage?: boolean;
 }) {
   const feeFastest = useDashboardStore((s) => s.live.feeFastest);
-  const feeEconomy = useDashboardStore((s) => s.live.feeEconomy);
   const baseSeries = useDashboardStore((s) => s.live.baseFeeSeries);
   const prioritySeries = useDashboardStore((s) => s.live.prioritySeries);
   const pressure = useDashboardStore((s) => s.live.mempoolPressure);

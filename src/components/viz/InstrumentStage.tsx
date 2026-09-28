@@ -1,29 +1,31 @@
 "use client";
 
+import { BlockMetronome, HashrateForge, IssuanceHourglass, MempoolAtmosphere, TipSigil, BaseFeeTide, BlockMosaic, BurnCandle, SlotLattice, ValidatorConstellation, ClearingClock, FundingTide, HashTape, OiVault, VolumeFountain, InflationFountain, LeaderRibbon, PriorityJets, StakeReef, TurbineTach } from "@/components/viz/lazy-instruments";
+
 import { AnimatePresence, motion } from "framer-motion";
 import { useAppReducedMotion } from "@/lib/settings/use-app-reduced-motion";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { BlockMetronome } from "@/components/viz/BlockMetronome";
-import { HashrateForge } from "@/components/viz/HashrateForge";
-import { IssuanceHourglass } from "@/components/viz/IssuanceHourglass";
-import { MempoolAtmosphere } from "@/components/viz/MempoolAtmosphere";
-import { TipSigil } from "@/components/viz/TipSigil";
-import { BaseFeeTide } from "@/components/viz/eth/BaseFeeTide";
-import { BlockMosaic } from "@/components/viz/eth/BlockMosaic";
-import { BurnCandle } from "@/components/viz/eth/BurnCandle";
-import { SlotLattice } from "@/components/viz/eth/SlotLattice";
-import { ValidatorConstellation } from "@/components/viz/eth/ValidatorConstellation";
-import { ClearingClock } from "@/components/viz/hype/ClearingClock";
-import { FundingTide } from "@/components/viz/hype/FundingTide";
-import { HashTape } from "@/components/viz/hype/HashTape";
-import { OiVault } from "@/components/viz/hype/OiVault";
-import { VolumeFountain } from "@/components/viz/hype/VolumeFountain";
-import { InflationFountain } from "@/components/viz/sol/InflationFountain";
-import { LeaderRibbon } from "@/components/viz/sol/LeaderRibbon";
-import { PriorityJets } from "@/components/viz/sol/PriorityJets";
-import { StakeReef } from "@/components/viz/sol/StakeReef";
-import { TurbineTach } from "@/components/viz/sol/TurbineTach";
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import { useInstrumentStage } from "@/lib/instrument-stage";
 import {
   INSTRUMENT_META,
@@ -201,8 +203,11 @@ export function InstrumentStage() {
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     panelRef.current?.focus();
-    bumpChrome();
+    const t = window.setTimeout(() => {
+      bumpChrome();
+    }, 0);
     return () => {
+      window.clearTimeout(t);
       document.body.style.overflow = prevOverflow;
       if (idleTimer.current) clearTimeout(idleTimer.current);
     };

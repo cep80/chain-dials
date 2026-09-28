@@ -49,16 +49,19 @@ export default function ControlRoomPage() {
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    const packsLocal = loadLocalPacks();
-    setPacks(packsLocal);
-    try {
-      const id = localStorage.getItem(WALL_PACK_ACTIVE_KEY);
-      if (id && packsLocal.some((p) => p.id === id)) setActiveId(id);
-      else setActiveId(packsLocal[0]!.id);
-    } catch {
-      setActiveId(packsLocal[0]!.id);
-    }
-    setHydrated(true);
+    const t = window.setTimeout(() => {
+      const packsLocal = loadLocalPacks();
+      setPacks(packsLocal);
+      try {
+        const id = localStorage.getItem(WALL_PACK_ACTIVE_KEY);
+        if (id && packsLocal.some((p) => p.id === id)) setActiveId(id);
+        else setActiveId(packsLocal[0]!.id);
+      } catch {
+        setActiveId(packsLocal[0]!.id);
+      }
+      setHydrated(true);
+    }, 0);
+    return () => window.clearTimeout(t);
   }, []);
 
   useEffect(() => {
@@ -89,7 +92,10 @@ export default function ControlRoomPage() {
   }, [pro, signedIn]);
 
   useEffect(() => {
-    void loadCloud();
+    const t = window.setTimeout(() => {
+      void loadCloud();
+    }, 0);
+    return () => window.clearTimeout(t);
   }, [loadCloud]);
 
   const active = useMemo(

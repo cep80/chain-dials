@@ -12,7 +12,7 @@ import { useProAccess } from "@/hooks/useProAccess";
 const FEATURES = [
   {
     title: "What stays free",
-    body: "Live boards on every chain, single-chain wall / TV mode, full price history, CSV, instruments, Trace, share, and the Hyperliquid paper co-pilot. No ticket into the room.",
+    body: "Live boards on every chain, single-chain wall / TV mode, full price history, CSV, instruments, Trace, wallet lookup, share, and the Hyperliquid paper co-pilot. No ticket into the room.",
   },
   {
     title: "Control room wall packs",

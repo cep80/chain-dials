@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { ALERT_KINDS } from "@/lib/alerts/kinds";
+import { alertRuleError } from "@/lib/alerts/runtime";
 import { cbRest } from "@/lib/cargobase";
 import { requireProUser } from "@/lib/cargobase-session";
 
@@ -66,32 +67,42 @@ export async function PUT(req: Request) {
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid rules payload" }, { status: 400 });
   }
+  if (parsed.data.rules.some((rule) => alertRuleError(rule.kind, rule.params))) {
+    return NextResponse.json({ error: "Invalid threshold or cooldown" }, { status: 400 });
+  }
+  const submittedKeys = parsed.data.rules.map((rule) => `${rule.chainId}:${rule.kind}`);
+  if (new Set(submittedKeys).size !== submittedKeys.length) {
+    return NextResponse.json({ error: "Duplicate alert rules" }, { status: 400 });
+  }
 
   const chainIds = [...new Set(parsed.data.rules.map((r) => r.chainId))];
 
-  // Replace this user's rules for the chains being saved. PostgREST has no
-  // multi-statement transaction, so unlike the previous Prisma version this is
-  // a delete followed by an insert: if the insert fails the chain is left with
-  // no rules and the client has to save again. Both halves are still scoped to
-  // the caller by row-level security.
-  if (chainIds.length > 0) {
-    const list = chainIds.map((c) => `"${c}"`).join(",");
-    await cbRest(`alert_rules?chain_id=in.(${encodeURIComponent(list)})`, {
-      method: "DELETE",
-      token: gate.user.token,
-    });
-  }
-
-  if (parsed.data.rules.length > 0) {
-    await cbRest("alert_rules", {
-      method: "POST",
-      token: gate.user.token,
-      body: parsed.data.rules.map((rule) => ({
+  // Apply updates and inserts before removing obsolete rules. A failed insert
+  // can leave an earlier update in place, but can no longer erase the old set.
+  const list = chainIds.map((chainId) => `"${chainId}"`).join(",");
+  const previous = chainIds.length ? await cbRest<RuleRow[]>(
+    `${SELECT}&chain_id=in.(${encodeURIComponent(list)})`, { token: gate.user.token },
+  ) : [];
+  const byKey = new Map(previous.map((row) => [`${row.chain_id}:${row.kind}`, row]));
+  for (const rule of parsed.data.rules) {
+    const old = byKey.get(`${rule.chainId}:${rule.kind}`);
+    const body = {
         chain_id: rule.chainId,
         kind: rule.kind,
         enabled: rule.enabled,
         params: rule.params ?? {},
-      })),
+    };
+    await cbRest(old ? `alert_rules?id=eq.${encodeURIComponent(old.id)}` : "alert_rules", {
+      method: old ? "PATCH" : "POST",
+      token: gate.user.token,
+      body: old ? { enabled: body.enabled, params: body.params } : body,
+    });
+  }
+  const keep = new Set(submittedKeys);
+  for (const row of previous) {
+    if (keep.has(`${row.chain_id}:${row.kind}`)) continue;
+    await cbRest(`alert_rules?id=eq.${encodeURIComponent(row.id)}`, {
+      method: "DELETE", token: gate.user.token,
     });
   }
 

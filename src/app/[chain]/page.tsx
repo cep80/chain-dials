@@ -6,6 +6,7 @@ import Link from "next/link";
 import { AppShell } from "@/components/shell/AppShell";
 import { BlockFoundToast } from "@/components/shell/BlockFoundToast";
 import { PulseStrip } from "@/components/shell/PulseStrip";
+import { SinceLastVisit } from "@/components/shell/SinceLastVisit";
 import { DeepLinkStage } from "@/components/share/DeepLinkStage";
 import { ShareBar } from "@/components/share/ShareBar";
 import { FavoritesBoard } from "@/components/favorites/FavoritesBoard";
@@ -90,6 +91,8 @@ export default function ChainBoardPage() {
         </header>
 
         <PulseStrip />
+
+        <SinceLastVisit key={chain.id} />
 
         <Observatory />
 

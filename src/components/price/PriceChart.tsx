@@ -8,6 +8,8 @@ import {
 } from "@/lib/format";
 import type { OhlcCandle, PricePoint } from "@/lib/price/types";
 
+import { chartPoints, chartCandles, nearestSample, sampleInterval, seriesSegments } from "@/lib/price/chart-series";
+
 export type ChartMode = "line" | "candle";
 
 interface Props {
@@ -26,13 +28,15 @@ function nicePad(min: number, max: number) {
 }
 
 export function PriceChart({
-  points,
-  candles,
+  points: rawPoints,
+  candles: rawCandles,
   mode,
   accent,
   positive,
   height = 280,
 }: Props) {
+  const points = useMemo(() => chartPoints(rawPoints), [rawPoints]);
+  const candles = useMemo(() => chartCandles(rawCandles), [rawCandles]);
   const gid = useId().replace(/:/g, "");
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const roRef = useRef<ResizeObserver | null>(null);
@@ -57,6 +61,9 @@ export function PriceChart({
   }, []);
 
   const useCandles = mode === "candle" && candles.length >= 2;
+  const series = useCandles ? candles : points;
+  const segments = useMemo(() => seriesSegments<{ t: number }>(series), [series]);
+  const interval = useMemo(() => sampleInterval(series), [series]);
   const spanMs = useMemo(() => {
     const src = useCandles ? candles : points;
     if (src.length < 2) return 0;
@@ -89,32 +96,24 @@ export function PriceChart({
       const range = priceExtent.max - priceExtent.min || 1;
       return padT + (1 - (v - priceExtent.min) / range) * plotH;
     },
-    [priceExtent, plotH],
+    [priceExtent, plotH, padT],
   );
 
-  const xAtLine = useCallback(
-    (i: number, n: number) =>
-      n <= 1 ? padL + innerW / 2 : padL + (i / (n - 1)) * innerW,
-    [innerW],
-  );
+  const firstT = series[0]?.t ?? 0;
+  const xAtTime = useCallback((timestamp: number) => spanMs <= 0 ? padL + innerW / 2 : padL + ((timestamp - firstT) / spanMs) * innerW, [firstT, spanMs, innerW]);
+  const xAtLine = (i: number) => xAtTime(points[i]?.t ?? firstT);
+  const xAtCandle = (i: number) => xAtTime(candles[i]?.t ?? firstT);
 
-  const xAtCandle = useCallback(
-    (i: number, n: number) => padL + ((i + 0.5) / n) * innerW,
-    [innerW],
-  );
-
-  const linePath = useMemo(() => {
-    if (useCandles || points.length < 2) return { line: "", area: "" };
-    const n = points.length;
-    const d = points
-      .map((p, i) => {
-        const cmd = i === 0 ? "M" : "L";
-        return `${cmd}${xAtLine(i, n).toFixed(2)},${yAt(p.price).toFixed(2)}`;
-      })
-      .join(" ");
-    const area = `${d} L${xAtLine(n - 1, n).toFixed(2)},${(padT + plotH).toFixed(2)} L${xAtLine(0, n).toFixed(2)},${(padT + plotH).toFixed(2)} Z`;
-    return { line: d, area };
-  }, [useCandles, points, xAtLine, yAt, plotH]);
+  const linePaths = useMemo(() => {
+    if (useCandles || points.length < 2) return [];
+    return seriesSegments(points).map((segment) => {
+      const line = segment.map((p, i) => `${i === 0 ? "M" : "L"}${xAtTime(p.t).toFixed(2)},${yAt(p.price).toFixed(2)}`).join(" ");
+      const start = segment[0]!;
+      const end = segment[segment.length - 1]!;
+      const area = `${line} L${xAtTime(end.t).toFixed(2)},${(padT + plotH).toFixed(2)} L${xAtTime(start.t).toFixed(2)},${(padT + plotH).toFixed(2)} Z`;
+      return { line, area };
+    });
+  }, [useCandles, points, xAtTime, yAt, plotH, padT]);
 
   const maxVol = useMemo(() => {
     if (useCandles) return 0;
@@ -130,26 +129,17 @@ export function PriceChart({
     const el = wrapRef.current;
     if (!el || count < 2) return;
     const x = clientX - el.getBoundingClientRect().left;
-    if (useCandles) {
-      const i = Math.max(
-        0,
-        Math.min(count - 1, Math.floor(((x - padL) / innerW) * count)),
-      );
-      setHoverI(i);
-    } else {
-      const t = (x - padL) / innerW;
-      setHoverI(Math.max(0, Math.min(count - 1, Math.round(t * (count - 1)))));
-    }
+    setHoverI(nearestSample(series, firstT + Math.max(0, Math.min(1, (x - padL) / innerW)) * spanMs));
   };
 
-  const activeI = hoverI ?? count - 1;
+  const activeI = Math.max(0, Math.min(count - 1, hoverI ?? count - 1));
   const activePoint = !useCandles ? points[activeI] : null;
   const activeCandle = useCandles ? candles[activeI] : null;
   const activePrice = activePoint?.price ?? activeCandle?.c ?? null;
   const activeT = activePoint?.t ?? activeCandle?.t ?? null;
   const hoverX = useCandles
-    ? xAtCandle(activeI, count)
-    : xAtLine(activeI, count);
+    ? xAtCandle(activeI)
+    : xAtLine(activeI);
   const hoverY =
     activePrice != null ? yAt(activePrice) : padT + plotH / 2;
 
@@ -170,25 +160,41 @@ export function PriceChart({
     );
   }
 
-  const candleW = Math.max(2, (innerW / count) * 0.62);
+  const candleW = Math.max(1, Math.min(24, (interval / (spanMs || 1)) * innerW * 0.62));
 
   return (
     <div ref={setWrap} className="relative w-full select-none">
+      <p id={`instructions-${gid}`} className="sr-only">Use left and right arrow keys to inspect prices, Home and End to jump to the first or latest reading. Drag horizontally on touch screens.</p>
       <svg
         width={width}
         height={height}
         viewBox={`0 0 ${width} ${height}`}
-        role="img"
+        role="slider"
+        tabIndex={0}
         aria-label="Historical USD price chart"
-        className="block w-full touch-none"
+        aria-describedby={`instructions-${gid}`}
+        aria-valuemin={0}
+        aria-valuemax={count - 1}
+        aria-valuenow={activeI}
+        aria-valuetext={`${activeT != null ? new Date(activeT).toLocaleString() : ""}: ${formatUsdSmart(activePrice)}`}
+        className="block w-full touch-pan-y rounded focus-visible:outline-2 focus-visible:outline-accent"
+        onFocus={() => setHoverI((value) => value ?? count - 1)}
+        onKeyDown={(event) => {
+          const steps: Record<string, number> = { ArrowLeft: -1, ArrowDown: -1, ArrowRight: 1, ArrowUp: 1, PageDown: -10, PageUp: 10 };
+          if (event.key === "Home" || event.key === "End" || event.key in steps) {
+            event.preventDefault();
+            setHoverI(event.key === "Home" ? 0 : event.key === "End" ? count - 1 : Math.max(0, Math.min(count - 1, activeI + steps[event.key]!)));
+          }
+          if (event.key === "Escape") { setHoverI(null); event.currentTarget.blur(); }
+        }}
         onPointerDown={(e) => {
           (e.currentTarget as Element).setPointerCapture?.(e.pointerId);
           pickIndex(e.clientX);
         }}
         onPointerMove={(e) => pickIndex(e.clientX)}
-        onPointerUp={() => setHoverI(null)}
+        onPointerUp={(e) => { e.currentTarget.releasePointerCapture?.(e.pointerId); }}
         onPointerCancel={() => setHoverI(null)}
-        onPointerLeave={() => setHoverI(null)}
+        onPointerLeave={(e) => { if (e.pointerType === "mouse" && document.activeElement !== e.currentTarget) setHoverI(null); }}
       >
         <defs>
           <linearGradient id={`fill-${gid}`} x1="0" y1="0" x2="0" y2="1">
@@ -223,19 +229,21 @@ export function PriceChart({
 
         {!useCandles ? (
           <>
-            <path d={linePath.area} fill={`url(#fill-${gid})`} />
+            {linePaths.map((path, index) => <g key={index} data-testid="price-segment">
+            <path d={path.area} fill={`url(#fill-${gid})`} />
             <path
-              d={linePath.line}
+              d={path.line}
               fill="none"
               stroke={stroke}
               strokeWidth={2}
               strokeLinejoin="round"
               strokeLinecap="round"
             />
+            </g>)}
           </>
         ) : (
           candles.map((c, i) => {
-            const x = xAtCandle(i, count);
+            const x = xAtCandle(i);
             const up = c.c >= c.o;
             const color = up ? "var(--up)" : "var(--down)";
             const top = Math.min(yAt(c.o), yAt(c.c));
@@ -266,7 +274,7 @@ export function PriceChart({
           ? points.map((p, i) => {
               const v = p.volume ?? 0;
               if (v <= 0) return null;
-              const x = xAtLine(i, points.length);
+              const x = xAtLine(i);
               const h = (v / maxVol) * (volH - 6);
               const barW = Math.max(1, (innerW / points.length) * 0.55);
               return (
@@ -334,8 +342,9 @@ export function PriceChart({
         </text>
       </svg>
 
+      {segments.length > 1 ? <p className="px-2 py-1 text-[11px] text-warn">{segments.length - 1} data {segments.length === 2 ? "gap" : "gaps"} · Missing intervals are not connected.</p> : null}
       {activePrice != null && activeT != null ? (
-        <div className="pointer-events-none absolute left-2 top-2 rounded-md border border-line/80 bg-ink/90 px-2.5 py-1.5 backdrop-blur-sm">
+        <div className="pointer-events-none absolute left-2 top-2 max-w-[calc(100%-1rem)] rounded-md border border-line/80 bg-ink/90 px-2.5 py-1.5 backdrop-blur-sm">
           <div className="mono text-sm font-medium text-paper">
             {formatUsdSmart(activePrice)}
           </div>

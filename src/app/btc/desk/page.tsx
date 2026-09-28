@@ -35,10 +35,13 @@ export default function ForensicsDeskPage() {
   const [addrDraft, setAddrDraft] = useState("");
 
   useEffect(() => {
-    const list = loadLocal();
-    setDesks(list);
-    setActiveId(list[0]!.id);
-    setHydrated(true);
+    const t = window.setTimeout(() => {
+      const list = loadLocal();
+      setDesks(list);
+      setActiveId(list[0]!.id);
+      setHydrated(true);
+    }, 0);
+    return () => window.clearTimeout(t);
   }, []);
 
   useEffect(() => {
@@ -63,7 +66,10 @@ export default function ForensicsDeskPage() {
   }, [pro, signedIn]);
 
   useEffect(() => {
-    void loadCloud();
+    const t = window.setTimeout(() => {
+      void loadCloud();
+    }, 0);
+    return () => window.clearTimeout(t);
   }, [loadCloud]);
 
   const active =
@@ -242,9 +248,15 @@ export default function ForensicsDeskPage() {
               </button>
             </div>
             <ul className="mt-2 max-h-40 space-y-1 overflow-auto text-xs">
-              {active.addresses.map((a) => (
+                  {active.addresses.map((a) => (
                 <li key={a.address} className="mono flex justify-between gap-2">
-                  <span className="truncate">{a.address}</span>
+                  <Link
+                    href={`/btc/wallet?a=${encodeURIComponent(a.address)}`}
+                    className="truncate text-accent hover:underline"
+                    title={a.address}
+                  >
+                    {a.address}
+                  </Link>
                   <button
                     type="button"
                     className="text-down"
@@ -286,6 +298,12 @@ export default function ForensicsDeskPage() {
             className="self-center text-xs text-accent hover:underline"
           >
             Open free Trace →
+          </Link>
+          <Link
+            href="/btc/wallet"
+            className="self-center text-xs text-accent hover:underline"
+          >
+            Wallet explorer →
           </Link>
           {message ? (
             <span className="self-center text-xs text-paper-muted">{message}</span>

@@ -6,18 +6,19 @@ import { PriceChart, type ChartMode } from "@/components/price/PriceChart";
 import { PredictionMarketCrosscheck } from "@/components/price/PredictionMarketCrosscheck";
 import { PriceScenario } from "@/components/price/PriceScenario";
 import { Hint } from "@/components/ui/Hint";
+import { useChartPreferences } from "@/hooks/useChartPreferences";
+import { ReadingStatus } from "@/components/status/ReadingStatus";
 import { usePriceHistory } from "@/hooks/usePriceHistory";
 import { useChain } from "@/lib/chains/context";
 import {
   formatCompactUsd,
   formatPercent,
-  formatRelativeAge,
   formatUsdSmart,
 } from "@/lib/format";
 import {
   PRICE_RANGE_ORDER,
   type PriceHistoryPayload,
-  type PriceRangeId,
+  priceHistoryRevalidate,
 } from "@/lib/price/types";
 import { useSettingsStore } from "@/lib/settings/store";
 import { useAppReducedMotion } from "@/lib/settings/use-app-reduced-motion";
@@ -39,16 +40,13 @@ export function PriceChartPanel() {
   const reduce = useAppReducedMotion();
   const defaultPriceRange = useSettingsStore((s) => s.defaultPriceRange);
   const hydrated = useSettingsStore((s) => s.hydrated);
-  const [rangeOverride, setRangeOverride] = useState<PriceRangeId | null>(null);
-  const [mode, setMode] = useState<ChartMode>("line");
+  const { range, mode, update: updateChart, ready } = useChartPreferences(chain.id, hydrated ? defaultPriceRange : "7D");
   const [expanded, setExpanded] = useState(false);
-  const range: PriceRangeId =
-    rangeOverride ?? (hydrated ? defaultPriceRange : "7D");
-  const { data, loading, error, reload } = usePriceHistory(chain.id, range);
+  const { data, loading, error, reload } = usePriceHistory(chain.id, range, ready);
   const { data: shortForecastData, loading: shortForecastLoading } =
-    usePriceHistory(chain.id, "7D");
+    usePriceHistory(chain.id, "7D", expanded);
   const { data: longForecastData, loading: longForecastLoading } =
-    usePriceHistory(chain.id, "1Y");
+    usePriceHistory(chain.id, "1Y", expanded);
 
   const stats = data?.stats ?? null;
   const close = livePrice ?? stats?.close ?? null;
@@ -150,7 +148,7 @@ export function PriceChartPanel() {
         <div className="flex flex-col items-stretch gap-2 sm:items-end">
           <Hint tip="chart.range" as="div">
             <div
-              role="tablist"
+              role="group"
               aria-label="Chart range"
               className="flex flex-wrap gap-1"
             >
@@ -160,10 +158,9 @@ export function PriceChartPanel() {
                   <button
                     key={id}
                     type="button"
-                    role="tab"
-                    aria-selected={on}
-                    onClick={() => setRangeOverride(id)}
-                    className={`min-h-8 rounded-md px-2 text-[11px] font-medium transition ${
+                    aria-pressed={on}
+                    onClick={() => updateChart({ range: id })}
+                    className={`min-h-11 rounded-md px-2 text-[11px] font-medium transition ${
                       on
                         ? "bg-accent text-ink"
                         : "border border-line/80 text-paper-muted hover:border-accent/50 hover:text-paper"
@@ -184,8 +181,9 @@ export function PriceChartPanel() {
               >
                 <button
                   type="button"
-                  onClick={() => setMode("line")}
-                  className={`min-h-8 px-2.5 text-[11px] transition ${
+                  aria-pressed={activeMode === "line"}
+                  onClick={() => updateChart({ mode: "line" })}
+                  className={`min-h-11 px-2.5 text-[11px] transition ${
                     activeMode === "line"
                       ? "bg-ink-soft text-paper"
                       : "text-paper-muted hover:text-paper"
@@ -196,8 +194,9 @@ export function PriceChartPanel() {
                 <button
                   type="button"
                   disabled={!canCandle}
-                  onClick={() => canCandle && setMode("candle")}
-                  className={`min-h-8 border-l border-line/80 px-2.5 text-[11px] transition disabled:cursor-not-allowed disabled:opacity-40 ${
+                  aria-pressed={activeMode === "candle"}
+                  onClick={() => canCandle && updateChart({ mode: "candle" })}
+                  className={`min-h-11 border-l border-line/80 px-2.5 text-[11px] transition disabled:cursor-not-allowed disabled:opacity-40 ${
                     activeMode === "candle"
                       ? "bg-ink-soft text-paper"
                       : "text-paper-muted hover:text-paper"
@@ -209,8 +208,9 @@ export function PriceChartPanel() {
             </Hint>
             <button
               type="button"
+              disabled={loading}
               onClick={() => void reload()}
-              className="min-h-8 rounded-md border border-line/80 px-2.5 text-[11px] text-paper-muted transition hover:border-accent/50 hover:text-paper"
+              className="min-h-11 rounded-md border border-line/80 px-2.5 text-[11px] text-paper-muted transition hover:border-accent/50 hover:text-paper"
             >
               Refresh
             </button>
@@ -232,7 +232,7 @@ export function PriceChartPanel() {
                 a.click();
                 URL.revokeObjectURL(url);
               }}
-              className="min-h-8 rounded-md border border-line/80 px-2.5 text-[11px] text-paper-muted transition hover:border-accent/50 hover:text-paper disabled:opacity-40"
+              className="min-h-11 rounded-md border border-line/80 px-2.5 text-[11px] text-paper-muted transition hover:border-accent/50 hover:text-paper disabled:opacity-40"
             >
               CSV
             </button>
@@ -240,7 +240,7 @@ export function PriceChartPanel() {
               type="button"
               aria-expanded={expanded}
               onClick={() => setExpanded((v) => !v)}
-              className="min-h-8 rounded-md border border-line/80 px-2.5 text-[11px] text-paper-muted transition hover:border-accent/50 hover:text-paper"
+              className="min-h-11 rounded-md border border-line/80 px-2.5 text-[11px] text-paper-muted transition hover:border-accent/50 hover:text-paper"
             >
               {expanded ? "Hide outlook" : "Outlook"}
             </button>
@@ -249,7 +249,7 @@ export function PriceChartPanel() {
       </div>
 
       <div className="relative border-t border-line/50 px-2 pb-1.5 pt-0.5 md:px-3">
-        {loading && !data ? (
+        {(loading || !ready) && !data ? (
           <div
             className="flex animate-pulse items-center justify-center rounded-md bg-ink-soft/35 text-xs text-paper-muted"
             style={{ height: CHART_H }}
@@ -282,6 +282,7 @@ export function PriceChartPanel() {
               <div className="mb-1 px-2 text-[11px] text-warn">{error}</div>
             ) : null}
             <PriceChart
+              key={`${chain.id}-${range}-${activeMode}`}
               points={points}
               candles={activeMode === "candle" ? candles : []}
               mode={activeMode}
@@ -314,9 +315,10 @@ export function PriceChartPanel() {
           <span className="underline decoration-dotted decoration-paper-muted/40 underline-offset-2">
             {sourceLabel ? `${sourceLabel} · ` : ""}
             historical USD
-            {data ? ` · ${formatRelativeAge(data.updatedAt)}` : ""}
+
           </span>
         </Hint>
+        <ReadingStatus updatedAt={data?.updatedAt ?? null} loading={loading || !ready} error={error} staleMs={priceHistoryRevalidate(range) * 2000} />
         <span>{points.length ? `${points.length} pts` : ""}</span>
       </div>
     </motion.section>

@@ -89,23 +89,14 @@ export function ValidatorConstellation({
           />
         ))}
         {stars.map((s, i) => (
-          <motion.circle
+          <circle
             key={i}
             cx={s.x}
             cy={s.y}
             r={s.r}
             fill={i % 5 === 0 ? "var(--accent)" : "var(--paper)"}
-            animate={
-              reduce
-                ? undefined
-                : { opacity: [0.35, 0.95, 0.35], r: [s.r, s.r * 1.25, s.r] }
-            }
-            transition={{
-              duration: 2.2 + s.delay,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: s.delay,
-            }}
+            className={reduce ? undefined : "constellation-star"}
+            style={reduce ? undefined : { animationDuration: `${2.2 + s.delay}s`, animationDelay: `${s.delay}s` }}
           />
         ))}
         <circle

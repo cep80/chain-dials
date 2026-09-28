@@ -161,6 +161,33 @@ export function composeSuiteTweet(): SharePayload {
   return asSharePayload(text, url);
 }
 
+export function composeWalletTweet(opts: {
+  chainId: ChainId;
+  address?: string | null;
+  reading?: string | null;
+}): SharePayload {
+  const chain = CHAINS[opts.chainId];
+  const address = (opts.address ?? "").trim();
+  const path = address
+    ? `/${opts.chainId}/wallet?a=${encodeURIComponent(address)}`
+    : `/${opts.chainId}/wallet`;
+  const url = absoluteShareUrl(path);
+  const short =
+    address.length > 20
+      ? `${address.slice(0, 10)}…${address.slice(-8)}`
+      : address;
+  const bits = [short || null, (opts.reading ?? "").trim() || null].filter(
+    Boolean,
+  );
+  const text = [
+    `${chain.shortName} · public address`,
+    bits.length ? bits.join(" · ") : "A reading, not a wallet.",
+    "",
+    url,
+  ].join("\n");
+  return asSharePayload(text, url, opts.chainId);
+}
+
 /** Current X compose intent (twitter.com still redirects). */
 export function xIntentUrl(text: string): string {
   const q = new URLSearchParams({ text });

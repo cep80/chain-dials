@@ -4,6 +4,7 @@ import Link from "next/link";
 import { AppShell } from "@/components/shell/AppShell";
 import { SuitePulseStrip } from "@/components/shell/SuitePulseStrip";
 import { SuiteWatchlistStrip } from "@/components/shell/SuiteWatchlistStrip";
+import { SuiteWalletWatchStrip } from "@/components/shell/SuiteWalletWatchStrip";
 import { InstrumentOfTheDay } from "@/components/shell/InstrumentOfTheDay";
 import { SuitePriceStrip } from "@/components/price/SuitePriceStrip";
 import { ShareBar } from "@/components/share/ShareBar";
@@ -42,6 +43,8 @@ export default function SuiteHomePage() {
       </Hint>
 
       <SuiteWatchlistStrip />
+
+      <SuiteWalletWatchStrip />
 
       <SuitePriceStrip />
 
@@ -82,6 +85,25 @@ export default function SuiteHomePage() {
           );
         })}
       </ul>
+
+      <section aria-label="Wallet explorers" className="mt-8">
+        <h2 className="text-lg font-bold text-paper">Wallet explorers</h2>
+        <p className="mt-1 text-sm text-paper-muted">
+          Public address lookup. A reading, not a wallet. Never paste a seed.
+        </p>
+        <ul className="mt-3 flex flex-wrap gap-2">
+          {CHAIN_ORDER.map((id) => (
+            <li key={id}>
+              <Link
+                href={`/${id}/wallet`}
+                className="inline-flex min-h-10 items-center rounded-full border border-line px-3.5 text-sm text-accent hover:border-accent"
+              >
+                {CHAINS[id].shortName}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </section>
     </AppShell>
   );
 }

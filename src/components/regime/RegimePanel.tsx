@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { Hint } from "@/components/ui/Hint";
+import { ReadingStatus } from "@/components/status/ReadingStatus";
 import { RegimeHowTo } from "@/components/regime/RegimeHowTo";
 import { formatUsd } from "@/lib/format";
 import {
@@ -11,6 +12,7 @@ import {
 } from "@/lib/regime/evaluate";
 import {
   applyPaperStance,
+  emptyPaperBook,
   loadPaperBook,
   paperEquity,
   savePaperBook,
@@ -25,37 +27,36 @@ import {
 } from "@/lib/regime/types";
 import { useDashboardStore } from "@/lib/store";
 
+const emptySubscribe = () => () => {};
+
 function notifyFlip(reading: RegimeReading, prevLabel: string) {
   if (typeof window === "undefined" || !("Notification" in window)) return;
   if (Notification.permission !== "granted") return;
   const reason = reading.reasons[0] ?? REGIME_LABELS[reading.regime];
-  new Notification(`HYPE ${REGIME_LABELS[reading.regime]}`, {
+  try { new Notification(`HYPE ${REGIME_LABELS[reading.regime]}`, {
     body: `${prevLabel} → ${REGIME_LABELS[reading.regime]}. ${reason} Stance ${STANCE_LABELS[reading.stance]}. Paper only.`,
     tag: "regime-hype",
-  });
+  }); } catch { /* Unsupported notification delivery must not interrupt the paper book. */ }
 }
 
 export function RegimePanel() {
   const live = useDashboardStore((s) => s.live);
+  const connection = useDashboardStore((s) => s.connection);
+  const [notificationError, setNotificationError] = useState<string | null>(null);
   const reduce = useReducedMotion();
+  const isClient = useSyncExternalStore(emptySubscribe, () => true, () => false);
   const [hydrated, setHydrated] = useState(false);
-  const [book, setBook] = useState<PaperBook>(() => loadPaperBook());
+  const [book, setBook] = useState<PaperBook>(emptyPaperBook);
   const [reading, setReading] = useState<RegimeReading | null>(null);
-  const [perm, setPerm] = useState<NotificationPermission | "unsupported">(
-    () => {
-      if (typeof window === "undefined" || !("Notification" in window)) {
-        return "unsupported";
-      }
-      return Notification.permission;
-    },
-  );
+  const [perm, setPerm] = useState<NotificationPermission | "unsupported">("unsupported");
   const lastRegime = useRef<string | null>(null);
   const lastNotifyAt = useRef(0);
 
-  useEffect(() => {
+  if (isClient && !hydrated) {
     setBook(loadPaperBook());
+    setPerm("Notification" in window ? Notification.permission : "unsupported");
     setHydrated(true);
-  }, []);
+  }
 
   useEffect(() => {
     if (!hydrated) return;
@@ -63,7 +64,7 @@ export function RegimePanel() {
   }, [book, hydrated]);
 
   useEffect(() => {
-    if (!hydrated) return;
+    if (!hydrated || document.hidden || connection !== "connected" || live.lastRestAt == null || Date.now() - live.lastRestAt > 120_000) return;
     const snap = regimeLiveFromBoard(live, Date.now());
     const prev = lastRegime.current;
     const next = evaluateHypeRegime(
@@ -95,14 +96,7 @@ export function RegimePanel() {
       lastNotifyAt.current = Date.now();
     }
     lastRegime.current = next.regime;
-  }, [
-    hydrated,
-    live.baseFeeSeries,
-    live.recentTxs,
-    live.securityScore,
-    live.issuanceProgress,
-    live.priceUsd,
-  ]);
+  }, [hydrated, live, connection]);
 
   const mark = live.priceUsd;
   const equity = paperEquity(book, mark);
@@ -115,7 +109,7 @@ export function RegimePanel() {
   const toggleAuto = () => {
     setBook((prev) => {
       const next = { ...prev, auto: !prev.auto };
-      if (!next.auto || !reading) return next;
+      if (!next.auto || !reading || connection !== "connected" || live.lastRestAt == null || Date.now() - live.lastRestAt > 120_000) return next;
       return applyPaperStance(next, {
         stance: reading.stance,
         regime: reading.regime,
@@ -127,12 +121,15 @@ export function RegimePanel() {
 
   const enableNudges = async () => {
     if (!("Notification" in window)) return;
-    const p = await Notification.requestPermission();
-    setPerm(p);
+    setNotificationError(null);
+    try { setPerm(await Notification.requestPermission()); }
+    catch { setNotificationError("This browser could not enable notifications. You can try again."); }
   };
 
   return (
     <section id="regime" className="mt-8 border-t border-line/80 pt-5">
+      <ReadingStatus updatedAt={live.lastRestAt} loading={connection === "connecting"} error={connection === "degraded" || connection === "disconnected" ? "Waiting for fresh network data" : null} staleMs={120_000} />
+      {notificationError ? <p role="status" className="mt-2 text-xs text-warn">{notificationError}</p> : null}
       <Hint tip="regime.panel">
         <p className="text-[10px] uppercase tracking-[0.22em] text-accent">
           Paper co-pilot
@@ -140,7 +137,7 @@ export function RegimePanel() {
       </Hint>
       <div className="mt-2 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div className="min-w-0">
-          {reduce ? (
+          {isClient && reduce ? (
             <h2 className="text-2xl font-bold text-paper">
               {regimeLabel}
               <span className="text-paper-muted"> · {stanceLabel}</span>

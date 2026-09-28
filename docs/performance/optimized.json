@@ -1,0 +1,19 @@
+{
+  "phase": "optimized",
+  "capturedAt": "2026-09-24T02:36:00.508Z",
+  "method": "Production build; Chromium Pixel 7 emulation; 4x CPU throttle; deterministic API fixtures; local server; 5s visible and 5s scrolled observation windows. Not a real-device or live-provider benchmark.",
+  "readyMs": 1563,
+  "visibleTaskMs": 142.24900000000008,
+  "scrolledTaskMs": 710.264,
+  "scriptBytes": 1162415,
+  "scriptCount": 23,
+  "visibleRequests": 6,
+  "apiRequests": 8,
+  "requestsByUrl": {
+    "/api/auth/session": 2,
+    "/api/suite/tip/eth": 3,
+    "/api/suite/snapshot/eth": 1,
+    "/api/suite/prices": 1,
+    "/api/suite/price-history?chain=eth&range=7D": 1
+  }
+}

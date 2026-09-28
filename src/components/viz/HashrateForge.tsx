@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useId, useMemo } from "react";
+import { useId } from "react";
 import { useChainOptional } from "@/lib/chains/context";
 import { formatHashrate, formatPercent, formatPlainPercent } from "@/lib/format";
 import { useAppReducedMotion } from "@/lib/settings/use-app-reduced-motion";
@@ -98,19 +98,17 @@ export function HashrateForge({
         })
       : 0;
 
-  const embers = useMemo(() => {
-    return Array.from({ length: emberCount }, (_, i) => {
-      const a = (i / Math.max(1, emberCount)) * Math.PI * 2;
-      const r = 12 + (i % 5) * 4;
-      return {
-        cx: px(CX + Math.cos(a) * r * 0.35),
-        cy: px(CY + 18 + Math.sin(a) * r * 0.18),
-        delay: (i % 5) * 0.04,
-        r: 1.2 + (i % 3) * 0.5,
-        lift: 14 + (i % 4) * 5 + intensity * 10,
-      };
-    });
-  }, [emberCount, intensity]);
+  const embers = Array.from({ length: emberCount }, (_, i) => {
+    const a = (i / Math.max(1, emberCount)) * Math.PI * 2;
+    const r = 12 + (i % 5) * 4;
+    return {
+      cx: px(CX + Math.cos(a) * r * 0.35),
+      cy: px(CY + 18 + Math.sin(a) * r * 0.18),
+      delay: (i % 5) * 0.04,
+      r: 1.2 + (i % 3) * 0.5,
+      lift: 14 + (i % 4) * 5 + intensity * 10,
+    };
+  });
 
   const aria = isPow
     ? `Hashrate forge. Network hashrate ${formatHashrate(hashrate)}. Difficulty epoch ${formatPlainPercent(retargetProgress ?? 0, 1)} complete. Estimated retarget ${formatPercent(retargetChange, 1)}.`

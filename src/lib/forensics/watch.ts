@@ -3,13 +3,28 @@ import {
   watchAddresses,
 } from "@/lib/forensics/dataset";
 import {
+  isLiquidActor,
+  liquidSummary,
+  liquidWatchAddresses,
+} from "@/lib/forensics/liquid";
+import {
   fetchAddressesBatched,
   fetchPriceUsd,
 } from "@/lib/forensics/mempool";
-import type { WatchResponse, WatchedAddress } from "@/lib/forensics/types";
+import type {
+  ForensicsCaseId,
+  WatchResponse,
+  WatchedAddress,
+} from "@/lib/forensics/types";
 
-export async function buildWatchboard(limit = 48): Promise<WatchResponse> {
-  const metas = watchAddresses(limit);
+export { parseForensicsCase } from "@/lib/forensics/liquid";
+
+export async function buildWatchboard(
+  limit = 48,
+  caseId: ForensicsCaseId = "coldcard",
+): Promise<WatchResponse> {
+  const metas =
+    caseId === "liquid" ? liquidWatchAddresses() : watchAddresses(limit);
   const liveMap = await fetchAddressesBatched(metas.map((m) => m.address));
   const priceUsd = await fetchPriceUsd();
 
@@ -21,9 +36,12 @@ export async function buildWatchboard(limit = 48): Promise<WatchResponse> {
     if (liveOrErr instanceof Error) {
       return { ...meta, live: null, error: liveOrErr.message };
     }
+    const trackMoves = caseId !== "liquid" || isLiquidActor(meta.address);
     const moved =
-      liveOrErr.spentSats > meta.sentSats ||
-      liveOrErr.balanceSats < Math.max(0, meta.receivedSats - meta.sentSats) - 1000;
+      trackMoves &&
+      (liveOrErr.spentSats > meta.sentSats ||
+        liveOrErr.balanceSats <
+          Math.max(0, meta.receivedSats - meta.sentSats) - 1000);
     return { ...meta, live: liveOrErr, moved };
   });
 
@@ -41,7 +59,7 @@ export async function buildWatchboard(limit = 48): Promise<WatchResponse> {
   return {
     fetchedAt: Date.now(),
     priceUsd,
-    summary: coldcardSummary,
+    summary: caseId === "liquid" ? liquidSummary : coldcardSummary,
     watched,
     totalLiveBalanceSats,
     movers: watched.filter((w) => w.moved),

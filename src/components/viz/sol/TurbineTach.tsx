@@ -1,4 +1,5 @@
 "use client";
+import { useInstrumentActive } from "@/components/viz/InstrumentActivity";
 
 import { motion } from "framer-motion";
 import { useAppReducedMotion } from "@/lib/settings/use-app-reduced-motion";
@@ -23,21 +24,25 @@ export function TurbineTach({
   const height = useDashboardStore((s) => s.live.blockHeight);
   const boardPulse = useDashboardStore((s) => s.boardPulse);
   const reduce = useAppReducedMotion();
+  const active = useInstrumentActive();
   const uid = useId();
   const faceId = svgDefId("tach-face", uid);
   const glowId = svgDefId("tach-glow", uid);
-  const [since, setSince] = useState<number | null>(null);
+  const [tickMs, setTickMs] = useState(() => Date.now());
 
   useEffect(() => {
-    if (tipTimestamp == null) {
-      setSince(null);
-      return;
-    }
-    const tick = () => setSince(Math.max(0, (Date.now() - tipTimestamp) / 1000));
+    if (!active) return;
+    if (tipTimestamp == null) return;
+    const tick = () => setTickMs(Date.now());
     tick();
     const id = window.setInterval(tick, reduce ? 500 : 50);
     return () => window.clearInterval(id);
-  }, [tipTimestamp, reduce, boardPulse]);
+  }, [tipTimestamp, reduce, boardPulse, active]);
+
+  const since =
+    tipTimestamp == null
+      ? null
+      : Math.max(0, (tickMs - tipTimestamp) / 1000);
 
   // Map delay to needle: 0s = redline (~240°), slow = drop toward 0
   const ratio = since == null ? 0.85 : Math.max(0, 1 - since / (TARGET * 8));

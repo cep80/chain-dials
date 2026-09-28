@@ -12,6 +12,7 @@ export type TipId =
   | "pulse.since_tip"
   | "pulse.feed"
   | "nav.board"
+  | "nav.wallet"
   | "nav.regime"
   | "nav.alerts"
   | "nav.wall"
@@ -93,6 +94,10 @@ const BASE: Record<TipId, TipBody> = {
     title: "Feed",
     body: "How fresh this board’s data is. Bitcoin updates live; other chains refresh about every 15 seconds. Loading or Updating means we are refreshing and instruments may briefly show last-known values.",
   },
+  "nav.wallet": {
+    title: "Wallet",
+    body: "Look up a public address: balance, tokens, extra explorers. Watch a few on this device. Never paste a seed.",
+  },
   "nav.board": {
     title: "Board",
     body: "The main dials view for this chain: instruments, price, and live pulse.",
@@ -115,7 +120,7 @@ const BASE: Record<TipId, TipBody> = {
   },
   "nav.forensics": {
     title: "Trace",
-    body: "Coldcard drain watchboard: live attacker holdings, victim lookup, and hop tracing for investigators.",
+    body: "Trace cases: Liquid peg drain (Sept 2026) and Coldcard RNG watch. Live holdings, address lookup, and hop tracing.",
   },
   "nav.desk": {
     title: "Desk",

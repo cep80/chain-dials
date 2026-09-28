@@ -65,13 +65,14 @@ export function AppShell({
     resetLive();
     const stopAlt = startAlt(chain.id);
     const tickDash = setInterval(() => {
-      useDashboardStore.getState().tick();
+      if (document.visibilityState !== "hidden") useDashboardStore.getState().tick();
     }, 1_000);
     const sync = (
       s: ReturnType<typeof useAltChainStore.getState>,
       prev?: ReturnType<typeof useAltChainStore.getState>,
     ) => {
       if (s.chainId !== chain.id) return;
+      if (prev && prev.live === s.live && prev.connection === s.connection) return;
       const pressure = s.live.mempoolPressure;
       const pulsed =
         !!prev &&
@@ -195,6 +196,14 @@ export function AppShell({
                     className="min-h-11 inline-flex items-center text-paper-muted transition hover:text-paper"
                   >
                     Board
+                  </Link>
+                </Hint>
+                <Hint tip="nav.wallet">
+                  <Link
+                    href={`/${chain.slug}/wallet`}
+                    className="min-h-11 inline-flex items-center text-paper-muted transition hover:text-paper"
+                  >
+                    Wallet
                   </Link>
                 </Hint>
                 {chain.id === "hype" ? (

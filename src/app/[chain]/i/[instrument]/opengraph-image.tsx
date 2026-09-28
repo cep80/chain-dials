@@ -2,7 +2,6 @@ import { CHAINS, isChainId } from "@/lib/chains/registry";
 import { isInstrumentId } from "@/lib/share/compose";
 import { OG_SIZE, renderShareCard } from "@/lib/share/og-card";
 import { readingForInstrument } from "@/lib/share/readings";
-import { SITE_NAME } from "@/lib/site";
 
 export const runtime = "edge";
 export const alt = "Chain Dials instrument share card";

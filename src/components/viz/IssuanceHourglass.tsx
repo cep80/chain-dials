@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useEffect, useId, useMemo, useState } from "react";
+import { useId, useMemo, useSyncExternalStore } from "react";
 import { useChainOptional } from "@/lib/chains/context";
 import { formatBtc, formatInteger, formatPlainPercent } from "@/lib/format";
 import { useAppReducedMotion } from "@/lib/settings/use-app-reduced-motion";
@@ -11,6 +11,7 @@ import { InstrumentFrame } from "@/components/viz/InstrumentFrame";
 
 const W = 100;
 const H = 140;
+const emptySubscribe = () => () => {};
 
 function grainSeed(i: number) {
   // Deterministic pseudo-random so SSR/client match
@@ -34,12 +35,7 @@ export function IssuanceHourglass({
   const reduce = useAppReducedMotion();
   const uid = useId().replace(/:/g, "");
   const mode = resolveDisplayMode({ compact, large, stage });
-  const [grainT, setGrainT] = useState(0);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
 
   const isBtc = !chain || chain.id === "btc";
   const pctIssued = isBtc
@@ -62,11 +58,8 @@ export function IssuanceHourglass({
   const clipBottom = `hg-bottom-${uid}`;
   const sandGrad = `sand-${uid}`;
 
-  // Sand only ticks on a new block: discrete issuance, not a fake continuous pour
-  useEffect(() => {
-    if (boardPulse <= 0 || reduce) return;
-    setGrainT((t) => t + 1);
-  }, [boardPulse, reduce]);
+  // Sand grains remount on each board pulse (discrete issuance, not a continuous pour)
+  const grainT = boardPulse;
 
   const grains = useMemo(() => {
     const n = particleBudget({

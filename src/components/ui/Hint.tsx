@@ -6,12 +6,15 @@ import {
   useId,
   useRef,
   useState,
+  useSyncExternalStore,
   type ReactNode,
 } from "react";
 import { createPortal } from "react-dom";
 import { useSettingsStore } from "@/lib/settings/store";
 import { resolveTip, type TipId } from "@/lib/settings/tips";
 import type { ChainId } from "@/lib/chains/types";
+
+const emptySubscribe = () => () => {};
 
 type HintProps = {
   tip: TipId;
@@ -28,7 +31,8 @@ type HintProps = {
 
 /**
  * Accessible hover/focus tip for newcomers.
- * Renders children unchanged when guidance tooltips are off.
+ * Wrapper markup stays identical on server and client to avoid hydration skew
+ * when settings hydrate before streamed instruments mount.
  */
 export function Hint({
   tip,
@@ -41,10 +45,14 @@ export function Hint({
 }: HintProps) {
   const enabled = useSettingsStore((s) => s.newbieTooltips);
   const hydrated = useSettingsStore((s) => s.hydrated);
+  const clientReady = useSyncExternalStore(emptySubscribe, () => true, () => false);
+  const active = clientReady && hydrated && enabled;
   const [open, setOpen] = useState(false);
-  const [coords, setCoords] = useState<{ x: number; y: number; place: "top" | "bottom" } | null>(
-    null,
-  );
+  const [coords, setCoords] = useState<{
+    x: number;
+    y: number;
+    place: "top" | "bottom";
+  } | null>(null);
   const anchorRef = useRef<HTMLElement | null>(null);
   const tipId = useId();
   const copy = resolveTip(tip, { chainId, feeUnit });
@@ -71,9 +79,10 @@ export function Hint({
   }, [side]);
 
   const show = useCallback(() => {
+    if (!active) return;
     updatePosition();
     setOpen(true);
-  }, [updatePosition]);
+  }, [active, updatePosition]);
 
   const hide = useCallback(() => setOpen(false), []);
 
@@ -93,28 +102,23 @@ export function Hint({
     };
   }, [open, hide, updatePosition]);
 
-  if (!hydrated || !enabled) {
-    const Tag = as;
-    const layoutClass = as === "div" ? "block w-full" : "inline-flex";
-    return <Tag className={`max-w-full ${layoutClass} ${className}`}>{children}</Tag>;
-  }
-
   const Tag = as;
-  const canPortal = typeof document !== "undefined";
   const layoutClass = as === "div" ? "block w-full" : "inline-flex";
+  const canPortal = typeof document !== "undefined";
+  const showTip = active && open && coords != null;
 
   return (
     <Tag
       ref={anchorRef as never}
       className={`relative max-w-full ${layoutClass} ${className}`}
-      onMouseEnter={show}
-      onMouseLeave={hide}
-      onFocus={show}
-      onBlur={hide}
-      aria-describedby={open ? tipId : undefined}
+      onMouseEnter={active ? show : undefined}
+      onMouseLeave={active ? hide : undefined}
+      onFocus={active ? show : undefined}
+      onBlur={active ? hide : undefined}
+      aria-describedby={showTip ? tipId : undefined}
     >
       {children}
-      {open && coords && canPortal
+      {showTip && canPortal
         ? createPortal(
             <div
               id={tipId}

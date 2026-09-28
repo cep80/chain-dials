@@ -1,7 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import Link from "next/link";
+import { useJsonResource } from "@/hooks/useJsonResource";
+import { ReadingStatus } from "@/components/status/ReadingStatus";
+import { ForensicsCaseTabs } from "@/components/forensics/ForensicsCaseTabs";
 import { formatBtc, formatCompactUsd, formatRelativeAge } from "@/lib/format";
+import { CHAINS } from "@/lib/chains/registry";
 import type {
   HopsResponse,
   LookupResponse,
@@ -9,6 +14,7 @@ import type {
   WatchedAddress,
 } from "@/lib/forensics/types";
 
+const emptySubscribe = () => () => {};
 const POLL_MS = 60_000;
 const NUDGE_KEY = "chain-dials:coldcard-watch-nudge:v1";
 const SNAPSHOT_KEY = "chain-dials:coldcard-spent-snapshot:v1";
@@ -23,11 +29,11 @@ function shortAddr(a: string): string {
 }
 
 function explorerAddress(a: string): string {
-  return `https://mempool.space/address/${a}`;
+  return CHAINS.btc.explorerAddress(a);
 }
 
 function explorerTx(txid: string): string {
-  return `https://mempool.space/tx/${txid}`;
+  return CHAINS.btc.explorerTx(txid);
 }
 
 function kindTone(kind: string): string {
@@ -46,34 +52,25 @@ function kindTone(kind: string): string {
 }
 
 export function ColdcardForensics() {
-  const [watch, setWatch] = useState<WatchResponse | null>(null);
-  const [watchError, setWatchError] = useState<string | null>(null);
-  const [loadingWatch, setLoadingWatch] = useState(true);
+  const { data: watch, error: watchError, loading: loadingWatch, reload: refreshWatch, retryAt } = useJsonResource<WatchResponse>("/api/forensics/watch?limit=48", { staleMs: POLL_MS, pollMs: POLL_MS });
   const [lookupQuery, setLookupQuery] = useState("");
   const [lookup, setLookup] = useState<LookupResponse | null>(null);
   const [lookupBusy, setLookupBusy] = useState(false);
+  const lookupController = useRef<AbortController | null>(null);
   const [hopAddress, setHopAddress] = useState("");
   const [hops, setHops] = useState<HopsResponse | null>(null);
   const [hopBusy, setHopBusy] = useState(false);
+  const hopController = useRef<AbortController | null>(null);
   const [hopError, setHopError] = useState<string | null>(null);
-  const [nudgeOn, setNudgeOn] = useState(() => {
-    try {
-      return (
-        typeof window !== "undefined" &&
-        localStorage.getItem(NUDGE_KEY) === "1"
-      );
-    } catch {
-      return false;
-    }
-  });
-  const [nudgePerm, setNudgePerm] = useState<
-    NotificationPermission | "unsupported"
-  >(() => {
-    if (typeof window === "undefined" || !("Notification" in window)) {
-      return "unsupported";
-    }
-    return Notification.permission;
-  });
+  const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
+  const [preferencesReady, setPreferencesReady] = useState(false);
+  const [nudgeOn, setNudgeOn] = useState(false);
+  const [nudgePerm, setNudgePerm] = useState<NotificationPermission | "unsupported">("unsupported");
+  if (mounted && !preferencesReady) {
+    setPreferencesReady(true);
+    setNudgePerm("Notification" in window ? Notification.permission : "unsupported");
+    try { setNudgeOn(localStorage.getItem(NUDGE_KEY) === "1"); } catch { /* session defaults */ }
+  }
   const lastNudgeAt = useRef(0);
   const spentSnapshot = useRef<Record<string, number>>(
     (() => {
@@ -89,36 +86,10 @@ export function ColdcardForensics() {
     })(),
   );
 
-  const refreshWatch = useCallback(async () => {
-    try {
-      const res = await fetch("/api/forensics/watch?limit=48", {
-        cache: "no-store",
-      });
-      if (!res.ok) throw new Error(`watch ${res.status}`);
-      const data = (await res.json()) as WatchResponse;
-      setWatch(data);
-      setWatchError(null);
-      return data;
-    } catch (err) {
-      setWatchError(err instanceof Error ? err.message : "watch failed");
-      return null;
-    } finally {
-      setLoadingWatch(false);
-    }
+  useEffect(() => () => {
+    lookupController.current?.abort();
+    hopController.current?.abort();
   }, []);
-
-  useEffect(() => {
-    const boot = window.setTimeout(() => {
-      void refreshWatch();
-    }, 0);
-    const id = window.setInterval(() => {
-      void refreshWatch();
-    }, POLL_MS);
-    return () => {
-      window.clearTimeout(boot);
-      window.clearInterval(id);
-    };
-  }, [refreshWatch]);
 
   useEffect(() => {
     if (!watch || !nudgeOn || nudgePerm !== "granted") return;
@@ -183,33 +154,44 @@ export function ColdcardForensics() {
   const runLookup = async (address?: string) => {
     const q = (address ?? lookupQuery).trim();
     if (!q) return;
+    lookupController.current?.abort();
+    const controller = new AbortController();
+    lookupController.current = controller;
     setLookupBusy(true);
     try {
       const res = await fetch(
         `/api/forensics/lookup?address=${encodeURIComponent(q)}`,
-        { cache: "no-store" },
+        { cache: "no-store", signal: controller.signal },
       );
+      if (!res.ok) throw new Error(`lookup ${res.status}`);
       const data = (await res.json()) as LookupResponse;
+      if (controller.signal.aborted) return;
       setLookup(data);
       if (data.normalized) {
         setHopAddress(data.normalized);
       }
     } catch {
-      setLookup(null);
+      if (!controller.signal.aborted) setLookup(null);
     } finally {
-      setLookupBusy(false);
+      if (lookupController.current === controller) {
+        lookupController.current = null;
+        setLookupBusy(false);
+      }
     }
   };
 
   const runHops = async (address?: string) => {
     const q = (address ?? hopAddress).trim();
     if (!q) return;
+    hopController.current?.abort();
+    const controller = new AbortController();
+    hopController.current = controller;
     setHopBusy(true);
     setHopError(null);
     try {
       const res = await fetch(
         `/api/forensics/hops?address=${encodeURIComponent(q)}`,
-        { cache: "no-store" },
+        { cache: "no-store", signal: controller.signal },
       );
       if (!res.ok) {
         const body = (await res.json().catch(() => null)) as {
@@ -218,13 +200,19 @@ export function ColdcardForensics() {
         throw new Error(body?.error ?? `hops ${res.status}`);
       }
       const data = (await res.json()) as HopsResponse;
+      if (controller.signal.aborted) return;
       setHops(data);
       setHopAddress(data.address);
     } catch (err) {
-      setHopError(err instanceof Error ? err.message : "trace failed");
-      setHops(null);
+      if (!controller.signal.aborted) {
+        setHopError(err instanceof Error ? err.message : "trace failed");
+        setHops(null);
+      }
     } finally {
-      setHopBusy(false);
+      if (hopController.current === controller) {
+        hopController.current = null;
+        setHopBusy(false);
+      }
     }
   };
 
@@ -236,15 +224,17 @@ export function ColdcardForensics() {
 
   return (
     <div className="space-y-10">
+      <ReadingStatus updatedAt={watch?.fetchedAt ?? null} loading={loadingWatch} error={watchError} staleMs={120_000} />
       <header className="space-y-3">
         <p className="text-[10px] uppercase tracking-[0.2em] text-accent">
           Bitcoin only · public chain data
         </p>
+        <ForensicsCaseTabs active="coldcard" />
         <h1 className="text-3xl font-extrabold text-paper md:text-4xl">
           Coldcard drain watch
         </h1>
         <p className="max-w-3xl text-paper-muted">
-          Track known collector and vault addresses from the July–August 2026
+          Track known collector and vault addresses from the July-August 2026
           Coldcard RNG sweeps, check whether an address appears in the published
           victim set, and follow the first hops when stolen coins move. Floor
           counts from public reconstructions (Galaxy Research, Kelbie
@@ -294,8 +284,8 @@ export function ColdcardForensics() {
             )}
             <button
               type="button"
+              disabled={loadingWatch || retryAt != null}
               onClick={() => {
-                setLoadingWatch(true);
                 void refreshWatch();
               }}
               className="rounded-[10px] border border-line px-3 py-2 text-xs text-paper-muted hover:text-paper"
@@ -439,10 +429,9 @@ export function ColdcardForensics() {
           />
           <button
             type="submit"
-            disabled={lookupBusy}
-            className="btn-cta min-h-11 rounded-[10px] px-4 text-sm disabled:opacity-60"
+            className="btn-cta min-h-11 rounded-[10px] px-4 text-sm"
           >
-            {lookupBusy ? "Checking…" : "Look up"}
+            {lookupBusy ? "Check latest" : "Look up"}
           </button>
         </form>
 
@@ -477,6 +466,20 @@ export function ColdcardForensics() {
                 <p className="mono text-xs text-paper">{lookup.normalized}</p>
                 <p className="text-paper-muted">{lookup.hit.holder?.label}</p>
               </div>
+            ) : lookup.hit?.kind === "liquid" ? (
+              <div className="space-y-2">
+                <p className="font-semibold text-accent">
+                  Match: Liquid Network incident
+                </p>
+                <p className="mono text-xs text-paper">{lookup.normalized}</p>
+                <p className="text-paper-muted">{lookup.hit.liquid?.label}</p>
+                <Link
+                  href="/btc/forensics?case=liquid"
+                  className="text-xs text-accent hover:underline"
+                >
+                  Open Liquid watch
+                </Link>
+              </div>
             ) : (
               <div className="space-y-2">
                 <p className="font-semibold text-paper">
@@ -497,18 +500,26 @@ export function ColdcardForensics() {
               </p>
             ) : null}
             {lookup.normalized ? (
-              <button
-                type="button"
-                className="mt-3 text-xs text-accent hover:underline"
-                onClick={() => {
-                  void runHops(lookup.normalized!);
-                  document
-                    .getElementById("hop-tracer")
-                    ?.scrollIntoView({ behavior: "smooth" });
-                }}
-              >
-                Trace hops from this address
-              </button>
+              <div className="mt-3 flex flex-wrap gap-4">
+                <button
+                  type="button"
+                  className="text-xs text-accent hover:underline"
+                  onClick={() => {
+                    void runHops(lookup.normalized!);
+                    document
+                      .getElementById("hop-tracer")
+                      ?.scrollIntoView({ behavior: "smooth" });
+                  }}
+                >
+                  Trace hops from this address
+                </button>
+                <Link
+                  href={`/btc/wallet?a=${encodeURIComponent(lookup.normalized)}`}
+                  className="text-xs text-accent hover:underline"
+                >
+                  Open in Wallet
+                </Link>
+              </div>
             ) : null}
           </div>
         ) : null}
@@ -542,10 +553,9 @@ export function ColdcardForensics() {
           />
           <button
             type="submit"
-            disabled={hopBusy}
-            className="btn-cta min-h-11 rounded-[10px] px-4 text-sm disabled:opacity-60"
+            className="btn-cta min-h-11 rounded-[10px] px-4 text-sm"
           >
-            {hopBusy ? "Tracing…" : "Trace spends"}
+            {hopBusy ? "Trace latest" : "Trace spends"}
           </button>
         </form>
 

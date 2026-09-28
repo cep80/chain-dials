@@ -1,106 +1,20 @@
 "use client";
-
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { Sparkline } from "@/components/metrics/Sparkline";
 import { CHAIN_ORDER, CHAINS } from "@/lib/chains/registry";
 import type { ChainId } from "@/lib/chains/types";
 import { formatPercent, formatUsdSmart } from "@/lib/format";
-import type { PriceHistoryPayload } from "@/lib/price/types";
-import type { HistoryPoint } from "@/types/metrics";
+import { usePriceHistory } from "@/hooks/usePriceHistory";
+import { ReadingStatus } from "@/components/status/ReadingStatus";
 
-interface CardState {
-  loading: boolean;
-  error: string | null;
-  close: number | null;
-  changePct: number | null;
-  spark: HistoryPoint[];
-}
-
-const empty: CardState = {
-  loading: true,
-  error: null,
-  close: null,
-  changePct: null,
-  spark: [],
-};
-
-export function SuitePriceStrip() {
-  const [byChain, setByChain] = useState<Record<ChainId, CardState>>({
-    btc: { ...empty },
-    eth: { ...empty },
-    sol: { ...empty },
-    hype: { ...empty },
-  });
-
-  useEffect(() => {
-    let cancelled = false;
-    const ac = new AbortController();
-
-    async function load(id: ChainId) {
-      try {
-        const res = await fetch(
-          `/api/suite/price-history?chain=${id}&range=7D`,
-          { cache: "no-store", signal: ac.signal },
-        );
-        const body = (await res.json()) as PriceHistoryPayload & {
-          error?: string;
-        };
-        if (!res.ok) throw new Error(body.error ?? `HTTP ${res.status}`);
-        if (cancelled) return;
-        const pts = body.points ?? [];
-        const spark: HistoryPoint[] = pts.map((p) => ({ t: p.t, v: p.price }));
-        setByChain((prev) => ({
-          ...prev,
-          [id]: {
-            loading: false,
-            error: null,
-            close: body.stats?.close ?? pts[pts.length - 1]?.price ?? null,
-            changePct: body.stats?.changePct ?? null,
-            spark,
-          },
-        }));
-      } catch (e) {
-        if (cancelled || ac.signal.aborted) return;
-        setByChain((prev) => ({
-          ...prev,
-          [id]: {
-            ...empty,
-            loading: false,
-            error: e instanceof Error ? e.message : "failed",
-          },
-        }));
-      }
-    }
-
-    // Stagger chain requests so free APIs are less likely to 429
-    void (async () => {
-      for (const id of CHAIN_ORDER) {
-        if (cancelled) return;
-        await load(id);
-        await new Promise((r) => setTimeout(r, 120));
-      }
-    })();
-    return () => {
-      cancelled = true;
-      ac.abort();
-    };
-  }, []);
-
-  return (
-    <section aria-label="Seven day price paths" className="mb-8">
-      <div className="mb-3 flex items-end justify-between gap-3">
-        <div>
-          <h2 className="text-lg font-bold text-paper">Seven-day prices</h2>
-          <p className="text-sm text-paper-muted">
-            Open a board for full history, ranges, and candles.
-          </p>
-        </div>
-      </div>
-      <ul className="grid gap-3 sm:grid-cols-3">
-        {CHAIN_ORDER.map((id) => {
+function PriceCard({ id }: { id: ChainId }) {
+  const { data, loading, error } = usePriceHistory(id, "7D");
+  const s = {
+    close: data?.stats?.close ?? data?.points.at(-1)?.price ?? null,
+    changePct: data?.stats?.changePct ?? null,
+    spark: (data?.points ?? []).map((point) => ({ t: point.t, v: point.price })),
+  };
           const c = CHAINS[id];
-          const s = byChain[id];
           const up =
             s.changePct == null
               ? null
@@ -132,13 +46,13 @@ export function SuitePriceStrip() {
                             : "var(--down)",
                     }}
                   >
-                    {s.loading ? "…" : formatPercent(s.changePct)}
+                    {formatPercent(s.changePct)}
                   </span>
                 </div>
                 <div className="flex items-end justify-between gap-3">
                   <div>
                     <div className="mono text-xl font-medium text-paper group-hover:text-accent">
-                      {s.loading ? "-" : formatUsdSmart(s.close)}
+                      {formatUsdSmart(s.close)}
                     </div>
                     <div className="mt-1 text-[10px] uppercase tracking-wider text-paper-muted">
                       7D USD
@@ -163,10 +77,25 @@ export function SuitePriceStrip() {
                     />
                   </div>
                 </div>
+                <ReadingStatus updatedAt={data?.updatedAt ?? null} loading={loading} error={error} staleMs={360_000} />
               </Link>
             </li>
           );
-        })}
+}
+
+export function SuitePriceStrip() {
+  return (
+    <section aria-label="Seven day price paths" className="mb-8">
+      <div className="mb-3 flex items-end justify-between gap-3">
+        <div>
+          <h2 className="text-lg font-bold text-paper">Seven-day prices</h2>
+          <p className="text-sm text-paper-muted">
+            Open a board for full history, ranges, and candles.
+          </p>
+        </div>
+      </div>
+      <ul className="grid gap-3 sm:grid-cols-3">
+        {CHAIN_ORDER.map((id) => <PriceCard key={id} id={id} />)}
       </ul>
     </section>
   );

@@ -497,3 +497,21 @@ html[data-motion="reduce"] .instrument-live-glow {
   );
   pointer-events: none;
 }
+
+/* Keep CSS animation work suspended with offscreen instrument motion. */
+[data-instrument-active="false"] *,
+[data-instrument-active="false"] *::before,
+[data-instrument-active="false"] *::after {
+  animation-play-state: paused !important;
+}
+
+/* CSS handles star twinkles without a JavaScript animation loop per SVG node. */
+@keyframes constellation-twinkle {
+  0%, 100% { opacity: 0.35; transform: scale(1); }
+  50% { opacity: 0.95; transform: scale(1.25); }
+}
+.constellation-star {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: constellation-twinkle 3s ease-in-out infinite;
+}

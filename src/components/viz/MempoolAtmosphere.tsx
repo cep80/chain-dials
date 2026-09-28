@@ -360,6 +360,9 @@ export function MempoolAtmosphere({
   const openStage = useInstrumentStage((s) => s.open);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedParticle, setSelectedParticle] = useState<Particle | null>(
+    null,
+  );
   const [hoverId, setHoverId] = useState<string | null>(null);
   const [sampleLabel, setSampleLabel] = useState(0);
   const [blockFlash, setBlockFlash] = useState(0);
@@ -375,23 +378,24 @@ export function MempoolAtmosphere({
   const sampleStale =
     catchupNote != null || connection === "disconnected";
 
-  feesRef.current = {
-    fastest: feeFastest,
-    half: feeHalfHour,
-    hour: feeHour,
-    economy: feeEconomy,
-  };
-  intensityRef.current = intensity;
-  pressurePctRef.current = pressurePct;
-  visibleRef.current = visible && !pausedByStage;
-  selectedRef.current = selectedId;
-  hoverRef.current = hoverId;
-  feeUnitRef.current = chain?.feeUnit ?? "sat/vB";
-  stageRef.current = stage;
+  useEffect(() => {
+    feesRef.current = {
+      fastest: feeFastest,
+      half: feeHalfHour,
+      hour: feeHour,
+      economy: feeEconomy,
+    };
+    intensityRef.current = intensity;
+    pressurePctRef.current = pressurePct;
+    visibleRef.current = visible && !pausedByStage;
+    selectedRef.current = selectedId;
+    hoverRef.current = hoverId;
+    feeUnitRef.current = chain?.feeUnit ?? "sat/vB";
+    stageRef.current = stage;
+  });
 
   useEffect(() => {
     if (boardPulse <= 0 || reduce) return;
-    setBlockFlash(boardPulse);
     clearBreathRef.current = 1;
     for (const p of particlesRef.current) {
       if (!p.dying) {
@@ -403,8 +407,12 @@ export function MempoolAtmosphere({
       m.vy = -1.8 - Math.random() * 1.4;
       m.alpha = Math.min(0.55, m.alpha + 0.25);
     }
+    const start = window.setTimeout(() => setBlockFlash(boardPulse), 0);
     const t = window.setTimeout(() => setBlockFlash(0), 900);
-    return () => window.clearTimeout(t);
+    return () => {
+      window.clearTimeout(start);
+      window.clearTimeout(t);
+    };
   }, [boardPulse, reduce]);
 
   useEffect(() => {
@@ -431,7 +439,14 @@ export function MempoolAtmosphere({
       const still = particlesRef.current.find(
         (p) => p.txid === selectedId && !p.dying && p.alpha > 0.2,
       );
-      if (!still) setSelectedId(null);
+      if (!still) {
+        setSelectedId(null);
+        setSelectedParticle(null);
+      } else {
+        setSelectedParticle(still);
+      }
+    } else if (!selectedId) {
+      setSelectedParticle(null);
     }
   }, [recentTxs, stage, selectedId]);
 
@@ -468,8 +483,8 @@ export function MempoolAtmosphere({
       fogRef.current?.destroy();
       fogRef.current = null;
       fogOkRef.current = false;
-      setFogReady(false);
-      return;
+      const t = window.setTimeout(() => setFogReady(false), 0);
+      return () => window.clearTimeout(t);
     }
     const glCanvas = glCanvasRef.current;
     if (!glCanvas) return;
@@ -1027,11 +1042,13 @@ export function MempoolAtmosphere({
       if (hit) {
         e.stopPropagation();
         setSelectedId(hit.txid);
+        setSelectedParticle(hit);
         return;
       }
       if (stage) {
         e.stopPropagation();
         setSelectedId(null);
+        setSelectedParticle(null);
       } else {
         openStage("atmosphere");
       }
@@ -1042,8 +1059,7 @@ export function MempoolAtmosphere({
   const selected =
     selectedId != null
       ? (recentTxs.find((t) => t.txid === selectedId) ??
-        particlesRef.current.find((p) => p.txid === selectedId) ??
-        null)
+        (selectedParticle?.txid === selectedId ? selectedParticle : null))
       : null;
 
   const sampleN = sampleLabel || recentTxs.length;
@@ -1118,7 +1134,10 @@ export function MempoolAtmosphere({
           <TxInspector
             tx={selected}
             priceUsd={priceUsd}
-            onClose={() => setSelectedId(null)}
+            onClose={() => {
+              setSelectedId(null);
+              setSelectedParticle(null);
+            }}
           />
         ) : null}
         <p className="instrument-stage-reading mono text-5xl font-medium text-paper md:text-7xl">
@@ -1155,7 +1174,10 @@ export function MempoolAtmosphere({
           <TxInspector
             tx={selected}
             priceUsd={priceUsd}
-            onClose={() => setSelectedId(null)}
+            onClose={() => {
+              setSelectedId(null);
+              setSelectedParticle(null);
+            }}
           />
         ) : null}
       </div>

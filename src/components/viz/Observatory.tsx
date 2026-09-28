@@ -1,47 +1,53 @@
 "use client";
 
+import { BlockMetronome, HashrateForge, IssuanceHourglass, MempoolAtmosphere, TipSigil, BaseFeeTide, BlockMosaic, BurnCandle, SlotLattice, ValidatorConstellation, ClearingClock, FundingTide, HashTape, OiVault, VolumeFountain, InflationFountain, LeaderRibbon, PriorityJets, StakeReef, TurbineTach } from "@/components/viz/lazy-instruments";
+
 import { motion } from "framer-motion";
-import { BlockMetronome } from "@/components/viz/BlockMetronome";
-import { HashrateForge } from "@/components/viz/HashrateForge";
-import { IssuanceHourglass } from "@/components/viz/IssuanceHourglass";
-import { MempoolAtmosphere } from "@/components/viz/MempoolAtmosphere";
-import { TipSigil } from "@/components/viz/TipSigil";
-import { BaseFeeTide } from "@/components/viz/eth/BaseFeeTide";
-import { BlockMosaic } from "@/components/viz/eth/BlockMosaic";
-import { BurnCandle } from "@/components/viz/eth/BurnCandle";
-import { SlotLattice } from "@/components/viz/eth/SlotLattice";
-import { ValidatorConstellation } from "@/components/viz/eth/ValidatorConstellation";
-import { ClearingClock } from "@/components/viz/hype/ClearingClock";
-import { FundingTide } from "@/components/viz/hype/FundingTide";
-import { HashTape } from "@/components/viz/hype/HashTape";
-import { OiVault } from "@/components/viz/hype/OiVault";
-import { VolumeFountain } from "@/components/viz/hype/VolumeFountain";
-import { InflationFountain } from "@/components/viz/sol/InflationFountain";
-import { LeaderRibbon } from "@/components/viz/sol/LeaderRibbon";
-import { PriorityJets } from "@/components/viz/sol/PriorityJets";
-import { StakeReef } from "@/components/viz/sol/StakeReef";
-import { TurbineTach } from "@/components/viz/sol/TurbineTach";
+import { useSyncExternalStore } from "react";
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import { InstrumentActivity } from "@/components/viz/InstrumentActivity";
 import { useChainOptional } from "@/lib/chains/context";
 import { useAppReducedMotion } from "@/lib/settings/use-app-reduced-motion";
+
+const emptySubscribe = () => () => {};
 
 function BtcGrid({ large }: { large: boolean }) {
   return (
     <>
-      <div className="sm:col-span-1 xl:col-span-2">
+      <InstrumentActivity className="sm:col-span-1 xl:col-span-2">
         <BlockMetronome large={large} />
-      </div>
-      <div className="sm:col-span-1 xl:col-span-2">
+      </InstrumentActivity>
+      <InstrumentActivity className="sm:col-span-1 xl:col-span-2">
         <MempoolAtmosphere large={large} />
-      </div>
-      <div className="sm:col-span-2 xl:col-span-2">
+      </InstrumentActivity>
+      <InstrumentActivity className="sm:col-span-2 xl:col-span-2">
         <TipSigil large={large} />
-      </div>
-      <div className="sm:col-span-1 xl:col-span-3">
+      </InstrumentActivity>
+      <InstrumentActivity className="sm:col-span-1 xl:col-span-3">
         <IssuanceHourglass large={large} />
-      </div>
-      <div className="sm:col-span-1 xl:col-span-3">
+      </InstrumentActivity>
+      <InstrumentActivity className="sm:col-span-1 xl:col-span-3">
         <HashrateForge large={large} />
-      </div>
+      </InstrumentActivity>
     </>
   );
 }
@@ -49,21 +55,21 @@ function BtcGrid({ large }: { large: boolean }) {
 function EthGrid({ large }: { large: boolean }) {
   return (
     <>
-      <div className="sm:col-span-1 xl:col-span-2">
+      <InstrumentActivity className="sm:col-span-1 xl:col-span-2">
         <SlotLattice large={large} />
-      </div>
-      <div className="sm:col-span-1 xl:col-span-2">
+      </InstrumentActivity>
+      <InstrumentActivity className="sm:col-span-1 xl:col-span-2">
         <BaseFeeTide large={large} />
-      </div>
-      <div className="sm:col-span-2 xl:col-span-2">
+      </InstrumentActivity>
+      <InstrumentActivity className="sm:col-span-2 xl:col-span-2">
         <BlockMosaic large={large} />
-      </div>
-      <div className="sm:col-span-1 xl:col-span-3">
+      </InstrumentActivity>
+      <InstrumentActivity className="sm:col-span-1 xl:col-span-3">
         <BurnCandle large={large} />
-      </div>
-      <div className="sm:col-span-1 xl:col-span-3">
+      </InstrumentActivity>
+      <InstrumentActivity className="sm:col-span-1 xl:col-span-3">
         <ValidatorConstellation large={large} />
-      </div>
+      </InstrumentActivity>
     </>
   );
 }
@@ -71,21 +77,21 @@ function EthGrid({ large }: { large: boolean }) {
 function SolGrid({ large }: { large: boolean }) {
   return (
     <>
-      <div className="sm:col-span-1 xl:col-span-2">
+      <InstrumentActivity className="sm:col-span-1 xl:col-span-2">
         <TurbineTach large={large} />
-      </div>
-      <div className="sm:col-span-1 xl:col-span-2">
+      </InstrumentActivity>
+      <InstrumentActivity className="sm:col-span-1 xl:col-span-2">
         <PriorityJets large={large} />
-      </div>
-      <div className="sm:col-span-2 xl:col-span-2">
+      </InstrumentActivity>
+      <InstrumentActivity className="sm:col-span-2 xl:col-span-2">
         <LeaderRibbon large={large} />
-      </div>
-      <div className="sm:col-span-1 xl:col-span-3">
+      </InstrumentActivity>
+      <InstrumentActivity className="sm:col-span-1 xl:col-span-3">
         <InflationFountain large={large} />
-      </div>
-      <div className="sm:col-span-1 xl:col-span-3">
+      </InstrumentActivity>
+      <InstrumentActivity className="sm:col-span-1 xl:col-span-3">
         <StakeReef large={large} />
-      </div>
+      </InstrumentActivity>
     </>
   );
 }
@@ -93,21 +99,21 @@ function SolGrid({ large }: { large: boolean }) {
 function HypeGrid({ large }: { large: boolean }) {
   return (
     <>
-      <div className="sm:col-span-1 xl:col-span-2">
+      <InstrumentActivity className="sm:col-span-1 xl:col-span-2">
         <ClearingClock large={large} />
-      </div>
-      <div className="sm:col-span-1 xl:col-span-2">
+      </InstrumentActivity>
+      <InstrumentActivity className="sm:col-span-1 xl:col-span-2">
         <FundingTide large={large} />
-      </div>
-      <div className="sm:col-span-2 xl:col-span-2">
+      </InstrumentActivity>
+      <InstrumentActivity className="sm:col-span-2 xl:col-span-2">
         <HashTape large={large} />
-      </div>
-      <div className="sm:col-span-1 xl:col-span-3">
+      </InstrumentActivity>
+      <InstrumentActivity className="sm:col-span-1 xl:col-span-3">
         <VolumeFountain large={large} />
-      </div>
-      <div className="sm:col-span-1 xl:col-span-3">
+      </InstrumentActivity>
+      <InstrumentActivity className="sm:col-span-1 xl:col-span-3">
         <OiVault large={large} />
-      </div>
+      </InstrumentActivity>
     </>
   );
 }
@@ -122,6 +128,9 @@ export function Observatory({
   const reduce = useAppReducedMotion();
   const chain = useChainOptional();
   const id = chain?.id ?? "btc";
+  // Instruments use motion, tips, and live clocks. Mount the grid only after
+  // hydrate so those client-only trees cannot disagree with SSR HTML.
+  const gridReady = useSyncExternalStore(emptySubscribe, () => true, () => false);
 
   return (
     <section
@@ -153,24 +162,33 @@ export function Observatory({
         </h2>
       )}
 
-      <motion.div
-        className={`observatory-grid grid gap-3 sm:grid-cols-2 xl:grid-cols-6 ${
-          large ? "gap-3.5 xl:gap-4" : ""
-        }`}
-        initial={reduce ? false : { opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
-      >
-        {id === "eth" ? (
-          <EthGrid large={large} />
-        ) : id === "sol" ? (
-          <SolGrid large={large} />
-        ) : id === "hype" ? (
-          <HypeGrid large={large} />
-        ) : (
-          <BtcGrid large={large} />
-        )}
-      </motion.div>
+      {gridReady ? (
+        <motion.div
+          className={`observatory-grid grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-6 ${
+            large ? "gap-3.5 xl:gap-4" : ""
+          }`}
+          initial={false}
+          animate={reduce ? undefined : { opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+        >
+          {id === "eth" ? (
+            <EthGrid large={large} />
+          ) : id === "sol" ? (
+            <SolGrid large={large} />
+          ) : id === "hype" ? (
+            <HypeGrid large={large} />
+          ) : (
+            <BtcGrid large={large} />
+          )}
+        </motion.div>
+      ) : (
+        <div
+          className={`observatory-grid grid min-h-[18rem] gap-3 sm:grid-cols-2 xl:grid-cols-6 ${
+            large ? "gap-3.5 xl:gap-4" : ""
+          }`}
+          aria-hidden
+        />
+      )}
     </section>
   );
 }

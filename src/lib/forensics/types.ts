@@ -1,6 +1,14 @@
-/** Shared Coldcard drain forensics types (safe for client). */
+/** Shared drain-watch types (safe for client). */
+
+export type ForensicsCaseId = "coldcard" | "liquid";
 
 export type HolderRole = "collector" | "vault" | string;
+
+export type LiquidRole =
+  | "actor"
+  | "federation-peg"
+  | "sideswap-payout"
+  | "blockstream";
 
 export interface ForensicsSummary {
   generatedAt: string;
@@ -31,6 +39,23 @@ export interface VictimMeta {
   sweptAt: number;
 }
 
+export interface LiquidAddress {
+  address: string;
+  label: string;
+  role: LiquidRole;
+  note: string;
+  receivedSats: number;
+  sentSats: number;
+}
+
+export interface LiquidTimelineEvent {
+  at: string;
+  title: string;
+  detail: string;
+  href?: string;
+  chain: "btc" | "liquid";
+}
+
 export interface LiveAddressStats {
   address: string;
   fundedSats: number;
@@ -57,10 +82,11 @@ export interface WatchResponse {
 }
 
 export interface LookupHit {
-  kind: "victim" | "holder" | "both" | "unknown";
+  kind: "victim" | "holder" | "both" | "unknown" | "liquid";
   address: string;
   victim?: VictimMeta;
   holder?: HolderMeta;
+  liquid?: LiquidAddress;
   live?: LiveAddressStats | null;
 }
 
@@ -101,8 +127,8 @@ export interface HopSpend {
 export interface HopsResponse {
   fetchedAt: number;
   address: string;
-  meta: HolderMeta | VictimMeta | null;
-  role: "holder" | "victim" | "unknown";
+  meta: HolderMeta | VictimMeta | LiquidAddress | null;
+  role: "holder" | "victim" | "liquid" | "unknown";
   live: LiveAddressStats | null;
   spends: HopSpend[];
 }

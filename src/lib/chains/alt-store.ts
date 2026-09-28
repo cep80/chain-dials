@@ -1,3 +1,4 @@
+import { jsonResource } from "@/lib/data/resource";
 import { create } from "zustand";
 import type { ChainId } from "@/lib/chains/types";
 import type { ChainSnapshot } from "@/lib/chains/snapshot";
@@ -29,6 +30,7 @@ export interface AltLive {
   inflationRate: number | null;
   burnEthPerBlock: number | null;
   lastAt: number | null;
+  lastTipAt: number | null;
   source: string | null;
 }
 
@@ -70,69 +72,62 @@ const empty: AltLive = {
   inflationRate: null,
   burnEthPerBlock: null,
   lastAt: null,
+  lastTipAt: null,
   source: null,
 };
 
 export const useAltChainStore = create<AltChainState>((set, get) => {
-  let snapTimer: ReturnType<typeof setInterval> | null = null;
-  let tipTimer: ReturnType<typeof setInterval> | null = null;
-  let priceTimer: ReturnType<typeof setInterval> | null = null;
+  let subscriptions: Array<() => void> = [];
   let clockTimer: ReturnType<typeof setInterval> | null = null;
   let refs = 0;
   let activeChain: ChainId | null = null;
-  let lastPrice: number | null = null;
-
-  async function pollPrice(chainId: ChainId) {
-    try {
-      const res = await fetch("/api/suite/prices", { cache: "no-store" });
-      if (!res.ok) throw new Error(String(res.status));
-      const prices = (await res.json()) as Partial<Record<ChainId, number>>;
-      lastPrice = prices[chainId] ?? lastPrice;
-      if (lastPrice != null) {
-        set({ live: { ...get().live, priceUsd: lastPrice } });
-      }
-    } catch {
-      // keep last; snapshot may still seed a mark price
-    }
-  }
-
-  async function pollSnapshot(chainId: ChainId) {
-    try {
-      const res = await fetch(`/api/suite/snapshot/${chainId}`, {
-        cache: "no-store",
-      });
-      if (!res.ok) throw new Error(String(res.status));
-      const snap = (await res.json()) as ChainSnapshot & { priceUsd?: number | null };
-      if (typeof snap.priceUsd === "number" && Number.isFinite(snap.priceUsd)) {
-        lastPrice = snap.priceUsd;
-      }
-      get().applySnapshot(snap, lastPrice);
-      set({ connection: "connected" });
-    } catch {
-      set({
-        connection: get().live.lastAt ? "degraded" : "disconnected",
-      });
-    }
-  }
-
-  async function pollTip(chainId: ChainId) {
-    try {
-      const res = await fetch(`/api/suite/tip/${chainId}`, { cache: "no-store" });
-      if (!res.ok) return;
-      const tip = (await res.json()) as TipSnapshot;
-      get().applyTip(tip);
-    } catch {
-      // tip is best-effort between heavy snapshots
-    }
-  }
 
   function teardown() {
-    if (snapTimer) clearInterval(snapTimer);
-    if (tipTimer) clearInterval(tipTimer);
-    if (priceTimer) clearInterval(priceTimer);
+    subscriptions.forEach((stop) => stop());
+    subscriptions = [];
     if (clockTimer) clearInterval(clockTimer);
-    snapTimer = tipTimer = priceTimer = clockTimer = null;
+    clockTimer = null;
     activeChain = null;
+  }
+
+  function connect(chainId: ChainId) {
+    const tipMs = chainId === "sol" || chainId === "hype" ? 2500 : 5000;
+    const tip = jsonResource<TipSnapshot>(`/api/suite/tip/${chainId}`, { staleMs: tipMs, pollMs: tipMs });
+    const snapshot = jsonResource<ChainSnapshot>(`/api/suite/snapshot/${chainId}`, { staleMs: 15_000, pollMs: 15_000 });
+    const prices = jsonResource<Partial<Record<ChainId, number>>>("/api/suite/prices", { staleMs: 60_000, pollMs: 60_000 });
+    let previousTip: TipSnapshot | null = null;
+    let previousSnapshot: ChainSnapshot | null = null;
+    let previousPrices: Partial<Record<ChainId, number>> | null = null;
+    const syncTip = () => {
+      if (activeChain !== chainId) return;
+      const state = tip.getSnapshot();
+      if (state.data && state.data !== previousTip) {
+        previousTip = state.data;
+        get().applyTip(state.data);
+        set({ live: { ...get().live, lastTipAt: state.updatedAt } });
+      }
+    };
+    const syncSnapshot = () => {
+      if (activeChain !== chainId) return;
+      const state = snapshot.getSnapshot();
+      if (state.data && state.data !== previousSnapshot) {
+        previousSnapshot = state.data;
+        get().applySnapshot(state.data, prices.getSnapshot().data?.[chainId] ?? null);
+        set({ live: { ...get().live, lastAt: state.updatedAt } });
+      }
+      set({ connection: state.error ? (state.data ? "degraded" : "disconnected") : state.data ? "connected" : "connecting" });
+    };
+    const syncPrices = () => {
+      if (activeChain !== chainId) return;
+      const state = prices.getSnapshot();
+      if (state.data && state.data !== previousPrices) {
+        previousPrices = state.data;
+        const value = state.data[chainId];
+        if (value != null && Number.isFinite(value)) set({ live: { ...get().live, priceUsd: value } });
+      }
+    };
+    subscriptions = [tip.subscribe(syncTip), snapshot.subscribe(syncSnapshot), prices.subscribe(syncPrices)];
+    syncTip(); syncSnapshot(); syncPrices();
   }
 
   return {
@@ -161,13 +156,12 @@ export const useAltChainStore = create<AltChainState>((set, get) => {
             same && get().live.tipTimestamp != null
               ? get().live.tipTimestamp
               : (tip.timestamp ?? get().live.tipTimestamp ?? Date.now()),
-          lastAt: Date.now(),
+          lastTipAt: Date.now(),
           source: tip.source
             ? `${get().live.source?.split("+")[0] ?? tip.source}+tip`
             : get().live.source,
         },
         boardPulse: advanced ? get().boardPulse + 1 : get().boardPulse,
-        connection: "connected",
       });
     },
     applySnapshot: (snap, priceUsd) => {
@@ -179,6 +173,7 @@ export const useAltChainStore = create<AltChainState>((set, get) => {
           : get().boardPulse;
       const sameHeight =
         height != null && prev != null && height === prev;
+      const olderThanTip = height != null && prev != null && height < prev;
       const snapPrice =
         typeof (snap as { priceUsd?: number }).priceUsd === "number"
           ? (snap as { priceUsd?: number }).priceUsd!
@@ -187,10 +182,10 @@ export const useAltChainStore = create<AltChainState>((set, get) => {
         live: {
           ...get().live,
           priceUsd: priceUsd ?? snapPrice ?? get().live.priceUsd,
-          blockHeight: height,
-          tipHash: snap.tip.hash,
+          blockHeight: olderThanTip ? prev : height,
+          tipHash: olderThanTip ? get().live.tipHash : snap.tip.hash,
           tipTimestamp:
-            sameHeight && get().live.tipTimestamp != null
+            (sameHeight || olderThanTip) && get().live.tipTimestamp != null
               ? get().live.tipTimestamp
               : (snap.tip.timestamp ?? get().live.tipTimestamp ?? Date.now()),
           feeFastest: snap.feeFastest,
@@ -225,25 +220,17 @@ export const useAltChainStore = create<AltChainState>((set, get) => {
         teardown();
         refs = 1;
         activeChain = chainId;
-        lastPrice = null;
         set({
           chainId,
           connection: "connecting",
           live: empty,
           boardPulse: 0,
         });
-        // Tip first so “since block” isn’t empty while the heavy snapshot loads
-        void pollTip(chainId);
-        void pollPrice(chainId).then(() => pollSnapshot(chainId));
-        snapTimer = setInterval(() => void pollSnapshot(chainId), 15_000);
-        tipTimer = setInterval(
-          () => void pollTip(chainId),
-          chainId === "sol" || chainId === "hype" ? 2_500 : 5_000,
-        );
-        priceTimer = setInterval(() => void pollPrice(chainId), 60_000);
-        clockTimer = setInterval(() => get().tick(), 1_000);
+        connect(chainId);
+        clockTimer = setInterval(() => { if (document.visibilityState !== "hidden") get().tick(); }, 1000);
       }
       return () => {
+        if (activeChain !== chainId) return;
         refs = Math.max(0, refs - 1);
         if (refs === 0) teardown();
       };

@@ -107,7 +107,7 @@ export function SlotLattice({
       </div>
       {!compact && (
         <p className="pointer-events-none absolute bottom-1.5 left-1/2 -translate-x-1/2 mono text-[10px] font-medium tracking-wide text-paper-muted">
-          {slotInEpoch != null ? `${slotInEpoch + 1}/${SLOTS}` : "—/32"}
+          {slotInEpoch != null ? `${slotInEpoch + 1}/${SLOTS}` : "-/32"}
         </p>
       )}
     </div>
@@ -122,7 +122,7 @@ export function SlotLattice({
           {reading}
         </p>
         <p className="text-xs uppercase tracking-[0.2em] text-paper-muted">
-          since block · slot {slotInEpoch != null ? slotInEpoch + 1 : "—"} of {SLOTS}
+          since block · slot {slotInEpoch != null ? slotInEpoch + 1 : "-"} of {SLOTS}
           {height != null ? ` · block ${formatInteger(height)}` : ""}
         </p>
         <p className="max-w-sm text-center text-[11px] text-paper-muted">

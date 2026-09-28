@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useInstrumentActive } from "@/components/viz/InstrumentActivity";
 
 /** True when the document tab is visible - pause heavy canvas when hidden. */
 export function useDocumentVisible(): boolean {
+  const active = useInstrumentActive();
   const [visible, setVisible] = useState(true);
 
   useEffect(() => {
@@ -13,5 +15,5 @@ export function useDocumentVisible(): boolean {
     return () => document.removeEventListener("visibilitychange", sync);
   }, []);
 
-  return visible;
+  return visible && active;
 }

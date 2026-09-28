@@ -1,13 +1,14 @@
 "use client";
+import { BlockMetronome, HashrateForge, IssuanceHourglass, MempoolAtmosphere, TipSigil } from "@/components/viz/lazy-instruments";
 
 import { FeeTrafficChip } from "@/components/metrics/FeeTrafficChip";
 import { MetricRow } from "@/components/metrics/MetricRow";
-import { BlockMetronome } from "@/components/viz/BlockMetronome";
-import { HashrateForge } from "@/components/viz/HashrateForge";
-import { IssuanceHourglass } from "@/components/viz/IssuanceHourglass";
-import { MempoolAtmosphere } from "@/components/viz/MempoolAtmosphere";
-import { TipSigil } from "@/components/viz/TipSigil";
-import { formatRelativeAge } from "@/lib/format";
+
+
+
+
+
+import { ReadingStatus } from "@/components/status/ReadingStatus";
 import { MODULE_BY_ID, metricsForModule } from "@/lib/metrics";
 import { useDashboardStore } from "@/lib/store";
 import type { ModuleId } from "@/types/metrics";
@@ -19,10 +20,9 @@ export function ModuleCard({ id }: { id: ModuleId }) {
 
   if (!mod) return null;
 
-  const updatedAt =
-    id === "lightning"
-      ? live.lnUpdatedAt
-      : Math.max(live.lastRestAt ?? 0, live.lastWsAt ?? 0) || null;
+  const feedKey = id === "fees" ? "fees" : id === "mempool" ? "mempool" : id === "mining" ? "hashrate" : id === "lightning" ? "lightning" : id === "markets" ? "prices" : "blocks";
+  const feed = live.feeds?.[feedKey];
+  const retargetFeed = id === "mining" ? live.feeds?.difficulty : null;
 
   const showViz =
     id === "halving" ||
@@ -46,9 +46,15 @@ export function ModuleCard({ id }: { id: ModuleId }) {
           </div>
           <p className="mt-0.5 text-[11px] text-paper-muted">{mod.description}</p>
         </div>
-        <p className="shrink-0 text-[10px] text-paper-muted/80">
-          {mod.source} · {formatRelativeAge(updatedAt)}
-        </p>
+        <div className="max-w-[45%] text-right text-[10px] text-paper-muted/80">
+          <p>{mod.source}</p>
+          {id === "mining" ? (
+            <div className="space-y-1">
+              <p>Hashrate <ReadingStatus updatedAt={feed?.updatedAt ?? null} error={feed?.error} loading={!feed || feed.loading} staleMs={120_000} /></p>
+              <p>Retarget <ReadingStatus updatedAt={retargetFeed?.updatedAt ?? null} error={retargetFeed?.error} loading={!retargetFeed || retargetFeed.loading} staleMs={120_000} /></p>
+            </div>
+          ) : <ReadingStatus updatedAt={feed?.updatedAt ?? null} error={feed?.error} loading={!feed || feed.loading} staleMs={120_000} />}
+        </div>
       </header>
 
       {showViz && (

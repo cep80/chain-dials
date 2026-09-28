@@ -10,7 +10,8 @@ import {
 import { defaultFavoritesFor, loadFavorites, saveFavorites } from "@/lib/favorites";
 import { DEFAULT_FAVORITES } from "@/lib/metrics";
 import type { ChainId } from "@/lib/chains/types";
-import { mempoolRest } from "@/lib/mempool-rest";
+import type { mempoolRest, MempoolBlockProjection, RecentMempoolTx } from "@/lib/mempool-rest";
+import { jsonResource } from "@/lib/data/resource";
 import { MempoolWs } from "@/lib/mempool-ws";
 import {
   mergeRecentTxs,
@@ -158,8 +159,7 @@ const emptyLive: LiveSnapshot = {
 };
 
 let wsClient: MempoolWs | null = null;
-let restTimer: ReturnType<typeof setInterval> | null = null;
-let recentTimer: ReturnType<typeof setInterval> | null = null;
+let stopRestFeeds: (() => void) | null = null;
 let tickTimer: ReturnType<typeof setInterval> | null = null;
 let historyPersistTimer: ReturnType<typeof setTimeout> | null = null;
 let startCount = 0;
@@ -201,11 +201,9 @@ function applyRecentTxSample(
 function teardown() {
   wsClient?.disconnect();
   wsClient = null;
-  if (restTimer) clearInterval(restTimer);
-  if (recentTimer) clearInterval(recentTimer);
+  stopRestFeeds?.();
+  stopRestFeeds = null;
   if (tickTimer) clearInterval(tickTimer);
-  restTimer = null;
-  recentTimer = null;
   tickTimer = null;
 }
 
@@ -339,7 +337,6 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
         blockHeight: height,
         tipHash: hash ?? get().live.tipHash,
         tipTimestamp,
-        lastWsAt: Date.now(),
       });
 
       if (hash) {
@@ -386,114 +383,64 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
           feeHistogram && feeHistogram.length
             ? feeHistogram
             : get().live.feeHistogram,
-        lastWsAt: Date.now(),
       });
       applyNumeric(set, get, "mempool_vsize", vsize);
       applyNumeric(set, get, "mempool_pressure", pressure);
     };
 
-    const pollAtmosphere = async () => {
-      try {
-        const [recent, projections] = await Promise.all([
-          mempoolRest.recentTxs(),
-          mempoolRest.mempoolBlocks().catch(() => null),
-        ]);
-        applyRecentTxSample(set, asRecentRaw(recent));
-        if (projections) {
-          set((s) => ({
-            connection:
-              s.connection === "disconnected" || s.connection === "connecting"
-                ? s.connection
-                : "connected",
-            live: {
-              ...s.live,
-              mempoolBlocks: projections.slice(0, 8).map((b) => ({
-                nTx: b.nTx,
-                medianFee: b.medianFee,
-                totalFees: b.totalFees,
-                blockVSize: b.blockVSize,
-                feeRange: b.feeRange ?? [],
-              })),
-              lastRestAt: Date.now(),
-            },
-          }));
-        } else {
-          set((s) => ({
-            connection:
-              s.connection === "disconnected" || s.connection === "connecting"
-                ? s.connection
-                : "connected",
-            live: { ...s.live, lastRestAt: Date.now() },
-          }));
+    const cleanups: Array<() => void> = [];
+    const streamReadingAt = new Map<string, number>();
+    const follow = <T,>(name: string, path: string, consume: (data: T) => void, pollMs = 45_000) => {
+      const resource = jsonResource<T>(`/api/mempool${path}`, { staleMs: pollMs, pollMs });
+      let previous: T | null = null;
+      let appliedRestAt: number | null = null;
+      const sync = () => {
+        const state = resource.getSnapshot();
+        const hasNewData = state.data != null && state.data !== previous;
+        const streamedAt = streamReadingAt.get(name);
+        const newerStream = streamedAt != null && state.dataRequestedAt != null && streamedAt >= state.dataRequestedAt;
+        if (hasNewData && state.data != null) {
+          previous = state.data;
+          if (!newerStream) {
+            consume(state.data);
+            appliedRestAt = state.updatedAt;
+          }
         }
-      } catch (err) {
-        console.warn("Atmosphere poll failed", err);
-        set((s) => ({
-          connection:
-            s.connection === "disconnected" ? "disconnected" : "degraded",
-        }));
-      }
-    };
-
-    const pollRest = async () => {
-      const results = await Promise.allSettled([
-        mempoolRest.prices(),
-        mempoolRest.mempool(),
-        mempoolRest.fees(),
-        mempoolRest.difficulty(),
-        mempoolRest.hashrate(),
-        mempoolRest.lightning(),
-        mempoolRest.recentBlocks(),
-      ]);
-
-      const [pricesR, mempoolR, feesR, difficultyR, hashrateR, lightningR, blocksR] =
-        results;
-
-      const fulfilled = results.filter((r) => r.status === "fulfilled").length;
-      if (fulfilled === 0) {
-        console.warn("REST poll failed entirely", results);
-        set({
-          connection: get().live.lastWsAt ? "degraded" : "disconnected",
+        set((s) => {
+          const feeds = { ...s.live.feeds, [name]: { updatedAt: Math.max(appliedRestAt ?? 0, s.live.feeds?.[name]?.updatedAt ?? 0) || null, error: state.error, loading: state.loading } };
+          const core = ["prices", "mempool", "fees", "blocks"].map((key) => feeds[key]);
+          const ready = core.every((feed) => feed?.updatedAt != null);
+          const failed = core.some((feed) => feed?.error);
+          return {
+            live: { ...s.live, feeds, lastRestAt: ready ? Math.min(...core.map((feed) => feed!.updatedAt!)) : s.live.lastRestAt },
+            connection: failed ? (core.some((feed) => feed?.updatedAt) ? "degraded" : "disconnected") : ready ? "connected" : "connecting",
+          };
         });
-        return;
-      }
-      if (fulfilled < 5) {
-        set((s) => ({
-          connection: s.connection === "disconnected" ? "disconnected" : "degraded",
-        }));
-      } else {
-        set((s) => ({
-          connection:
-            s.connection === "disconnected" || s.connection === "connecting"
-              ? "connected"
-              : s.connection === "degraded"
-                ? "connected"
-                : s.connection,
-        }));
-      }
-
-      try {
-        if (pricesR.status === "fulfilled") {
-          const priceUsd = pricesR.value.USD;
+      };
+      cleanups.push(resource.subscribe(sync));
+      sync();
+    };
+    const startRestFeeds = () => {
+      follow<Awaited<ReturnType<typeof mempoolRest.prices>>>("prices", "/v1/prices", (data) => {
+          const priceUsd = data.USD;
           applyNumeric(set, get, "price_usd", priceUsd, {
             priceUsd,
-            lastRestAt: Date.now(),
           });
           applyNumeric(set, get, "sats_per_dollar", satsPerDollar(priceUsd));
-        }
-
-        if (mempoolR.status === "fulfilled") {
-          const mempool = mempoolR.value;
+          const height = get().live.blockHeight;
+          if (height != null) applyNumeric(set, get, "market_cap", priceUsd * issuedSupplyBtc(height));
+      });
+      follow<Awaited<ReturnType<typeof mempoolRest.mempool>>>("mempool", "/mempool", (data) => {
+          const mempool = data;
           ingestMempool(
             mempool.count,
             mempool.vsize,
             mempool.total_fee,
             mempool.fee_histogram,
           );
-        }
-
-        if (feesR.status === "fulfilled") {
-          const fees = feesR.value;
+      });
+      follow<Awaited<ReturnType<typeof mempoolRest.fees>>>("fees", "/v1/fees/recommended", (data) => {
+          const fees = data;
           applyNumeric(set, get, "fee_fastest", fees.fastestFee, {
             feeFastest: fees.fastestFee,
             feeHalfHour: fees.halfHourFee,
@@ -504,19 +451,17 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
           applyNumeric(set, get, "fee_half_hour", fees.halfHourFee);
           applyNumeric(set, get, "fee_hour", fees.hourFee);
           applyNumeric(set, get, "fee_economy", fees.economyFee);
-        }
-
-        if (hashrateR.status === "fulfilled") {
-          const hashrate = hashrateR.value;
+      });
+      follow<Awaited<ReturnType<typeof mempoolRest.hashrate>>>("hashrate", "/v1/mining/hashrate/3d", (data) => {
+          const hashrate = data;
           applyNumeric(set, get, "hashrate", hashrate.currentHashrate, {
             hashrate: hashrate.currentHashrate,
             difficulty: hashrate.currentDifficulty,
           });
           applyNumeric(set, get, "difficulty", hashrate.currentDifficulty);
-        }
-
-        if (difficultyR.status === "fulfilled") {
-          const difficulty = difficultyR.value;
+      });
+      follow<Awaited<ReturnType<typeof mempoolRest.difficulty>>>("difficulty", "/v1/difficulty-adjustment", (data) => {
+          const difficulty = data;
           applyNumeric(set, get, "retarget_progress", difficulty.progressPercent, {
             retargetProgress: difficulty.progressPercent,
             retargetChange: difficulty.difficultyChange,
@@ -525,10 +470,10 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
           });
           applyNumeric(set, get, "retarget_change", difficulty.difficultyChange);
           applyNumeric(set, get, "retarget_blocks", difficulty.remainingBlocks);
-        }
-
-        if (lightningR.status === "fulfilled" && lightningR.value?.latest) {
-          const ln = lightningR.value.latest;
+      });
+      follow<Awaited<ReturnType<typeof mempoolRest.lightning>>>("lightning", "/v1/lightning/statistics/latest", (data) => {
+        if (!data?.latest) return;
+          const ln = data.latest;
           const lnAt = Date.parse(ln.added) || Date.now();
           applyNumeric(set, get, "ln_capacity", ln.total_capacity / 1e8, {
             lnCapacitySats: ln.total_capacity,
@@ -538,41 +483,33 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
           });
           applyNumeric(set, get, "ln_nodes", ln.node_count);
           applyNumeric(set, get, "ln_channels", ln.channel_count);
-        }
-
-        if (blocksR.status === "fulfilled" && blocksR.value.length > 0) {
-          const tip = blocksR.value[0];
-          ingestBlock(tip.height, tip.id, tip.timestamp);
-        } else if (pricesR.status === "fulfilled") {
-          const height = get().live.blockHeight;
-          const priceUsd = pricesR.value.USD;
-          if (height != null && priceUsd != null) {
-            applyNumeric(set, get, "market_cap", priceUsd * issuedSupplyBtc(height));
-          }
-        }
-
-        const tipTs = get().live.tipTimestamp;
-        if (tipTs) {
-          applyNumeric(set, get, "time_since_block", (Date.now() - tipTs) / 1000);
-        }
-
-        set((s) => ({
-          live: { ...s.live, lastRestAt: Date.now() },
-        }));
-      } catch (err) {
-        console.warn("REST apply failed", err);
-        set({
-          connection: get().live.lastWsAt ? "degraded" : "disconnected",
-        });
-      }
+      });
+      follow<Awaited<ReturnType<typeof mempoolRest.recentBlocks>>>("blocks", "/v1/blocks", (data) => {
+        const tip = data[0];
+        // A cached REST response must not roll back a newer streamed tip.
+        if (tip && (get().live.blockHeight == null || tip.height >= get().live.blockHeight!)) ingestBlock(tip.height, tip.id, tip.timestamp);
+      });
+      follow<RecentMempoolTx[]>("transactions", "/mempool/recent", (data) => applyRecentTxSample(set, asRecentRaw(data)), 8_000);
+      follow<MempoolBlockProjection[]>("projections", "/v1/fees/mempool-blocks", (data) => {
+        set((s) => ({ live: { ...s.live, mempoolBlocks: data.slice(0, 8).map((b) => ({
+          nTx: b.nTx, medianFee: b.medianFee, totalFees: b.totalFees, blockVSize: b.blockVSize, feeRange: b.feeRange ?? [],
+        })) } }));
+      }, 8_000);
+      stopRestFeeds = () => cleanups.forEach((stop) => stop());
     };
 
     wsClient = new MempoolWs(
       (msg) => {
         set((s) => ({
           live: { ...s.live, lastWsAt: Date.now() },
-          connection: s.connection === "degraded" ? "connected" : s.connection,
         }));
+        const markStreamReading = (name: string) => {
+          const receivedAt = Date.now();
+          streamReadingAt.set(name, receivedAt);
+          set((s) => ({ live: {
+            ...s.live, feeds: { ...s.live.feeds, [name]: { updatedAt: receivedAt, error: null, loading: false } },
+          } }));
+        };
 
         const block = parseWsField<{
           height?: number;
@@ -582,6 +519,7 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
         }>(msg.block);
         if (block && typeof block.height === "number") {
           ingestBlock(block.height, block.id ?? block.hash, block.timestamp);
+          markStreamReading("blocks");
         }
 
         const blocks = parseWsField<
@@ -591,6 +529,7 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
           const b = blocks[0];
           if (b && typeof b.height === "number") {
             ingestBlock(b.height, b.id, b.timestamp);
+            markStreamReading("blocks");
           }
         }
 
@@ -608,6 +547,7 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
 
         const fees = parseWsField<Record<string, number>>(msg.fees);
         if (fees) {
+          if ([fees.fastestFee, fees.halfHourFee, fees.hourFee, fees.economyFee].every(Number.isFinite)) markStreamReading("fees");
           if (fees.fastestFee != null) {
             applyNumeric(set, get, "fee_fastest", fees.fastestFee, {
               feeFastest: fees.fastestFee,
@@ -652,20 +592,17 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
         }
       },
       (status) => {
-        if (status === "connected") set({ connection: "connected" });
-        else if (status === "connecting") set({ connection: "connecting" });
-        else set({ connection: get().live.lastRestAt ? "degraded" : "disconnected" });
+        // REST owns overall completeness. A socket handshake or ping must not
+        // mark a failed fee/price feed healthy.
+        if (get().live.lastRestAt == null) set({ connection: status === "disconnected" ? "disconnected" : "connecting" });
       },
     );
 
     wsClient.connect();
-    void pollRest();
-    void pollAtmosphere();
-    restTimer = setInterval(() => void pollRest(), 45_000);
-    // REST backup for tip sample; WS `transactions` is the live path
-    recentTimer = setInterval(() => void pollAtmosphere(), 8_000);
+    startRestFeeds();
     let sinceSample = 0;
     tickTimer = setInterval(() => {
+      if (document.hidden) return;
       get().tick();
       sinceSample += 1;
       const tipTs = get().live.tipTimestamp;

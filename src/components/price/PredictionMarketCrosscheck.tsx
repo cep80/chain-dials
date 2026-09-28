@@ -2,6 +2,7 @@
 
 import { formatPercent, formatRelativeAge } from "@/lib/format";
 import { usePredictionMarketCrosscheck } from "@/hooks/usePredictionMarketCrosscheck";
+import { ReadingStatus } from "@/components/status/ReadingStatus";
 import type { ChainId } from "@/lib/chains/types";
 
 function VenueLink({
@@ -24,7 +25,7 @@ function VenueLink({
 }
 
 export function PredictionMarketCrosscheck({ chain }: { chain: ChainId }) {
-  const { data, loading, error, reload } = usePredictionMarketCrosscheck(chain);
+  const { data, loading, error, reload, updatedAt, retryAt } = usePredictionMarketCrosscheck(chain);
   const hasGaps = Boolean(data?.crossVenue.length || data?.withinVenue.length);
   const mismatch = data?.ruleMismatches[0] ?? null;
   const kalshiOn = data?.venues.kalshi ?? false;
@@ -45,11 +46,13 @@ export function PredictionMarketCrosscheck({ chain }: { chain: ChainId }) {
         <button
           type="button"
           onClick={() => void reload()}
+          disabled={loading || retryAt != null}
           className="min-h-8 rounded-md border border-line px-2.5 text-[10px] uppercase tracking-wider text-paper-muted transition hover:border-accent/50 hover:text-paper"
         >
           Refresh
         </button>
       </div>
+      <ReadingStatus updatedAt={updatedAt} loading={loading} error={error} staleMs={120_000} />
 
       {data && !kalshiOn ? (
         <p className="mt-2 text-xs leading-relaxed text-paper-muted">

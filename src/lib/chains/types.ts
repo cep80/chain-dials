@@ -30,7 +30,8 @@ export interface ChainConfig {
   tipNoun: string;
   explorerTx: (id: string) => string;
   explorerBlock: (height: number | string) => string;
-  explorerAddress?: (address: string) => string;
+  explorerAddress: (address: string) => string;
+  explorerName: string;
   dataStatus: "live" | "partial" | "preview";
   coingeckoId: string;
   modules: "full" | "core";

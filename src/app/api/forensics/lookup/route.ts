@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { normalizeBtcAddress } from "@/lib/forensics/address";
 import { getHolder, getVictim } from "@/lib/forensics/dataset";
+import { getLiquidAddress } from "@/lib/forensics/liquid";
 import { fetchAddress } from "@/lib/forensics/mempool";
 import type { LookupHit, LookupResponse } from "@/lib/forensics/types";
 import { clientIp, rateLimit, rateLimitResponse } from "@/lib/rate-limit";
@@ -27,6 +28,7 @@ export async function GET(req: NextRequest) {
 
   const holder = getHolder(normalized);
   const victim = getVictim(normalized);
+  const liquid = getLiquidAddress(normalized);
   let live = null;
   try {
     live = await fetchAddress(normalized);
@@ -43,6 +45,13 @@ export async function GET(req: NextRequest) {
       address: normalized,
       victim: victim ?? undefined,
       holder: holder ?? undefined,
+      live,
+    };
+  } else if (liquid) {
+    hit = {
+      kind: "liquid",
+      address: normalized,
+      liquid,
       live,
     };
   } else {

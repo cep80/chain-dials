@@ -38,7 +38,7 @@ export function InflationFountain({
         delay: (i % 7) * 0.18,
         speed: 0.75 + (i % 4) * 0.2 * spray,
       })),
-    [compact, stage, dropCount, spray],
+    [dropCount, spray],
   );
 
   const h = stage ? 400 : large ? 190 : compact ? 100 : 154;

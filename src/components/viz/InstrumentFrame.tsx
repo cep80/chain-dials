@@ -1,7 +1,9 @@
 "use client";
 
 import { Hint } from "@/components/ui/Hint";
+import { ReadingStatus } from "@/components/status/ReadingStatus";
 import { useInstrumentPreview } from "@/components/viz/instrument-preview";
+import { useInstrumentActive } from "@/components/viz/InstrumentActivity";
 import { useChainOptional } from "@/lib/chains/context";
 import { feedCatchupLabel } from "@/lib/feed-status";
 import { useInstrumentStage } from "@/lib/instrument-stage";
@@ -61,7 +63,18 @@ export function InstrumentFrame({
   const open = useInstrumentStage((s) => s.open);
   const chain = useChainOptional();
   const preview = useInstrumentPreview();
+  const active = useInstrumentActive();
   const connection = useDashboardStore((s) => s.connection);
+  const live = useDashboardStore((s) => s.live);
+  const feedKey = instrumentId === "forge" ? "hashrate" : instrumentId === "atmosphere" ? "mempool" : "blocks";
+  const primaryFeed = chain?.id === "btc" ? live.feeds?.[feedKey] : undefined;
+  const difficultyFeed = chain?.id === "btc" && instrumentId === "forge" ? live.feeds?.difficulty : undefined;
+  const feed = difficultyFeed && primaryFeed ? {
+    updatedAt: difficultyFeed.updatedAt != null && primaryFeed.updatedAt != null ? Math.min(difficultyFeed.updatedAt, primaryFeed.updatedAt) : null,
+    error: difficultyFeed.error ?? primaryFeed.error,
+    loading: difficultyFeed.loading || primaryFeed.loading,
+  } : difficultyFeed ?? primaryFeed;
+  const updatedAt = chain?.id === "btc" ? feed?.updatedAt ?? null : live.lastRestAt;
   const catchupNote = feedCatchupLabel(connection);
   const narrative =
     instrumentId && chain
@@ -72,6 +85,8 @@ export function InstrumentFrame({
     if (instrumentId) open(instrumentId);
   };
 
+  // Keep title markup identical whether tips are armed or not. Hint only
+  // adds behavior; it must not change the kicker's class tree across hydrate.
   const titleNode =
     instrumentId && !preview ? (
       <Hint tip={INSTRUMENT_TIP[instrumentId]} chainId={chain?.id} as="div">
@@ -93,7 +108,7 @@ export function InstrumentFrame({
       <div className="instrument-frame-sheen pointer-events-none absolute inset-0" aria-hidden />
       <div className="instrument-frame-vignette pointer-events-none absolute inset-0" aria-hidden />
 
-      <header className="instrument-frame-header relative z-[1] flex items-start justify-between gap-3">
+      <header className="instrument-frame-header relative z-[1] flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           {titleNode}
           <p
@@ -102,8 +117,9 @@ export function InstrumentFrame({
           >
             {subtitle}
           </p>
+          {!preview && <ReadingStatus updatedAt={updatedAt} error={chain?.id === "btc" ? feed?.error : connection === "degraded" || connection === "disconnected" ? "Feed is reconnecting" : null} loading={feed?.loading ?? connection === "connecting"} staleMs={120_000} />}
         </div>
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex min-w-0 max-w-full flex-wrap items-center gap-2">
           {catchupNote ? (
             <span
               className="rounded-md border border-warn/40 bg-warn/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-warn"
@@ -145,7 +161,7 @@ export function InstrumentFrame({
       >
         {/* Soft stage well under the canvas */}
         <div className="instrument-stage-well pointer-events-none absolute inset-3 rounded-[12px]" aria-hidden />
-        <div className="relative z-[1] flex h-full w-full items-center justify-center">
+        <div key={active ? "animated" : "still"} className="relative z-[1] flex h-full w-full items-center justify-center">
           {children}
         </div>
       </div>
