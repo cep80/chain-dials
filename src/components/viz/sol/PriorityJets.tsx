@@ -53,8 +53,8 @@ export function PriorityJets({
     }));
   }, [fees, hist, compact, stage, now]);
 
-  const w = stage ? 640 : large ? 260 : compact ? 120 : 200;
-  const h = stage ? 340 : large ? 150 : compact ? 72 : 120;
+  const w = stage ? 640 : large ? 320 : compact ? 120 : 280;
+  const h = stage ? 340 : large ? 192 : compact ? 72 : 168;
 
   const clearPick = (e: MouseEvent) => {
     if ((e.target as HTMLElement).closest("[data-jet]")) return;
@@ -69,7 +69,7 @@ export function PriorityJets({
       className={`relative overflow-hidden rounded-[12px] border border-line/80 bg-ink shadow-[0_0_40px_color-mix(in_oklab,var(--accent)_8%,transparent)] ${
         reduce ? "" : "instrument-live-glow"
       }`}
-      style={{ width: w, height: h }}
+      style={{ width: stage ? `min(${w}px, 82vw, ${w / h * 52}svh)` : w, maxWidth: "100%", aspectRatio: w / h, height: "auto" }}
       role="img"
       aria-label={`Priority fee samples. Top ${formatFee(feeFastest, "µLamports/CU")}.`}
       onClick={clearPick}

@@ -42,7 +42,7 @@ export function OiVault({
     [n, score],
   );
 
-  const size = stage ? 720 : large ? 180 : compact ? 96 : 140;
+  const size = stage ? 560 : large ? 280 : compact ? 96 : 220;
   const orbit = Math.max(0, Math.min(100, gasMood ?? 0)) / 100;
 
   const vault = (
@@ -50,7 +50,7 @@ export function OiVault({
       className={`relative overflow-hidden rounded-[14px] border border-line/80 bg-ink shadow-[0_0_36px_color-mix(in_oklab,var(--accent)_12%,transparent)] ${
         reduce ? "" : "instrument-live-glow"
       }`}
-      style={{ width: size, height: size }}
+      style={{ width: stage ? "min(560px, 52svh, 82vw)" : size, maxWidth: "100%", aspectRatio: "1", height: "auto" }}
       role="img"
       aria-label={`OI vault. ${label ?? `${Math.round(score * 100)}% heat`}.`}
     >

@@ -1,147 +1,46 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { useAppReducedMotion } from "@/lib/settings/use-app-reduced-motion";
+import { useId } from "react";
+import { DialCanvas, DialStageReadout, type DialProps } from "@/components/viz/DialPrimitives";
 import { InstrumentFrame } from "@/components/viz/InstrumentFrame";
-import { formatPlainPercent } from "@/lib/format";
 import { useDashboardStore } from "@/lib/store";
 
-export function BurnCandle({
-  large = false,
-  compact = false,
-  stage = false,
-}: {
-  large?: boolean;
-  compact?: boolean;
-  stage?: boolean;
-}) {
-  const burn = useDashboardStore((s) => s.live.issuanceProgress) ?? 0;
-  const supply = useDashboardStore((s) => s.live.supplyProgress);
-  const burnEth = useDashboardStore((s) => s.live.burnEthPerBlock);
-  const boardPulse = useDashboardStore((s) => s.boardPulse);
-  const reduce = useAppReducedMotion();
-
-  const flame = Math.max(0.12, Math.min(1, burn / 100));
-  const wax =
-    supply != null ? Math.max(0.2, Math.min(0.85, supply / 120)) : 0.55;
-
-  const h = stage ? 400 : large ? 190 : compact ? 100 : 154;
-  const w = stage ? 180 : large ? 100 : compact ? 56 : 80;
-
-  const burnLabel =
-    burnEth != null && burnEth > 0
-      ? `${burnEth < 0.01 ? burnEth.toFixed(4) : burnEth.toFixed(3)} ETH`
-      : formatPlainPercent(burn, 0);
-
-  const candle = (
-    <div
-      className={`relative flex items-end justify-center ${reduce ? "" : "instrument-live-glow"}`}
-      style={{ width: w, height: h }}
-      role="img"
-      aria-label={`Burn candle. About ${burnLabel} burned in the latest block. Supply clock ${supply != null ? `${supply.toFixed(0)} percent` : "unavailable"}.`}
-    >
-      <div
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2"
-        style={{
-          background:
-            "radial-gradient(ellipse 60% 50% at 50% 100%, color-mix(in oklab, var(--accent) 18%, transparent), transparent 70%)",
-        }}
-        aria-hidden
-      />
-      <motion.div
-        className="absolute z-[2]"
-        style={{
-          bottom: `${wax * 100 * 0.72 + 18}%`,
-          width: compact ? 18 : 30,
-          height: compact ? 30 : 48,
-        }}
-        animate={
-          reduce
-            ? undefined
-            : {
-                scaleY: [0.9, 1.18, 0.95, 1.12, 0.9],
-                scaleX: [1, 0.9, 1.06, 0.94, 1],
-                opacity: [0.78, 1, 0.88, 1, 0.78],
-              }
-        }
-        transition={{ duration: 1.1 + (1 - flame), repeat: Infinity, ease: "easeInOut" }}
-      >
-        <div
-          className="h-full w-full rounded-[50%_50%_50%_50%/60%_60%_40%_40%]"
-          style={{
-            background: `radial-gradient(circle at 50% 70%, rgba(255,255,255,0.85) 0%, var(--accent) ${35 + flame * 32}%, transparent 72%)`,
-            filter: `drop-shadow(0 0 ${8 + flame * 14}px var(--accent)) drop-shadow(0 0 ${4 + flame * 6}px rgba(255,220,160,0.5))`,
-            transform: `scale(${0.72 + flame * 0.58})`,
-          }}
-        />
-      </motion.div>
-
-      <div
-        className="relative w-[55%] overflow-hidden rounded-b-[8px] border border-line-strong"
-        style={{
-          height: `${wax * 72}%`,
-          background:
-            "linear-gradient(180deg, color-mix(in oklab, var(--ink-elevated) 90%, var(--paper) 10%), var(--ink-elevated))",
-          boxShadow:
-            "0 0 20px color-mix(in oklab, var(--accent) 12%, transparent), inset 0 1px 0 color-mix(in oklab, var(--paper) 8%, transparent)",
-        }}
-      >
-        <motion.div
-          className="absolute inset-x-0 bottom-0"
-          style={{
-            height: `${flame * 100}%`,
-            background:
-              "linear-gradient(180deg, color-mix(in oklab, var(--accent) 55%, transparent), color-mix(in oklab, var(--accent-dim) 40%, transparent))",
-          }}
-          animate={reduce ? undefined : { opacity: [0.4, 0.7, 0.4] }}
-          transition={{ duration: 2.4, repeat: Infinity }}
-        />
-        <div className="absolute left-1/2 top-0 h-3.5 w-[2px] -translate-x-1/2 bg-paper-muted shadow-[0_0_6px_var(--accent)]" />
-      </div>
-
-      {!reduce && boardPulse > 0 && (
-        <motion.div
-          key={boardPulse}
-          className="pointer-events-none absolute inset-0 rounded-full border border-accent/70"
-          initial={{ opacity: 0.7, scale: 0.8 }}
-          animate={{ opacity: 0, scale: 1.3 }}
-          transition={{ duration: 0.9 }}
-        />
-      )}
-    </div>
-  );
-
-  if (compact) return candle;
-  if (stage) {
-    return (
-      <div className="flex flex-col items-center gap-6">
-        {candle}
-        <p className="instrument-stage-reading mono text-5xl font-medium text-paper md:text-7xl">
-          {burnLabel}
-        </p>
-        <p className="text-xs uppercase tracking-[0.2em] text-paper-muted">
-          burned last block
-          {supply != null
-            ? ` · supply clock ${formatPlainPercent(supply, 0)}`
-            : " · supply feed unavailable"}
-        </p>
-        <p className="max-w-sm text-center text-[11px] text-paper-muted">
-          Flame = base fee × gas used (EIP-1559 burn). Wax tracks reported
-          circulating supply against a soft 120M clock, not mint rate.
-        </p>
-      </div>
-    );
-  }
-
-  return (
-    <InstrumentFrame
-      title="Candle"
-      subtitle="Flame = ETH burned last block · wax = reported supply clock"
-      reading={burnLabel}
-      large={large}
-      instrumentId="issuance"
-    >
-      {candle}
-    </InstrumentFrame>
-  );
+export function BurnCandle({ large = false, compact = false, stage = false }: DialProps) {
+  const burn = useDashboardStore((s) => s.live.burnEthPerBlock);
+  const uid = useId().replace(/:/g, "");
+  const known = burn != null && Number.isFinite(burn) && burn >= 0;
+  const intensity = known ? Math.min(1, Math.log10(1 + burn * 100) / 2) : 0;
+  const peak = 139 - intensity * 86;
+  const label = known ? `${burn < .01 ? burn.toFixed(4) : burn.toFixed(3)} ETH` : "Burn unavailable";
+  const art = <DialCanvas {...{ large, compact, stage }} label={`Burn candle. ${label}${known ? " burned in the latest block. Flame height uses a logarithmic scale." : "."}`}>
+    <defs>
+      <radialGradient id={`${uid}-halo`}><stop stopColor="var(--accent)" stopOpacity={intensity * .45} /><stop offset="1" stopColor="var(--accent)" stopOpacity="0" /></radialGradient>
+      <linearGradient id={`${uid}-plasma`} x1="0" y1="0" x2="0" y2="1"><stop stopColor="#bbcaff" stopOpacity=".1" /><stop offset=".35" stopColor="#849cff" /><stop offset=".73" stopColor="#c5e8ff" /><stop offset="1" stopColor="#fafcff" /></linearGradient>
+      <linearGradient id={`${uid}-glass`}><stop stopColor="#b9ceff" stopOpacity=".16" /><stop offset=".12" stopColor="#b9ceff" stopOpacity=".03" /><stop offset=".8" stopColor="#b9ceff" stopOpacity=".01" /><stop offset="1" stopColor="#b9ceff" stopOpacity=".18" /></linearGradient>
+      <linearGradient id={`${uid}-base`} x1="0" y1="0" x2="0" y2="1"><stop stopColor="#3e526f" /><stop offset=".24" stopColor="#101d31" /><stop offset=".8" stopColor="#080e18" /><stop offset="1" stopColor="#2b3b55" /></linearGradient>
+    </defs>
+    <circle cx="120" cy="118" r="102" fill={`url(#${uid}-halo)`} />
+    <ellipse cx="120" cy="195" rx="70" ry="10" fill="#000" opacity=".35" />
+    <path d="M58 178 L77 168 H163 L182 178 V188 L165 198 H75 L58 188Z" fill={`url(#${uid}-base)`} stroke="#7f93af" strokeOpacity=".4" strokeWidth=".6" />
+    <ellipse cx="120" cy="178" rx="57" ry="12" fill="#080e18" stroke="#7b94c0" strokeOpacity=".4" />
+    <ellipse cx="120" cy="176" rx="43" ry="8" fill="var(--accent)" opacity={.12 + intensity * .25} />
+    <path d="M76 53 V168 C76 185 164 185 164 168 V53" fill={`url(#${uid}-glass)`} stroke="#7d96bd" strokeOpacity=".28" strokeWidth=".65" />
+    <ellipse cx="120" cy="53" rx="44" ry="10" fill="#172137" fillOpacity=".15" stroke="#a7bddc" strokeOpacity=".4" strokeWidth=".7" />
+    <path d="M83 63 V153 M157 64 V119" stroke="#cedfff" strokeOpacity=".22" strokeWidth="1.4" strokeLinecap="round" />
+    {Array.from({ length: 9 }, (_, i) => <path key={i} d={`M176 ${67 + i * 12} h${i % 2 ? 4 : 8}`} stroke="#879cc0" strokeOpacity=".45" strokeWidth=".6" />)}
+    <text x="181" y="56" className="dial-tiny">LOG</text>
+    {known && burn > 0 && <g className="dial-flame">
+      <path d={`M120 ${peak} C141 ${peak + 36} 159 139 143 164 C132 181 104 181 96 164 C81 140 113 ${peak + 37} 120 ${peak}Z`} fill={`url(#${uid}-plasma)`} opacity=".15" />
+      <path d={`M120 ${peak + 6} C122 ${peak + 47} 145 133 139 157 C135 181 105 183 102 160 C95 138 118 ${peak + 45} 120 ${peak + 6}Z`} fill={`url(#${uid}-plasma)`} opacity=".85" />
+      <path d="M120 129 C127 145 135 153 129 168 C121 179 110 170 111 160 C112 151 119 140 120 129Z" fill="#eefaff" opacity=".85" />
+      <path d={`M120 ${peak + 15} C125 ${peak + 48} 145 146 130 169`} fill="none" stroke="#a5b7ff" strokeWidth=".8" />
+      {[0, 1, 2, 3, 4, 5].map((i) => <circle key={i} cx={103 + i * 7} cy={140 - (i % 3) * 19} r={i % 2 ? .7 : 1.1} fill="#d6eaff" className="dial-ember" style={{ animationDelay: `${-i * .63}s` }} />)}
+    </g>}
+    {!known && <text x="120" y="121" textAnchor="middle" className="dial-tiny">AWAITING BURN</text>}
+    {known && burn === 0 && <text x="120" y="121" textAnchor="middle" className="dial-tiny">NO BURN</text>}
+    <text x="120" y="219" textAnchor="middle" className="dial-tiny">EIP-1559 / LAST BLOCK</text>
+  </DialCanvas>;
+  if (compact) return art;
+  if (stage) return <DialStageReadout reading={label} detail="ETH burned in the latest block · Logarithmic flame scale">{art}</DialStageReadout>;
+  return <InstrumentFrame title="Candle" subtitle="ETH burned last block · logarithmic flame" reading={label} large={large} instrumentId="issuance">{art}</InstrumentFrame>;
 }

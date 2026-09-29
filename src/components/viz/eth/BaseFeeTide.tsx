@@ -1,179 +1,50 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { useId, useMemo } from "react";
-import { useAppReducedMotion } from "@/lib/settings/use-app-reduced-motion";
+import { useId } from "react";
+import { DialCanvas, DialStageReadout, type DialProps } from "@/components/viz/DialPrimitives";
 import { InstrumentFrame } from "@/components/viz/InstrumentFrame";
-import { formatFee, formatInteger, formatPlainPercent } from "@/lib/format";
+import { formatFee } from "@/lib/format";
+import { feePlot } from "@/lib/dial-geometry";
 import { useDashboardStore } from "@/lib/store";
-import { tideHeight } from "@/lib/viz-scale";
 
-export function BaseFeeTide({
-  large = false,
-  compact = false,
-  stage = false,
-}: {
-  large?: boolean;
-  compact?: boolean;
-  stage?: boolean;
-}) {
-  const feeFastest = useDashboardStore((s) => s.live.feeFastest);
-  const baseSeries = useDashboardStore((s) => s.live.baseFeeSeries);
-  const prioritySeries = useDashboardStore((s) => s.live.prioritySeries);
-  const pressure = useDashboardStore((s) => s.live.mempoolPressure);
-  const count = useDashboardStore((s) => s.live.mempoolCount);
-  const reduce = useAppReducedMotion();
+export function BaseFeeTide({ large = false, compact = false, stage = false }: DialProps) {
+  const base = useDashboardStore((s) => s.live.baseFeeSeries);
+  const tips = useDashboardStore((s) => s.live.prioritySeries);
   const uid = useId().replace(/:/g, "");
-
-  const latestBase =
-    baseSeries.length > 0 ? baseSeries[baseSeries.length - 1]! : null;
-  const latestTip =
-    prioritySeries.length > 0
-      ? prioritySeries[prioritySeries.length - 1]!
-      : null;
-
-  // Tide height from base fee level (gwei), soft-capped
-  const baseCap = Math.max(...(baseSeries.length ? baseSeries : [20]), 20);
-  const tide = tideHeight(latestBase, baseCap);
-
-  const wave = useMemo(() => {
-    const series =
-      baseSeries.length >= 3
-        ? baseSeries
-        : Array.from({ length: 12 }, (_, i) => 10 + Math.sin(i * 0.6) * 4);
-    const max = Math.max(...series, 1);
-    const pts = series.map((v, i) => ({
-      x: (i / Math.max(1, series.length - 1)) * 100,
-      y: 100 - Math.min(88, (v / max) * 55 + tide * 20),
-    }));
-    const d = pts
-      .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`)
-      .join(" ");
-    return `${d} L 100 100 L 0 100 Z`;
-  }, [baseSeries, tide]);
-
-  // Soft tip-foam dashes (not clickable sample dots)
-  const foam = useMemo(() => {
-    const tips = prioritySeries.length
-      ? prioritySeries.slice(- (compact ? 6 : 12))
-      : Array.from({ length: 8 }, (_, i) => 1 + (i % 3));
-    const max = Math.max(...tips, 1);
-    return tips.map((t, i) => ({
-      id: `foam-${i}`,
-      x: 8 + (i / Math.max(1, tips.length - 1)) * 84,
-      y: 100 - tide * 100 - 3 - (t / max) * 14,
-      w: 2.4 + (t / max) * 2,
-    }));
-  }, [prioritySeries, tide, compact]);
-
-  const w = stage ? 640 : large ? 260 : compact ? 120 : 200;
-  const h = stage ? 340 : large ? 150 : compact ? 72 : 120;
-
-  const reading =
-    latestBase != null
-      ? `${formatFee(latestBase, "gwei")} base`
-      : formatFee(feeFastest, "gwei");
-
-  const body = (
-    <div
-      className={`relative overflow-hidden rounded-[12px] border border-line/80 bg-ink shadow-[0_0_40px_color-mix(in_oklab,var(--accent)_8%,transparent)] ${
-        reduce ? "" : "instrument-live-glow"
-      }`}
-      style={{ width: w, height: h }}
-      role="img"
-      aria-label={`Base fee tide. Base ${formatFee(latestBase, "gwei")}. Priority tip ${formatFee(latestTip, "gwei")}.`}
-    >
-      <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="h-full w-full">
-        <defs>
-          <linearGradient id={`tideFill-${uid}`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--paper)" stopOpacity="0.25" />
-            <stop offset="18%" stopColor="var(--accent)" stopOpacity="0.7" />
-            <stop offset="100%" stopColor="var(--accent-dim)" stopOpacity="0.18" />
-          </linearGradient>
-          <linearGradient id={`tideSky-${uid}`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--ink-soft)" stopOpacity="0.9" />
-            <stop offset="100%" stopColor="var(--ink)" stopOpacity="1" />
-          </linearGradient>
-          <filter id={`tideBlur-${uid}`} x="-5%" y="-5%" width="110%" height="120%">
-            <feGaussianBlur stdDeviation="0.6" />
-          </filter>
-        </defs>
-        <rect width="100" height="100" fill={`url(#tideSky-${uid})`} />
-        <motion.path
-          d={wave}
-          fill={`url(#tideFill-${uid})`}
-          filter={`url(#tideBlur-${uid})`}
-          initial={false}
-          animate={reduce ? undefined : { opacity: [0.88, 1, 0.88] }}
-          transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
-        />
-        {/* Specular crest line */}
-        <motion.path
-          d={wave.replace(/ L 100 100 L 0 100 Z$/, "")}
-          fill="none"
-          stroke="var(--paper)"
-          strokeWidth={0.4}
-          opacity={0.35}
-        />
-        {foam.map((f) => (
-          <motion.rect
-            key={f.id}
-            x={f.x - f.w / 2}
-            y={f.y}
-            width={f.w}
-            height={1.3}
-            rx={0.6}
-            fill="var(--paper)"
-            opacity={0.32}
-            animate={
-              reduce
-                ? undefined
-                : { opacity: [0.15, 0.45, 0.15], y: [f.y, f.y - 1.4, f.y] }
-            }
-            transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
-          />
-        ))}
-      </svg>
-      {!compact && (
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 flex justify-between p-2 mono text-[9px] uppercase tracking-wider text-paper-muted">
-          <span>base fee wave</span>
-          <span>tip foam</span>
-        </div>
-      )}
-    </div>
-  );
-
-  if (compact) return body;
-  if (stage) {
-    return (
-      <div className="flex w-full flex-col items-center gap-5">
-        {body}
-        <p className="instrument-stage-reading mono text-5xl font-medium text-paper md:text-7xl">
-          {formatFee(latestBase ?? feeFastest, "gwei")}
-        </p>
-        <p className="text-xs uppercase tracking-[0.2em] text-paper-muted">
-          base gwei · tip {formatFee(latestTip, "gwei")}
-          {pressure != null
-            ? ` · block fullness ${formatPlainPercent(pressure, 0)}`
-            : ""}
-          {count != null ? ` · ${formatInteger(count)} in last block` : ""}
-        </p>
-        <p className="text-center text-[11px] text-paper-muted">
-          Click anywhere to expand. Foam shows decorative priority tips, not samples.
-        </p>
-      </div>
-    );
-  }
-
-  return (
-    <InstrumentFrame
-      title="Tide"
-      subtitle="Base fee wave · tip foam is decorative · click to expand"
-      reading={reading}
-      large={large}
-      instrumentId="atmosphere"
-    >
-      {body}
-    </InstrumentFrame>
-  );
+  const latest = base.at(-1);
+  const tip = tips.at(-1);
+  const known = latest != null && Number.isFinite(latest) && latest >= 0;
+  const ceiling = Math.max(.01, ...base.filter((v) => Number.isFinite(v) && v >= 0), ...tips.filter((v) => Number.isFinite(v) && v >= 0)) * 1.2;
+  const waves = feePlot(base, ceiling);
+  const tipWaves = feePlot(tips, ceiling);
+  const reading = known ? `${formatFee(latest, "gwei")} base` : "Awaiting base fee";
+  const art = <DialCanvas {...{ large, compact, stage }} wide label={`Base fee tide. ${reading}. Priority tip ${formatFee(tip, "gwei")}. Lines show reported recent block samples.`}>
+    <defs>
+      <linearGradient id={`${uid}-water`} x1="0" y1="0" x2="0" y2="1"><stop stopColor="#a8baff" stopOpacity=".62" /><stop offset=".25" stopColor="var(--accent)" stopOpacity=".55" /><stop offset="1" stopColor="var(--accent)" stopOpacity=".03" /></linearGradient>
+      <linearGradient id={`${uid}-chamber`} x1="0" y1="0" x2="1" y2="1"><stop stopColor="#17243b" /><stop offset=".6" stopColor="#080e19" /><stop offset="1" stopColor="#15223a" /></linearGradient>
+      <clipPath id={`${uid}-clip`}><rect x="20" y="40" width="280" height="143" /></clipPath>
+    </defs>
+    <path d="M17 18 H303 L314 29 V204 L301 219 H19 L6 206 V29 Z" fill={`url(#${uid}-chamber)`} stroke="#7a8fac" strokeOpacity=".35" strokeWidth=".7" />
+    <path d="M19 22 H301 M10 33 V198 M19 215 H299" fill="none" stroke="#e1ebff" strokeOpacity=".16" strokeWidth=".6" />
+    <text x="25" y="37" className="dial-tiny">FEE SPECTRUM</text><text x="294" y="37" textAnchor="end" className="dial-tiny">GWEI</text>
+    {[0, .25, .5, .75, 1].map((v) => <g key={v}><path d={`M25 ${178 - 126 * v} H295`} stroke="#7890b8" strokeOpacity=".15" strokeWidth=".5" strokeDasharray="2 4" /><text x="28" y={174 - 126 * v} className="dial-tiny" opacity=".7">{(ceiling * v).toFixed(ceiling < 1 ? 3 : 1)}</text></g>)}
+    <g clipPath={`url(#${uid}-clip)`}>
+      {waves.map((wave, i) => <g key={i}>
+        <path d={wave.area} fill={`url(#${uid}-water)`} />
+        {[10, 20, 30].map((dy) => <path key={dy} d={wave.line} transform={`translate(0 ${dy})`} fill="none" stroke="var(--accent)" strokeOpacity={.3 - dy / 140} strokeWidth=".7" />)}
+        <path d={wave.line} fill="none" stroke="var(--accent)" strokeOpacity=".12" strokeWidth="7" />
+        <path d={wave.line} fill="none" stroke="#c4d2ff" strokeWidth="1.4" strokeLinejoin="round" />
+      </g>)}
+      {tipWaves.map((wave, i) => <path key={i} d={wave.line} fill="none" stroke="#72e0db" strokeWidth="1" strokeDasharray="3 3" opacity=".85" />)}
+      {known && <circle cx={base.length === 1 ? 28 : 292} cy={178 - latest / ceiling * 126} r="3" fill="#e2ebff" className="dial-signal" />}
+    </g>
+    {!waves.length && <text x="160" y="119" textAnchor="middle" className="dial-label">AWAITING FEE SAMPLES</text>}
+    <path d="M25 187 H295" stroke="#8598ba" strokeOpacity=".28" strokeWidth=".5" />
+    <circle cx="29" cy="201" r="2" fill="#b7c8ff" /><text x="37" y="204" className="dial-tiny">BASE</text>
+    <circle cx="84" cy="201" r="2" fill="#72e0db" /><text x="92" y="204" className="dial-tiny">PRIORITY</text>
+    <text x="293" y="204" textAnchor="end" className="dial-tiny">RECENT BLOCKS →</text>
+  </DialCanvas>;
+  if (compact) return art;
+  if (stage) return <DialStageReadout reading={reading} detail={`Priority ${formatFee(tip, "gwei")} · Both traces use the same scale`}>{art}</DialStageReadout>;
+  return <InstrumentFrame title="Tide" subtitle="Base fee and priority · recent block samples" reading={reading} large={large} instrumentId="atmosphere">{art}</InstrumentFrame>;
 }

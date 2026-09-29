@@ -62,12 +62,12 @@ export function instrumentCanvasSize(
     case "compact":
       return Math.round(base * 0.7);
     case "large":
-      return Math.round(base * 1.35);
+      return Math.round(base * 1.9);
     case "stage":
       // Clean fullscreen: TV-distance scale (~3.6× board base)
       return Math.round(base * 3.6);
     default:
-      return base;
+      return Math.round(base * 1.6);
   }
 }
 

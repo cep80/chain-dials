@@ -201,6 +201,7 @@ export function InstrumentStage() {
   useEffect(() => {
     if (!active) return;
     const prevOverflow = document.body.style.overflow;
+    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     document.body.style.overflow = "hidden";
     panelRef.current?.focus();
     const t = window.setTimeout(() => {
@@ -210,6 +211,7 @@ export function InstrumentStage() {
       window.clearTimeout(t);
       document.body.style.overflow = prevOverflow;
       if (idleTimer.current) clearTimeout(idleTimer.current);
+      if (previousFocus?.isConnected) previousFocus.focus({ preventScroll: true });
     };
   }, [active, bumpChrome]);
 
@@ -217,7 +219,14 @@ export function InstrumentStage() {
     if (!active) return;
     const onKey = (e: KeyboardEvent) => {
       bumpChrome();
-      if (e.key === "Escape") {
+      if (e.key === "Tab") {
+        const controls = Array.from(panelRef.current?.querySelectorAll<HTMLElement>('button:not(:disabled), a[href], [tabindex="0"]') ?? []).filter((el) => el.getClientRects().length > 0);
+        const first = controls[0];
+        const last = controls.at(-1);
+        if (!first) { e.preventDefault(); panelRef.current?.focus(); }
+        else if (e.shiftKey && (document.activeElement === first || document.activeElement === panelRef.current)) { e.preventDefault(); last?.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      } else if (e.key === "Escape") {
         e.preventDefault();
         if (document.fullscreenElement) {
           void document.exitFullscreen();
@@ -414,7 +423,7 @@ export function InstrumentStage() {
               <AnimatePresence mode="wait">
                 <motion.div
                   key={active}
-                  className="flex w-full max-w-[min(96vw,1100px)] flex-col items-center"
+                  className="instrument-stage-art flex w-full max-w-[min(96vw,1100px)] flex-col items-center"
                   initial={reduce ? false : { opacity: 0, scale: 0.985 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={reduce ? undefined : { opacity: 0, scale: 0.99 }}

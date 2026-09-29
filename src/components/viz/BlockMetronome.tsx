@@ -140,7 +140,7 @@ export function BlockMetronome({
   const dial = (
     <div
       className={`relative ${reduce ? "" : "instrument-live-glow"}`}
-      style={{ width: size, height: size }}
+      style={{ width: stage ? `min(${size}px, 52svh, 82vw)` : size, maxWidth: "100%", aspectRatio: "1", height: "auto" }}
       role="img"
       aria-label={aria}
     >

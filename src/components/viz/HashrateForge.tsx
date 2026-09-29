@@ -118,8 +118,8 @@ export function HashrateForge({
     <div
       className="relative"
       style={{
-        width: size,
-        height: size,
+        width: stage ? `min(${size}px, 52svh, 82vw)` : size,
+        maxWidth: "100%", aspectRatio: "1", height: "auto",
         filter: `drop-shadow(0 0 ${dropBlur}px color-mix(in oklab, var(--accent) ${Math.round(glow * 55)}%, transparent))`,
       }}
       role="img"

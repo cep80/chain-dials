@@ -41,8 +41,8 @@ export function InflationFountain({
     [dropCount, spray],
   );
 
-  const h = stage ? 400 : large ? 190 : compact ? 100 : 154;
-  const w = stage ? 240 : large ? 120 : compact ? 64 : 100;
+  const h = stage ? 400 : large ? 230 : compact ? 100 : 200;
+  const w = stage ? 240 : large ? 144 : compact ? 64 : 125;
 
   const reading =
     inflation != null
@@ -54,7 +54,7 @@ export function InflationFountain({
       className={`relative overflow-hidden rounded-[12px] border border-line/80 bg-ink shadow-[0_0_36px_color-mix(in_oklab,var(--accent)_10%,transparent)] ${
         reduce ? "" : "instrument-live-glow"
       }`}
-      style={{ width: w, height: h }}
+      style={{ width: stage ? `min(${w}px, 82vw, ${w / h * 52}svh)` : w, maxWidth: "100%", aspectRatio: w / h, height: "auto" }}
       role="img"
       aria-label={`Inflation fountain. Epoch ${progress.toFixed(0)} percent. Inflation ${inflation?.toFixed(1) ?? "unknown"} percent.`}
     >

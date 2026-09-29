@@ -1,4 +1,6 @@
 import type { ChainId } from "@/lib/chains/types";
+import { CHAINS } from "@/lib/chains/registry";
+import type { InstrumentId } from "@/lib/instruments";
 
 export type TipId =
   | "pulse.price"
@@ -296,6 +298,10 @@ export function resolveTip(
       title: "Open interest",
       body: "Aggregate open interest across sampled perpetual markets. It measures trading exposure, not network security.",
     };
+  }
+  if (ctx?.chainId && ctx.chainId !== "btc" && id.startsWith("instrument.") && id !== "instrument.expand") {
+    const instrument = CHAINS[ctx.chainId].instruments[id.slice("instrument.".length) as InstrumentId];
+    if (instrument) return { title: instrument.title, body: instrument.narrative };
   }
   return tip;
 }

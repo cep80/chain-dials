@@ -42,7 +42,7 @@ export function HashTape({
     [tipHash],
   );
 
-  const w = stage ? 720 : large ? 280 : compact ? 120 : 200;
+  const w = stage ? 720 : large ? 320 : compact ? 120 : 280;
   const h = stage ? 128 : large ? 64 : compact ? 36 : 52;
 
   const tape = (
@@ -52,7 +52,7 @@ export function HashTape({
       className={`relative overflow-hidden rounded-[12px] border border-line/80 bg-ink outline-none focus-visible:ring-2 focus-visible:ring-accent shadow-[0_0_36px_color-mix(in_oklab,var(--accent)_12%,transparent)] ${
         reduce ? "" : "instrument-live-glow"
       }`}
-      style={{ width: w, height: h }}
+      style={{ width: stage ? `min(${w}px, 82vw, ${w / h * 52}svh)` : w, maxWidth: "100%", aspectRatio: w / h, height: "auto" }}
       aria-label="Hash tape. Click to copy block hash."
       title="Click to copy block hash"
     >

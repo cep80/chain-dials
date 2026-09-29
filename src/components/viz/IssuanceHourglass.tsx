@@ -95,8 +95,8 @@ export function IssuanceHourglass({
     <div
       className="relative"
       style={{
-        width: stage ? 280 : large ? 130 : compact ? 72 : 110,
-        height: stage ? 392 : large ? 182 : compact ? 100 : 154,
+        width: stage ? "min(280px, 37svh, 70vw)" : large ? 170 : compact ? 72 : 145,
+        maxWidth: "100%", aspectRatio: "5 / 7", height: "auto",
       }}
       role="img"
       aria-label={aria}

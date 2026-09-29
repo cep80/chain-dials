@@ -207,6 +207,7 @@ html[data-density="compact"] .pulse-chip {
 /* ── AAA instrument glass + TV / wall materials ───────────────────────── */
 
 .instrument-frame {
+  height: 100%;
   border-radius: 16px;
   border: 1px solid color-mix(in oklab, var(--line) 88%, var(--accent) 12%);
   background:
@@ -289,8 +290,10 @@ html[data-density="compact"] .pulse-chip {
 }
 
 .instrument-frame-header {
+  display: grid;
+  gap: .65rem;
   border-bottom: 1px solid color-mix(in oklab, var(--line) 75%, transparent);
-  padding: 0.7rem 1rem;
+  padding: 1rem 1.15rem .85rem;
   background: linear-gradient(
     180deg,
     color-mix(in oklab, var(--ink) 35%, transparent),
@@ -312,7 +315,8 @@ html[data-density="compact"] .pulse-chip {
 }
 
 .instrument-frame-subtitle {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
+  line-height: 1.5;
   color: var(--paper-muted);
 }
 
@@ -321,7 +325,7 @@ html[data-density="compact"] .pulse-chip {
 }
 
 .instrument-frame-reading {
-  font-size: 0.8125rem;
+  font-size: 1.2rem;
   font-weight: 500;
   letter-spacing: -0.01em;
   text-shadow: 0 0 20px color-mix(in oklab, var(--accent) 18%, transparent);
@@ -337,12 +341,13 @@ html[data-density="compact"] .pulse-chip {
 }
 
 .instrument-frame-body {
-  min-height: 168px;
-  padding: 1rem;
+  min-height: 278px;
+  padding: 1.1rem;
+  background: radial-gradient(ellipse at 50% 45%, color-mix(in oklab, var(--accent) 6%, transparent), transparent 68%);
 }
 
 .instrument-frame-body--large {
-  min-height: 280px;
+  min-height: 320px;
   padding: 1.2rem 1.1rem 1.35rem;
 }
 
@@ -503,6 +508,52 @@ html[data-motion="reduce"] .instrument-live-glow {
 [data-instrument-active="false"] *::before,
 [data-instrument-active="false"] *::after {
   animation-play-state: paused !important;
+}
+
+/* Precision-instrument typography and optical surfaces. */
+.instrument-index { font-size: 9px; letter-spacing: .05em; color: var(--paper-muted); opacity: .6; }
+.instrument-frame-heading { min-width: 0; }
+.instrument-frame-controls { display: flex; align-items: center; justify-content: space-between; gap: .65rem; min-width: 0; }
+.instrument-frame-reading { overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.instrument-expand-btn { width: 44px; min-height: 44px; justify-content: center; flex-shrink: 0; padding: 0; }
+.instrument-frame:focus-within { border-color: var(--accent); }
+.instrument-calibration { position: absolute; inset: 15px; pointer-events: none; color: var(--paper-muted); opacity: .25; font: 10px var(--font-mono); }
+.instrument-calibration span { position: absolute; }
+.instrument-calibration span:nth-child(2) { right: 0; }
+.instrument-calibration span:nth-child(3) { bottom: 0; }
+.instrument-calibration span:nth-child(4) { bottom: 0; right: 0; }
+.instrument-art { min-width: 0; }
+.instrument-art > * { max-width: 100%; }
+.dial-canvas { display: block; flex-shrink: 1; max-width: 100%; height: auto; overflow: visible; isolation: isolate; }
+.dial-value { fill: #edf3ff; font-family: var(--font-mono); font-weight: 500; letter-spacing: -2px; font-variant-numeric: tabular-nums; }
+.dial-tiny { fill: #93a7c9; font: 6.3px var(--font-mono); letter-spacing: .85px; }
+.dial-label { fill: #d3e0f5; font: 10px var(--font-mono); letter-spacing: 1px; }
+.dial-copy-button { display: flex; align-items: center; justify-content: center; max-width: 100%; border-radius: 50%; outline: none; cursor: copy; }
+.dial-copy-button:focus-visible { box-shadow: 0 0 0 2px var(--accent); }
+.dial-copy-button:disabled { cursor: default; }
+.dial-copy-button:hover .dial-relief { opacity: .85; }
+.dial-relief { transition: opacity .2s ease; }
+.dial-stage-composition { display: flex; flex-direction: column; align-items: center; gap: clamp(1rem, 3vh, 2rem); width: 100%; min-width: 0; padding: 0 1rem; }
+.dial-stage-composition .dial-canvas { max-height: 57svh; max-width: min(100%, 70svw); }
+.dial-stage-caption { max-width: 38rem; text-align: center; }
+.dial-stage-caption .instrument-stage-reading { font-size: clamp(1.8rem, 5vw, 4rem); line-height: 1.15; overflow-wrap: anywhere; }
+.dial-stage-caption > p + p { margin-top: .8rem; color: var(--paper-muted); font-size: .7rem; line-height: 1.7; letter-spacing: .06em; }
+.instrument-stage-art { max-height: 100%; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; padding: 1rem 0; }
+.instrument-stage-art > div { max-width: 100%; text-align: center; flex-shrink: 0; }
+.instrument-stage-art .instrument-stage-reading { overflow-wrap: anywhere; }
+.dial-canvas[data-motion="live"] .dial-signal { animation: dial-signal 3s ease-in-out infinite; }
+.dial-canvas[data-motion="live"] .dial-slot-current { animation: dial-signal 3s ease-in-out infinite; }
+.dial-canvas[data-motion="live"] .dial-flame { transform-origin: 120px 173px; animation: dial-flame 4s ease-in-out infinite; }
+.dial-canvas[data-motion="live"] .dial-ember { animation: dial-ember 4s linear infinite; }
+@keyframes dial-signal { 0%, 100% { opacity: .65; } 50% { opacity: 1; } }
+@keyframes dial-flame { 0%, 100% { transform: scaleX(.97) scaleY(.99); } 50% { transform: scaleX(1.03) scaleY(1.02); } }
+@keyframes dial-ember { 0% { transform: translateY(4px); opacity: 0; } 35% { opacity: .65; } 100% { transform: translateY(-33px); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .dial-canvas * { animation: none !important; } }
+html[data-motion="reduce"] .dial-canvas * { animation: none !important; }
+@media (max-width: 639px) {
+  .instrument-frame-header { padding: .9rem 1rem .7rem; }
+  .instrument-frame-body { min-height: 278px; padding: .75rem; }
+  .dial-stage-composition .dial-canvas { max-width: 100%; max-height: 49svh; }
 }
 
 /* CSS handles star twinkles without a JavaScript animation loop per SVG node. */

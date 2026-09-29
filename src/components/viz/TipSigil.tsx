@@ -64,7 +64,7 @@ export function TipSigil({
       className={`group relative rounded-full outline-none focus-visible:ring-2 focus-visible:ring-accent ${
         reduce ? "" : "instrument-live-glow"
       }`}
-      style={{ width: displaySize, height: displaySize }}
+      style={{ width: stage ? `min(${displaySize}px, 52svh, 82vw)` : displaySize, maxWidth: "100%", aspectRatio: "1", height: "auto" }}
       aria-label={aria}
       title="Click to copy the block hash"
     >
@@ -212,7 +212,7 @@ export function TipSigil({
   ) : (
     <div
       className="flex items-center justify-center rounded-full border border-dashed border-line bg-ink"
-      style={{ width: displaySize, height: displaySize }}
+      style={{ width: stage ? `min(${displaySize}px, 52svh, 82vw)` : displaySize, height: displaySize }}
       role="img"
       aria-label={aria}
     >

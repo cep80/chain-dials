@@ -88,42 +88,42 @@ export const CHAINS: Record<ChainId, ChainConfig> = {
     modules: "core",
     observatoryTitle: "Beacon room",
     observatoryBlurb:
-      "Not Bitcoin’s dials: a dimmer room with its own mood. Click Tide anywhere to stretch out (the foam’s just decor). The board refreshes about every 15s; the latest block updates a little faster.",
+      "Five views into Ethereum: consensus time, the cost of block space, a block’s fingerprint, burn, and network security. Expand any instrument for a closer look.",
     instruments: {
       metronome: {
         frameTitle: "Lattice",
         title: "Slot Lattice",
         subtitle: "Thirty-two slots, then an epoch",
         narrative:
-          "Ethereum’s clock is a grid, not a circle. Thirty-two cells for the current stretch; the lit one is now. If height jumps ahead, skipped cells keep a little scar, so you can see where time hiccuped.",
+          "Thirty-two segments trace the current consensus epoch. The bright segment is the current slot; earlier segments show elapsed positions, not a record of successful proposals. The center reads time since the latest observed block.",
       },
       atmosphere: {
         frameTitle: "Tide",
         title: "Base Fee Tide",
-        subtitle: "Base fee wave, tip foam on top",
+        subtitle: "Base fee and priority across recent blocks",
         narrative:
-          "The wave is recent base fee (what gets burned). Soft foam on the crest is priority-tip mood (pretty, not clickable). High tide? Pricey base. Click anywhere on the pane to go fullscreen.",
+          "The solid trace is the reported base fee. The dashed trace is the priority fee on the same gwei scale. Samples are spaced by block; missing readings leave gaps. Use Expand for a closer look.",
       },
       sigil: {
         frameTitle: "Mosaic",
         title: "Block Mosaic",
-        subtitle: "Block hash as stained glass",
+        subtitle: "Block hash as a crystalline relief",
         narrative:
-          "We shatter the latest block hash into colored tiles. New block, new window. Click to copy the full hash, if you collect that sort of thing.",
+          "The block hash’s 64 digits control the height and light of this crystalline relief. It stays consistent across board and expanded views. Select the relief to copy the full hash.",
       },
       issuance: {
         frameTitle: "Candle",
         title: "Burn Candle",
-        subtitle: "Burn flame, supply wax",
+        subtitle: "ETH burned in the latest block",
         narrative:
-          "Flame height is ETH burned in the latest block. Wax is circulating supply against a soft 120M mark (not mint rate). Sometimes the flame wins. That’s the joke, and kind of the point.",
+          "The chamber holds the latest block’s EIP-1559 burn: base fee multiplied by gas used. Flame height follows a logarithmic scale so small burns remain visible. No flame means zero burn; unavailable data is labeled separately.",
       },
       forge: {
         frameTitle: "Sky",
         title: "Validator Constellation",
         subtitle: "Stake as a night sky",
         narrative:
-          "No ASICs here. Security is a sky of bonded validators. Brighter sky, warmer stake. The orbit ring? Just how far we are through the epoch.",
+          "An illustrated network field, not a map of individual validators. Brightness follows the reported security reading. If stake data is unavailable, a clearly labeled gas-utilization proxy is shown. The outer marker tracks epoch progress.",
       },
     },
   },

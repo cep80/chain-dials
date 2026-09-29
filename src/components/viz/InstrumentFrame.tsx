@@ -7,7 +7,7 @@ import { useInstrumentActive } from "@/components/viz/InstrumentActivity";
 import { useChainOptional } from "@/lib/chains/context";
 import { feedCatchupLabel } from "@/lib/feed-status";
 import { useInstrumentStage } from "@/lib/instrument-stage";
-import type { InstrumentId } from "@/lib/instruments";
+import { INSTRUMENT_ORDER, type InstrumentId } from "@/lib/instruments";
 import type { TipId } from "@/lib/settings/tips";
 import { useDashboardStore } from "@/lib/store";
 
@@ -100,6 +100,7 @@ export function InstrumentFrame({
 
   return (
     <article
+      data-instrument={instrumentId}
       className={`instrument-frame group/frame relative flex flex-col overflow-hidden ${
         large ? "instrument-frame--large" : ""
       } ${preview ? "instrument-frame--preview" : ""} ${className}`}
@@ -108,18 +109,21 @@ export function InstrumentFrame({
       <div className="instrument-frame-sheen pointer-events-none absolute inset-0" aria-hidden />
       <div className="instrument-frame-vignette pointer-events-none absolute inset-0" aria-hidden />
 
-      <header className="instrument-frame-header relative z-[1] flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          {titleNode}
+      <header className="instrument-frame-header relative z-[1]">
+        <div className="instrument-frame-heading">
+          <div className="flex items-center gap-2">
+            <span className="instrument-index mono" aria-hidden>{instrumentId ? String(INSTRUMENT_ORDER.indexOf(instrumentId) + 1).padStart(2, "0") : "CD"}</span>
+            {titleNode}
+          </div>
           <p
-            className="instrument-frame-subtitle mt-0.5 truncate"
+            className="instrument-frame-subtitle mt-1"
             title={narrative ?? subtitle}
           >
             {subtitle}
           </p>
           {!preview && <ReadingStatus updatedAt={updatedAt} error={chain?.id === "btc" ? feed?.error : connection === "degraded" || connection === "disconnected" ? "Feed is reconnecting" : null} loading={feed?.loading ?? connection === "connecting"} staleMs={120_000} />}
         </div>
-        <div className="flex min-w-0 max-w-full flex-wrap items-center gap-2">
+        <div className="instrument-frame-controls">
           {catchupNote ? (
             <span
               className="rounded-md border border-warn/40 bg-warn/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-warn"
@@ -130,7 +134,7 @@ export function InstrumentFrame({
           ) : null}
           {reading != null && (
             <p
-              className={`instrument-frame-reading mono text-right text-paper ${
+              className={`instrument-frame-reading mono text-paper ${
                 large ? "instrument-frame-reading--large" : ""
               }`}
             >
@@ -145,9 +149,6 @@ export function InstrumentFrame({
                 className="instrument-expand-btn inline-flex min-h-10 items-center gap-1.5 rounded-md border border-line/80 bg-ink/40 px-2.5 text-paper-muted backdrop-blur-sm transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                 aria-label={`Open ${title} fullscreen`}
               >
-                <span className="text-[10px] font-semibold uppercase tracking-wider">
-                  Expand
-                </span>
                 <ExpandIcon />
               </button>
             </Hint>
@@ -161,7 +162,8 @@ export function InstrumentFrame({
       >
         {/* Soft stage well under the canvas */}
         <div className="instrument-stage-well pointer-events-none absolute inset-3 rounded-[12px]" aria-hidden />
-        <div key={active ? "animated" : "still"} className="relative z-[1] flex h-full w-full items-center justify-center">
+        <div className="instrument-calibration" aria-hidden><span>+</span><span>+</span><span>+</span><span>+</span></div>
+        <div key={active ? "animated" : "still"} className="instrument-art relative z-[1] flex h-full w-full items-center justify-center">
           {children}
         </div>
       </div>
