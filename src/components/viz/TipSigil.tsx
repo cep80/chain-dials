@@ -3,9 +3,11 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useCallback, useId, useMemo, useState, type MouseEvent } from "react";
 import { arcPath, buildSigil } from "@/lib/hash-sigil";
+import { allowSoftFilters, keyLight } from "@/lib/dial-light";
 import { formatHash, formatInteger } from "@/lib/format";
 import { useAppReducedMotion } from "@/lib/settings/use-app-reduced-motion";
 import { useDashboardStore } from "@/lib/store";
+import { useQualityTier } from "@/lib/use-quality-tier";
 import {
   instrumentCanvasSize,
   materialStrokeWeight,
@@ -32,6 +34,9 @@ export function TipSigil({
   const [copied, setCopied] = useState(false);
 
   const geom = useMemo(() => buildSigil(tipHash, SIZE), [tipHash]);
+  const tier = useQualityTier();
+  const soft = allowSoftFilters(tier) ? `url(#sigil-soft-${uid})` : undefined;
+  const light = keyLight();
   const mode = resolveDisplayMode({ compact, large, stage });
   const displaySize = instrumentCanvasSize(mode, 128);
   const strokeScale = mode === "stage" ? 2.4 : mode === "large" ? 1.55 : 1.15;
@@ -78,9 +83,10 @@ export function TipSigil({
           exit={reduce ? undefined : { opacity: 0, scale: 1.04 }}
           transition={{ duration: 0.45, ease: "easeOut" }}
           aria-hidden
+          data-tier={tier}
         >
           <defs>
-            <radialGradient id={`sigil-face-${uid}`} cx="40%" cy="35%" r="65%">
+            <radialGradient id={`sigil-face-${uid}`} cx={light.cx} cy={light.cy} r="65%">
               <stop offset="0%" stopColor="var(--ink-soft)" />
               <stop offset="55%" stopColor="var(--ink)" />
               <stop offset="100%" stopColor="var(--ink)" />
@@ -93,19 +99,21 @@ export function TipSigil({
               />
               <stop offset="100%" stopColor="var(--accent)" stopOpacity="0" />
             </radialGradient>
-            <filter
-              id={`sigil-soft-${uid}`}
-              x="-35%"
-              y="-35%"
-              width="170%"
-              height="170%"
-            >
-              <feGaussianBlur stdDeviation={stage ? 2.2 : 1.4} result="b" />
-              <feMerge>
-                <feMergeNode in="b" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
+            {soft && (
+              <filter
+                id={`sigil-soft-${uid}`}
+                x="-35%"
+                y="-35%"
+                width="170%"
+                height="170%"
+              >
+                <feGaussianBlur stdDeviation={stage ? 2.2 : 1.4} result="b" />
+                <feMerge>
+                  <feMergeNode in="b" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+            )}
           </defs>
           <circle
             cx={SIZE / 2}
@@ -159,7 +167,7 @@ export function TipSigil({
                   strokeWidth={s.weight * strokeScale}
                   strokeLinecap="round"
                   opacity={s.type === "chord" ? 0.75 : 0.95}
-                  filter={s.accent ? `url(#sigil-soft-${uid})` : undefined}
+                  filter={s.accent ? soft : undefined}
                 />
               ))}
             {geom.segments
@@ -174,7 +182,7 @@ export function TipSigil({
                     strokeWidth={s.weight * strokeScale}
                     strokeLinecap="round"
                     opacity={0.95}
-                    filter={s.accent ? `url(#sigil-soft-${uid})` : undefined}
+                    filter={s.accent ? soft : undefined}
                   />
                 ) : null,
               )}
@@ -187,7 +195,7 @@ export function TipSigil({
                   cy={s.y1}
                   r={(s.r ?? 1.5) * (stage ? 1.7 : large ? 1.35 : 1.15)}
                   fill={s.accent ? "var(--accent)" : "var(--paper-muted)"}
-                  filter={s.accent ? `url(#sigil-soft-${uid})` : undefined}
+                  filter={s.accent ? soft : undefined}
                 />
               ))}
           </g>

@@ -1,8 +1,10 @@
 "use client";
 
 import { useId, type ReactNode } from "react";
+import { bezelTickCount, keyLight, LIGHT_RIG } from "@/lib/dial-light";
 import { useAppReducedMotion } from "@/lib/settings/use-app-reduced-motion";
 import { useDocumentVisible } from "@/lib/use-document-visible";
+import { useQualityTier } from "@/lib/use-quality-tier";
 
 export type DialProps = { compact?: boolean; large?: boolean; stage?: boolean };
 
@@ -30,19 +32,27 @@ export function DialCanvas({ children, label, compact, large, stage, wide = fals
   >{children}</svg>;
 }
 
-/** Static optical housing. Light comes from gradients, not a per-frame blur pass. */
+/**
+ * Static optical housing. Light comes from gradients, not a per-frame blur pass.
+ * Metal, face and glass all follow LIGHT_RIG so every dial sits under one lamp.
+ * The mobile tier halves the tick count (see docs/instruments/art-direction.md).
+ */
 export function DialBezel({ children, ticks = 64 }: { children?: ReactNode; ticks?: number }) {
   const uid = useId().replace(/:/g, "");
-  return <>
+  const tier = useQualityTier();
+  const tickCount = bezelTickCount(ticks, tier);
+  const light = keyLight();
+  const rim = LIGHT_RIG.rim;
+  return <g data-tier={tier}>
     <defs>
-      <linearGradient id={`${uid}-metal`} x1="0" y1="0" x2="1" y2="1">
+      <linearGradient id={`${uid}-metal`} x1={rim.x1} y1={rim.y1} x2={rim.x2} y2={rim.y2}>
         <stop stopColor="#c3cede" stopOpacity=".48" />
         <stop offset=".24" stopColor="#17212f" />
         <stop offset=".51" stopColor="#080f19" />
         <stop offset=".77" stopColor="#6e8098" stopOpacity=".45" />
         <stop offset="1" stopColor="#0b111b" />
       </linearGradient>
-      <radialGradient id={`${uid}-face`} cx="40%" cy="30%" r="75%">
+      <radialGradient id={`${uid}-face`} cx={light.cx} cy={light.cy} r="75%">
         <stop stopColor="var(--accent)" stopOpacity=".13" />
         <stop offset=".55" stopColor="#0b131f" />
         <stop offset="1" stopColor="#050910" />
@@ -53,14 +63,14 @@ export function DialBezel({ children, ticks = 64 }: { children?: ReactNode; tick
         <stop offset="1" stopColor="var(--accent)" stopOpacity=".04" />
       </linearGradient>
     </defs>
-    <circle cx="120" cy="123" r="112" fill="#000" opacity=".35" />
+    <circle cx="120" cy={120 + LIGHT_RIG.shadow.dy} r="112" fill="#000" opacity={LIGHT_RIG.shadow.opacity} />
     <circle cx="120" cy="120" r="111" fill={`url(#${uid}-metal)`} stroke="#a4b9d2" strokeOpacity=".2" strokeWidth=".6" />
     <circle cx="120" cy="120" r="106" fill={`url(#${uid}-face)`} stroke="#02050a" strokeWidth="2" />
     <circle cx="120" cy="120" r="103" fill="none" stroke="#cfddf0" strokeOpacity=".15" strokeWidth=".5" />
     <circle cx="120" cy="120" r="77" fill="none" stroke="var(--accent)" strokeOpacity=".1" strokeWidth=".5" />
-    {Array.from({ length: ticks }, (_, i) => {
-      const a = polar(i % 4 === 0 ? 94 : 98, i * 360 / ticks);
-      const b = polar(101, i * 360 / ticks);
+    {Array.from({ length: tickCount }, (_, i) => {
+      const a = polar(i % 4 === 0 ? 94 : 98, i * 360 / tickCount);
+      const b = polar(101, i * 360 / tickCount);
       return <line key={i} x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke={i % 4 === 0 ? "#b7c7df" : "#53627a"} strokeWidth={i % 4 === 0 ? 1 : .65} opacity={i % 4 === 0 ? .8 : .65} />;
     })}
     {[45, 135, 225, 315].map((a) => {
@@ -69,7 +79,7 @@ export function DialBezel({ children, ticks = 64 }: { children?: ReactNode; tick
     })}
     {children}
     <circle cx="120" cy="120" r="102" fill={`url(#${uid}-glass)`} pointerEvents="none" />
-  </>;
+  </g>;
 }
 
 export function DialStageReadout({ children, reading, detail }: { children: ReactNode; reading: string; detail: string }) {

@@ -1,0 +1,1407 @@
+{
+  "capturedAt": "2026-10-27T17:40:46.133Z",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.8010.12 Safari/537.36",
+  "viewport": {
+    "width": 1440,
+    "height": 900,
+    "dpr": 1
+  },
+  "tier": "auto",
+  "motion": "still",
+  "method": "Fixture readings, not live feeds. Frame times are requestAnimationFrame deltas over a short dwell per view, not GPU timings. Canvas bytes are an RGBA estimate.",
+  "runs": [
+    {
+      "chain": "btc",
+      "view": "board",
+      "light": "accent",
+      "scenario": "nominal",
+      "frames": {
+        "samples": 55,
+        "medianMs": 16.7,
+        "p95Ms": 16.7,
+        "fps": 60
+      },
+      "inventory": {
+        "nodes": 370,
+        "svgElements": 221,
+        "svgFilters": 4,
+        "svgGradients": 12,
+        "canvases": 1,
+        "canvasPixels": 52302,
+        "canvasBytesEstimate": 209208,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "4:10",
+        "48,213 tx",
+        "000000…f5e4c9",
+        "37.3%",
+        "910.0 EH/s"
+      ]
+    },
+    {
+      "chain": "btc",
+      "view": "board",
+      "light": "neutral",
+      "scenario": "nominal",
+      "frames": {
+        "samples": 54,
+        "medianMs": 16.7,
+        "p95Ms": 16.8,
+        "fps": 60.01
+      },
+      "inventory": {
+        "nodes": 370,
+        "svgElements": 221,
+        "svgFilters": 4,
+        "svgGradients": 12,
+        "canvases": 1,
+        "canvasPixels": 52302,
+        "canvasBytesEstimate": 209208,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "4:10",
+        "48,213 tx",
+        "000000…f5e4c9",
+        "37.3%",
+        "910.0 EH/s"
+      ]
+    },
+    {
+      "chain": "btc",
+      "view": "wall",
+      "light": "accent",
+      "scenario": "nominal",
+      "frames": {
+        "samples": 53,
+        "medianMs": 16.7,
+        "p95Ms": 16.8,
+        "fps": 60
+      },
+      "inventory": {
+        "nodes": 369,
+        "svgElements": 223,
+        "svgFilters": 4,
+        "svgGradients": 12,
+        "canvases": 1,
+        "canvasPixels": 45000,
+        "canvasBytesEstimate": 180000,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "4:10",
+        "48,213 tx",
+        "000000…f5e4c9",
+        "37.3%",
+        "910.0 EH/s"
+      ]
+    },
+    {
+      "chain": "btc",
+      "view": "wall",
+      "light": "neutral",
+      "scenario": "nominal",
+      "frames": {
+        "samples": 53,
+        "medianMs": 16.7,
+        "p95Ms": 16.7,
+        "fps": 60
+      },
+      "inventory": {
+        "nodes": 369,
+        "svgElements": 223,
+        "svgFilters": 4,
+        "svgGradients": 12,
+        "canvases": 1,
+        "canvasPixels": 45000,
+        "canvasBytesEstimate": 180000,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "4:10",
+        "48,213 tx",
+        "000000…f5e4c9",
+        "37.3%",
+        "910.0 EH/s"
+      ]
+    },
+    {
+      "chain": "btc",
+      "view": "board",
+      "light": "accent",
+      "scenario": "late",
+      "frames": {
+        "samples": 24,
+        "medianMs": 16.7,
+        "p95Ms": 16.7,
+        "fps": 60.02
+      },
+      "inventory": {
+        "nodes": 374,
+        "svgElements": 225,
+        "svgFilters": 4,
+        "svgGradients": 12,
+        "canvases": 1,
+        "canvasPixels": 45000,
+        "canvasBytesEstimate": 180000,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "26:00",
+        "48,213 tx",
+        "000000…f5e4c9",
+        "37.3%",
+        "910.0 EH/s"
+      ]
+    },
+    {
+      "chain": "btc",
+      "view": "board",
+      "light": "neutral",
+      "scenario": "late",
+      "frames": {
+        "samples": 25,
+        "medianMs": 16.7,
+        "p95Ms": 16.7,
+        "fps": 60.01
+      },
+      "inventory": {
+        "nodes": 374,
+        "svgElements": 225,
+        "svgFilters": 4,
+        "svgGradients": 12,
+        "canvases": 1,
+        "canvasPixels": 45000,
+        "canvasBytesEstimate": 180000,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "26:00",
+        "48,213 tx",
+        "000000…f5e4c9",
+        "37.3%",
+        "910.0 EH/s"
+      ]
+    },
+    {
+      "chain": "btc",
+      "view": "wall",
+      "light": "accent",
+      "scenario": "late",
+      "frames": {
+        "samples": 24,
+        "medianMs": 16.7,
+        "p95Ms": 16.7,
+        "fps": 60
+      },
+      "inventory": {
+        "nodes": 373,
+        "svgElements": 227,
+        "svgFilters": 4,
+        "svgGradients": 12,
+        "canvases": 1,
+        "canvasPixels": 45000,
+        "canvasBytesEstimate": 180000,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "26:00",
+        "48,213 tx",
+        "000000…f5e4c9",
+        "37.3%",
+        "910.0 EH/s"
+      ]
+    },
+    {
+      "chain": "btc",
+      "view": "wall",
+      "light": "neutral",
+      "scenario": "late",
+      "frames": {
+        "samples": 24,
+        "medianMs": 16.7,
+        "p95Ms": 16.8,
+        "fps": 59.99
+      },
+      "inventory": {
+        "nodes": 373,
+        "svgElements": 227,
+        "svgFilters": 4,
+        "svgGradients": 12,
+        "canvases": 1,
+        "canvasPixels": 45000,
+        "canvasBytesEstimate": 180000,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "26:00",
+        "48,213 tx",
+        "000000…f5e4c9",
+        "37.3%",
+        "910.0 EH/s"
+      ]
+    },
+    {
+      "chain": "btc",
+      "view": "board",
+      "light": "accent",
+      "scenario": "empty",
+      "frames": {
+        "samples": 24,
+        "medianMs": 16.7,
+        "p95Ms": 16.7,
+        "fps": 60
+      },
+      "inventory": {
+        "nodes": 335,
+        "svgElements": 186,
+        "svgFilters": 3,
+        "svgGradients": 10,
+        "canvases": 1,
+        "canvasPixels": 45000,
+        "canvasBytesEstimate": 180000,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "…",
+        "-",
+        "-",
+        "0.0%",
+        "-"
+      ]
+    },
+    {
+      "chain": "btc",
+      "view": "board",
+      "light": "neutral",
+      "scenario": "empty",
+      "frames": {
+        "samples": 24,
+        "medianMs": 16.7,
+        "p95Ms": 16.7,
+        "fps": 59.99
+      },
+      "inventory": {
+        "nodes": 335,
+        "svgElements": 186,
+        "svgFilters": 3,
+        "svgGradients": 10,
+        "canvases": 1,
+        "canvasPixels": 45000,
+        "canvasBytesEstimate": 180000,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "…",
+        "-",
+        "-",
+        "0.0%",
+        "-"
+      ]
+    },
+    {
+      "chain": "btc",
+      "view": "wall",
+      "light": "accent",
+      "scenario": "empty",
+      "frames": {
+        "samples": 16,
+        "medianMs": 16.7,
+        "p95Ms": 50,
+        "fps": 45.73
+      },
+      "inventory": {
+        "nodes": 334,
+        "svgElements": 188,
+        "svgFilters": 3,
+        "svgGradients": 10,
+        "canvases": 1,
+        "canvasPixels": 45000,
+        "canvasBytesEstimate": 180000,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "…",
+        "-",
+        "-",
+        "0.0%",
+        "-"
+      ]
+    },
+    {
+      "chain": "btc",
+      "view": "wall",
+      "light": "neutral",
+      "scenario": "empty",
+      "frames": {
+        "samples": 24,
+        "medianMs": 16.7,
+        "p95Ms": 16.7,
+        "fps": 60
+      },
+      "inventory": {
+        "nodes": 334,
+        "svgElements": 188,
+        "svgFilters": 3,
+        "svgGradients": 10,
+        "canvases": 1,
+        "canvasPixels": 45000,
+        "canvasBytesEstimate": 180000,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "…",
+        "-",
+        "-",
+        "0.0%",
+        "-"
+      ]
+    },
+    {
+      "chain": "eth",
+      "view": "board",
+      "light": "accent",
+      "scenario": "nominal",
+      "frames": {
+        "samples": 54,
+        "medianMs": 16.7,
+        "p95Ms": 16.7,
+        "fps": 60.01
+      },
+      "inventory": {
+        "nodes": 1099,
+        "svgElements": 960,
+        "svgFilters": 0,
+        "svgGradients": 16,
+        "canvases": 0,
+        "canvasPixels": 0,
+        "canvasBytesEstimate": 0,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "0:07",
+        "15.4 gwei base",
+        "000000…f5e4c9",
+        "0.420 ETH",
+        "1.04M validators"
+      ]
+    },
+    {
+      "chain": "eth",
+      "view": "board",
+      "light": "neutral",
+      "scenario": "nominal",
+      "frames": {
+        "samples": 54,
+        "medianMs": 16.7,
+        "p95Ms": 16.8,
+        "fps": 60
+      },
+      "inventory": {
+        "nodes": 1099,
+        "svgElements": 960,
+        "svgFilters": 0,
+        "svgGradients": 16,
+        "canvases": 0,
+        "canvasPixels": 0,
+        "canvasBytesEstimate": 0,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "0:07",
+        "15.4 gwei base",
+        "000000…f5e4c9",
+        "0.420 ETH",
+        "1.04M validators"
+      ]
+    },
+    {
+      "chain": "eth",
+      "view": "wall",
+      "light": "accent",
+      "scenario": "nominal",
+      "frames": {
+        "samples": 46,
+        "medianMs": 16.7,
+        "p95Ms": 33.28,
+        "fps": 54.13
+      },
+      "inventory": {
+        "nodes": 1096,
+        "svgElements": 960,
+        "svgFilters": 0,
+        "svgGradients": 16,
+        "canvases": 0,
+        "canvasPixels": 0,
+        "canvasBytesEstimate": 0,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "0:07",
+        "15.4 gwei base",
+        "000000…f5e4c9",
+        "0.420 ETH",
+        "1.04M validators"
+      ]
+    },
+    {
+      "chain": "eth",
+      "view": "wall",
+      "light": "neutral",
+      "scenario": "nominal",
+      "frames": {
+        "samples": 54,
+        "medianMs": 16.7,
+        "p95Ms": 16.8,
+        "fps": 60.01
+      },
+      "inventory": {
+        "nodes": 1096,
+        "svgElements": 960,
+        "svgFilters": 0,
+        "svgGradients": 16,
+        "canvases": 0,
+        "canvasPixels": 0,
+        "canvasBytesEstimate": 0,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "0:07",
+        "15.4 gwei base",
+        "000000…f5e4c9",
+        "0.420 ETH",
+        "1.04M validators"
+      ]
+    },
+    {
+      "chain": "eth",
+      "view": "board",
+      "light": "accent",
+      "scenario": "late",
+      "frames": {
+        "samples": 24,
+        "medianMs": 16.7,
+        "p95Ms": 16.8,
+        "fps": 60
+      },
+      "inventory": {
+        "nodes": 1099,
+        "svgElements": 960,
+        "svgFilters": 0,
+        "svgGradients": 16,
+        "canvases": 0,
+        "canvasPixels": 0,
+        "canvasBytesEstimate": 0,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "0:31",
+        "15.4 gwei base",
+        "000000…f5e4c9",
+        "0.420 ETH",
+        "1.04M validators"
+      ]
+    },
+    {
+      "chain": "eth",
+      "view": "board",
+      "light": "neutral",
+      "scenario": "late",
+      "frames": {
+        "samples": 24,
+        "medianMs": 16.7,
+        "p95Ms": 16.7,
+        "fps": 60.02
+      },
+      "inventory": {
+        "nodes": 1099,
+        "svgElements": 960,
+        "svgFilters": 0,
+        "svgGradients": 16,
+        "canvases": 0,
+        "canvasPixels": 0,
+        "canvasBytesEstimate": 0,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "0:31",
+        "15.4 gwei base",
+        "000000…f5e4c9",
+        "0.420 ETH",
+        "1.04M validators"
+      ]
+    },
+    {
+      "chain": "eth",
+      "view": "wall",
+      "light": "accent",
+      "scenario": "late",
+      "frames": {
+        "samples": 20,
+        "medianMs": 16.7,
+        "p95Ms": 49.9,
+        "fps": 48
+      },
+      "inventory": {
+        "nodes": 1096,
+        "svgElements": 960,
+        "svgFilters": 0,
+        "svgGradients": 16,
+        "canvases": 0,
+        "canvasPixels": 0,
+        "canvasBytesEstimate": 0,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "0:31",
+        "15.4 gwei base",
+        "000000…f5e4c9",
+        "0.420 ETH",
+        "1.04M validators"
+      ]
+    },
+    {
+      "chain": "eth",
+      "view": "wall",
+      "light": "neutral",
+      "scenario": "late",
+      "frames": {
+        "samples": 24,
+        "medianMs": 16.7,
+        "p95Ms": 16.7,
+        "fps": 60.02
+      },
+      "inventory": {
+        "nodes": 1096,
+        "svgElements": 960,
+        "svgFilters": 0,
+        "svgGradients": 16,
+        "canvases": 0,
+        "canvasPixels": 0,
+        "canvasBytesEstimate": 0,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "0:31",
+        "15.4 gwei base",
+        "000000…f5e4c9",
+        "0.420 ETH",
+        "1.04M validators"
+      ]
+    },
+    {
+      "chain": "eth",
+      "view": "board",
+      "light": "accent",
+      "scenario": "empty",
+      "frames": {
+        "samples": 24,
+        "medianMs": 16.7,
+        "p95Ms": 16.7,
+        "fps": 60
+      },
+      "inventory": {
+        "nodes": 593,
+        "svgElements": 454,
+        "svgFilters": 0,
+        "svgGradients": 16,
+        "canvases": 0,
+        "canvasPixels": 0,
+        "canvasBytesEstimate": 0,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "-",
+        "Awaiting base fee",
+        "-",
+        "Burn unavailable",
+        "Awaiting security data"
+      ]
+    },
+    {
+      "chain": "eth",
+      "view": "board",
+      "light": "neutral",
+      "scenario": "empty",
+      "frames": {
+        "samples": 25,
+        "medianMs": 16.7,
+        "p95Ms": 16.7,
+        "fps": 60.01
+      },
+      "inventory": {
+        "nodes": 593,
+        "svgElements": 454,
+        "svgFilters": 0,
+        "svgGradients": 16,
+        "canvases": 0,
+        "canvasPixels": 0,
+        "canvasBytesEstimate": 0,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "-",
+        "Awaiting base fee",
+        "-",
+        "Burn unavailable",
+        "Awaiting security data"
+      ]
+    },
+    {
+      "chain": "eth",
+      "view": "wall",
+      "light": "accent",
+      "scenario": "empty",
+      "frames": {
+        "samples": 24,
+        "medianMs": 16.7,
+        "p95Ms": 16.8,
+        "fps": 60.02
+      },
+      "inventory": {
+        "nodes": 590,
+        "svgElements": 454,
+        "svgFilters": 0,
+        "svgGradients": 16,
+        "canvases": 0,
+        "canvasPixels": 0,
+        "canvasBytesEstimate": 0,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "-",
+        "Awaiting base fee",
+        "-",
+        "Burn unavailable",
+        "Awaiting security data"
+      ]
+    },
+    {
+      "chain": "eth",
+      "view": "wall",
+      "light": "neutral",
+      "scenario": "empty",
+      "frames": {
+        "samples": 24,
+        "medianMs": 16.7,
+        "p95Ms": 16.7,
+        "fps": 59.99
+      },
+      "inventory": {
+        "nodes": 590,
+        "svgElements": 454,
+        "svgFilters": 0,
+        "svgGradients": 16,
+        "canvases": 0,
+        "canvasPixels": 0,
+        "canvasBytesEstimate": 0,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "-",
+        "Awaiting base fee",
+        "-",
+        "Burn unavailable",
+        "Awaiting security data"
+      ]
+    },
+    {
+      "chain": "sol",
+      "view": "board",
+      "light": "accent",
+      "scenario": "nominal",
+      "frames": {
+        "samples": 53,
+        "medianMs": 16.7,
+        "p95Ms": 16.7,
+        "fps": 58.9
+      },
+      "inventory": {
+        "nodes": 388,
+        "svgElements": 215,
+        "svgFilters": 0,
+        "svgGradients": 5,
+        "canvases": 0,
+        "canvasPixels": 0,
+        "canvasBytesEstimate": 0,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "0:00",
+        "1200 µLamports/CU",
+        "000000…f5e4c9",
+        "4.6%",
+        "380M SOL staked"
+      ]
+    },
+    {
+      "chain": "sol",
+      "view": "board",
+      "light": "neutral",
+      "scenario": "nominal",
+      "frames": {
+        "samples": 54,
+        "medianMs": 16.7,
+        "p95Ms": 16.7,
+        "fps": 60.01
+      },
+      "inventory": {
+        "nodes": 388,
+        "svgElements": 215,
+        "svgFilters": 0,
+        "svgGradients": 5,
+        "canvases": 0,
+        "canvasPixels": 0,
+        "canvasBytesEstimate": 0,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "0:00",
+        "1200 µLamports/CU",
+        "000000…f5e4c9",
+        "4.6%",
+        "380M SOL staked"
+      ]
+    },
+    {
+      "chain": "sol",
+      "view": "wall",
+      "light": "accent",
+      "scenario": "nominal",
+      "frames": {
+        "samples": 48,
+        "medianMs": 16.7,
+        "p95Ms": 49.97,
+        "fps": 53.34
+      },
+      "inventory": {
+        "nodes": 385,
+        "svgElements": 215,
+        "svgFilters": 0,
+        "svgGradients": 5,
+        "canvases": 0,
+        "canvasPixels": 0,
+        "canvasBytesEstimate": 0,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "0:00",
+        "1200 µLamports/CU",
+        "000000…f5e4c9",
+        "4.6%",
+        "380M SOL staked"
+      ]
+    },
+    {
+      "chain": "sol",
+      "view": "wall",
+      "light": "neutral",
+      "scenario": "nominal",
+      "frames": {
+        "samples": 53,
+        "medianMs": 16.7,
+        "p95Ms": 16.7,
+        "fps": 60
+      },
+      "inventory": {
+        "nodes": 385,
+        "svgElements": 215,
+        "svgFilters": 0,
+        "svgGradients": 5,
+        "canvases": 0,
+        "canvasPixels": 0,
+        "canvasBytesEstimate": 0,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "0:00",
+        "1200 µLamports/CU",
+        "000000…f5e4c9",
+        "4.6%",
+        "380M SOL staked"
+      ]
+    },
+    {
+      "chain": "sol",
+      "view": "board",
+      "light": "accent",
+      "scenario": "late",
+      "frames": {
+        "samples": 23,
+        "medianMs": 16.7,
+        "p95Ms": 16.7,
+        "fps": 60.01
+      },
+      "inventory": {
+        "nodes": 388,
+        "svgElements": 215,
+        "svgFilters": 0,
+        "svgGradients": 5,
+        "canvases": 0,
+        "canvasPixels": 0,
+        "canvasBytesEstimate": 0,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "0:01",
+        "1200 µLamports/CU",
+        "000000…f5e4c9",
+        "4.6%",
+        "380M SOL staked"
+      ]
+    },
+    {
+      "chain": "sol",
+      "view": "board",
+      "light": "neutral",
+      "scenario": "late",
+      "frames": {
+        "samples": 24,
+        "medianMs": 16.7,
+        "p95Ms": 16.7,
+        "fps": 59.99
+      },
+      "inventory": {
+        "nodes": 388,
+        "svgElements": 215,
+        "svgFilters": 0,
+        "svgGradients": 5,
+        "canvases": 0,
+        "canvasPixels": 0,
+        "canvasBytesEstimate": 0,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "0:01",
+        "1200 µLamports/CU",
+        "000000…f5e4c9",
+        "4.6%",
+        "380M SOL staked"
+      ]
+    },
+    {
+      "chain": "sol",
+      "view": "wall",
+      "light": "accent",
+      "scenario": "late",
+      "frames": {
+        "samples": 19,
+        "medianMs": 16.7,
+        "p95Ms": 50,
+        "fps": 47.5
+      },
+      "inventory": {
+        "nodes": 385,
+        "svgElements": 215,
+        "svgFilters": 0,
+        "svgGradients": 5,
+        "canvases": 0,
+        "canvasPixels": 0,
+        "canvasBytesEstimate": 0,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "0:01",
+        "1200 µLamports/CU",
+        "000000…f5e4c9",
+        "4.6%",
+        "380M SOL staked"
+      ]
+    },
+    {
+      "chain": "sol",
+      "view": "wall",
+      "light": "neutral",
+      "scenario": "late",
+      "frames": {
+        "samples": 23,
+        "medianMs": 16.7,
+        "p95Ms": 16.8,
+        "fps": 60.01
+      },
+      "inventory": {
+        "nodes": 385,
+        "svgElements": 215,
+        "svgFilters": 0,
+        "svgGradients": 5,
+        "canvases": 0,
+        "canvasPixels": 0,
+        "canvasBytesEstimate": 0,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "0:01",
+        "1200 µLamports/CU",
+        "000000…f5e4c9",
+        "4.6%",
+        "380M SOL staked"
+      ]
+    },
+    {
+      "chain": "sol",
+      "view": "board",
+      "light": "accent",
+      "scenario": "empty",
+      "frames": {
+        "samples": 24,
+        "medianMs": 16.7,
+        "p95Ms": 16.7,
+        "fps": 60
+      },
+      "inventory": {
+        "nodes": 334,
+        "svgElements": 167,
+        "svgFilters": 0,
+        "svgGradients": 5,
+        "canvases": 0,
+        "canvasPixels": 0,
+        "canvasBytesEstimate": 0,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "-",
+        "-",
+        "-",
+        "40.0%",
+        "40% reef"
+      ]
+    },
+    {
+      "chain": "sol",
+      "view": "board",
+      "light": "neutral",
+      "scenario": "empty",
+      "frames": {
+        "samples": 25,
+        "medianMs": 16.7,
+        "p95Ms": 16.7,
+        "fps": 60
+      },
+      "inventory": {
+        "nodes": 334,
+        "svgElements": 167,
+        "svgFilters": 0,
+        "svgGradients": 5,
+        "canvases": 0,
+        "canvasPixels": 0,
+        "canvasBytesEstimate": 0,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "-",
+        "-",
+        "-",
+        "40.0%",
+        "40% reef"
+      ]
+    },
+    {
+      "chain": "sol",
+      "view": "wall",
+      "light": "accent",
+      "scenario": "empty",
+      "frames": {
+        "samples": 23,
+        "medianMs": 16.7,
+        "p95Ms": 16.7,
+        "fps": 59.99
+      },
+      "inventory": {
+        "nodes": 331,
+        "svgElements": 167,
+        "svgFilters": 0,
+        "svgGradients": 5,
+        "canvases": 0,
+        "canvasPixels": 0,
+        "canvasBytesEstimate": 0,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "-",
+        "-",
+        "-",
+        "40.0%",
+        "40% reef"
+      ]
+    },
+    {
+      "chain": "sol",
+      "view": "wall",
+      "light": "neutral",
+      "scenario": "empty",
+      "frames": {
+        "samples": 24,
+        "medianMs": 16.7,
+        "p95Ms": 16.7,
+        "fps": 59.99
+      },
+      "inventory": {
+        "nodes": 331,
+        "svgElements": 167,
+        "svgFilters": 0,
+        "svgGradients": 5,
+        "canvases": 0,
+        "canvasPixels": 0,
+        "canvasBytesEstimate": 0,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "-",
+        "-",
+        "-",
+        "40.0%",
+        "40% reef"
+      ]
+    },
+    {
+      "chain": "hype",
+      "view": "board",
+      "light": "accent",
+      "scenario": "nominal",
+      "frames": {
+        "samples": 53,
+        "medianMs": 16.7,
+        "p95Ms": 16.8,
+        "fps": 58.89
+      },
+      "inventory": {
+        "nodes": 361,
+        "svgElements": 187,
+        "svgFilters": 0,
+        "svgGradients": 5,
+        "canvases": 0,
+        "canvasPixels": 0,
+        "canvasBytesEstimate": 0,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "0:00",
+        "+2.43 bps",
+        "000000…f5e4c9",
+        "$5.3B",
+        "OI $4.2B"
+      ]
+    },
+    {
+      "chain": "hype",
+      "view": "board",
+      "light": "neutral",
+      "scenario": "nominal",
+      "frames": {
+        "samples": 54,
+        "medianMs": 16.7,
+        "p95Ms": 16.8,
+        "fps": 60
+      },
+      "inventory": {
+        "nodes": 361,
+        "svgElements": 187,
+        "svgFilters": 0,
+        "svgGradients": 5,
+        "canvases": 0,
+        "canvasPixels": 0,
+        "canvasBytesEstimate": 0,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "0:00",
+        "+2.43 bps",
+        "000000…f5e4c9",
+        "$5.3B",
+        "OI $4.2B"
+      ]
+    },
+    {
+      "chain": "hype",
+      "view": "wall",
+      "light": "accent",
+      "scenario": "nominal",
+      "frames": {
+        "samples": 54,
+        "medianMs": 16.7,
+        "p95Ms": 16.7,
+        "fps": 60.01
+      },
+      "inventory": {
+        "nodes": 358,
+        "svgElements": 187,
+        "svgFilters": 0,
+        "svgGradients": 5,
+        "canvases": 0,
+        "canvasPixels": 0,
+        "canvasBytesEstimate": 0,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "0:00",
+        "+2.43 bps",
+        "000000…f5e4c9",
+        "$5.3B",
+        "OI $4.2B"
+      ]
+    },
+    {
+      "chain": "hype",
+      "view": "wall",
+      "light": "neutral",
+      "scenario": "nominal",
+      "frames": {
+        "samples": 54,
+        "medianMs": 16.7,
+        "p95Ms": 16.7,
+        "fps": 60.01
+      },
+      "inventory": {
+        "nodes": 358,
+        "svgElements": 187,
+        "svgFilters": 0,
+        "svgGradients": 5,
+        "canvases": 0,
+        "canvasPixels": 0,
+        "canvasBytesEstimate": 0,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "0:00",
+        "+2.43 bps",
+        "000000…f5e4c9",
+        "$5.3B",
+        "OI $4.2B"
+      ]
+    },
+    {
+      "chain": "hype",
+      "view": "board",
+      "light": "accent",
+      "scenario": "late",
+      "frames": {
+        "samples": 24,
+        "medianMs": 16.7,
+        "p95Ms": 16.7,
+        "fps": 60
+      },
+      "inventory": {
+        "nodes": 361,
+        "svgElements": 187,
+        "svgFilters": 0,
+        "svgGradients": 5,
+        "canvases": 0,
+        "canvasPixels": 0,
+        "canvasBytesEstimate": 0,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "0:02",
+        "+2.43 bps",
+        "000000…f5e4c9",
+        "$5.3B",
+        "OI $4.2B"
+      ]
+    },
+    {
+      "chain": "hype",
+      "view": "board",
+      "light": "neutral",
+      "scenario": "late",
+      "frames": {
+        "samples": 24,
+        "medianMs": 16.7,
+        "p95Ms": 16.8,
+        "fps": 60
+      },
+      "inventory": {
+        "nodes": 361,
+        "svgElements": 187,
+        "svgFilters": 0,
+        "svgGradients": 5,
+        "canvases": 0,
+        "canvasPixels": 0,
+        "canvasBytesEstimate": 0,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "0:02",
+        "+2.43 bps",
+        "000000…f5e4c9",
+        "$5.3B",
+        "OI $4.2B"
+      ]
+    },
+    {
+      "chain": "hype",
+      "view": "wall",
+      "light": "accent",
+      "scenario": "late",
+      "frames": {
+        "samples": 19,
+        "medianMs": 16.7,
+        "p95Ms": 50,
+        "fps": 49.59
+      },
+      "inventory": {
+        "nodes": 358,
+        "svgElements": 187,
+        "svgFilters": 0,
+        "svgGradients": 5,
+        "canvases": 0,
+        "canvasPixels": 0,
+        "canvasBytesEstimate": 0,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "0:02",
+        "+2.43 bps",
+        "000000…f5e4c9",
+        "$5.3B",
+        "OI $4.2B"
+      ]
+    },
+    {
+      "chain": "hype",
+      "view": "wall",
+      "light": "neutral",
+      "scenario": "late",
+      "frames": {
+        "samples": 23,
+        "medianMs": 16.7,
+        "p95Ms": 16.8,
+        "fps": 60.01
+      },
+      "inventory": {
+        "nodes": 358,
+        "svgElements": 187,
+        "svgFilters": 0,
+        "svgGradients": 5,
+        "canvases": 0,
+        "canvasPixels": 0,
+        "canvasBytesEstimate": 0,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "0:02",
+        "+2.43 bps",
+        "000000…f5e4c9",
+        "$5.3B",
+        "OI $4.2B"
+      ]
+    },
+    {
+      "chain": "hype",
+      "view": "board",
+      "light": "accent",
+      "scenario": "empty",
+      "frames": {
+        "samples": 25,
+        "medianMs": 16.7,
+        "p95Ms": 16.8,
+        "fps": 60
+      },
+      "inventory": {
+        "nodes": 345,
+        "svgElements": 177,
+        "svgFilters": 0,
+        "svgGradients": 5,
+        "canvases": 0,
+        "canvasPixels": 0,
+        "canvasBytesEstimate": 0,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "-",
+        "-",
+        "-",
+        "—",
+        "40% vault"
+      ]
+    },
+    {
+      "chain": "hype",
+      "view": "board",
+      "light": "neutral",
+      "scenario": "empty",
+      "frames": {
+        "samples": 24,
+        "medianMs": 16.7,
+        "p95Ms": 16.7,
+        "fps": 60.02
+      },
+      "inventory": {
+        "nodes": 345,
+        "svgElements": 177,
+        "svgFilters": 0,
+        "svgGradients": 5,
+        "canvases": 0,
+        "canvasPixels": 0,
+        "canvasBytesEstimate": 0,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "-",
+        "-",
+        "-",
+        "—",
+        "40% vault"
+      ]
+    },
+    {
+      "chain": "hype",
+      "view": "wall",
+      "light": "accent",
+      "scenario": "empty",
+      "frames": {
+        "samples": 23,
+        "medianMs": 16.7,
+        "p95Ms": 16.8,
+        "fps": 60.01
+      },
+      "inventory": {
+        "nodes": 342,
+        "svgElements": 177,
+        "svgFilters": 0,
+        "svgGradients": 5,
+        "canvases": 0,
+        "canvasPixels": 0,
+        "canvasBytesEstimate": 0,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "-",
+        "-",
+        "-",
+        "—",
+        "40% vault"
+      ]
+    },
+    {
+      "chain": "hype",
+      "view": "wall",
+      "light": "neutral",
+      "scenario": "empty",
+      "frames": {
+        "samples": 25,
+        "medianMs": 16.7,
+        "p95Ms": 16.8,
+        "fps": 60.01
+      },
+      "inventory": {
+        "nodes": 342,
+        "svgElements": 177,
+        "svgFilters": 0,
+        "svgGradients": 5,
+        "canvases": 0,
+        "canvasPixels": 0,
+        "canvasBytesEstimate": 0,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "-",
+        "-",
+        "-",
+        "—",
+        "40% vault"
+      ]
+    }
+  ],
+  "readingDrift": []
+}

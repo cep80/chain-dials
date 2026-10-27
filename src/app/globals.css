@@ -566,3 +566,100 @@ html[data-motion="reduce"] .dial-canvas * { animation: none !important; }
   transform-origin: center;
   animation: constellation-twinkle 3s ease-in-out infinite;
 }
+
+/* ── Instrument review harness (/review/instruments) ─────────────────────
+ * Development-only switches. Neutral light strips the chain accent and the
+ * ambient glows so defects the warm accent hides become visible. Bare art
+ * hides the frame glass so each dial has to read on its own.
+ */
+html[data-review-light="neutral"] {
+  --accent: #9aa3ad;
+  --accent-dim: #6b7480;
+}
+html[data-review-light="neutral"] body::before,
+html[data-review-light="neutral"] body::after {
+  display: none;
+}
+html[data-review-light="neutral"] .instrument-frame-kicker,
+html[data-review-light="neutral"] .instrument-frame-reading,
+html[data-review-light="neutral"] .instrument-stage-reading,
+html[data-review-light="neutral"] .wall-theater-title {
+  text-shadow: none;
+}
+html[data-review-light="neutral"] .instrument-live-glow {
+  filter: none;
+}
+html[data-review-chrome="off"] .instrument-frame-header,
+html[data-review-chrome="off"] .instrument-stage-well,
+html[data-review-chrome="off"] .instrument-calibration,
+html[data-review-chrome="off"] .instrument-frame-sheen,
+html[data-review-chrome="off"] .instrument-frame-vignette {
+  display: none;
+}
+html[data-review-chrome="off"] .instrument-frame,
+html[data-review-chrome="off"] .instrument-frame-body {
+  background: var(--ink);
+  box-shadow: none;
+  border-color: var(--line);
+}
+.review-harness {
+  position: relative;
+  min-height: 100vh;
+  background: var(--ink);
+}
+.review-controls {
+  /* Not sticky: a sticky bar composites over the top of element captures. */
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem .9rem;
+  padding: .55rem .85rem;
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in oklab, var(--ink-elevated) 92%, transparent);
+  font: 11px var(--font-mono);
+  color: var(--paper-muted);
+}
+.review-controls fieldset {
+  display: flex;
+  align-items: center;
+  gap: .25rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.review-controls legend {
+  float: left;
+  padding: 0 .35rem 0 0;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  font-size: 9px;
+}
+.review-controls button {
+  min-height: 28px;
+  padding: 0 .55rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--paper-muted);
+}
+.review-controls button[aria-pressed="true"] {
+  border-color: var(--accent);
+  color: var(--paper);
+}
+.review-controls button:disabled {
+  opacity: .5;
+  cursor: default;
+}
+.review-target {
+  padding: 1rem;
+}
+.review-report {
+  max-height: 14rem;
+  overflow: auto;
+  margin: 0;
+  padding: .75rem 1rem;
+  border-top: 1px solid var(--line);
+  background: var(--ink-elevated);
+  font: 10px/1.5 var(--font-mono);
+  color: var(--paper-muted);
+  white-space: pre-wrap;
+}

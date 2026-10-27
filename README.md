@@ -33,6 +33,12 @@ Open [http://localhost:3000](http://localhost:3000).
 - Store checklist + signing: [docs/LAUNCH.md](docs/LAUNCH.md)
 - Listing / Data Safety / App Privacy copy: [docs/store/](docs/store/)
 
+## Instrument graphics
+
+- Art direction (palette, light rig, shape rules, acceptance views): [docs/instruments/art-direction.md](docs/instruments/art-direction.md)
+- Playbook mapping and what was built: [docs/instruments/graphics-playbook.md](docs/instruments/graphics-playbook.md)
+- Review harness: `/review/instruments` (noindex, fixture data). Reference captures and the latest review in [docs/instruments/](docs/instruments/).
+
 Privacy: `/privacy` · Terms: `/terms` · Settings: `/settings`
 
 ## Configure

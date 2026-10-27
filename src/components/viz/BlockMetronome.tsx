@@ -6,8 +6,10 @@ import { useEffect, useId, useState } from "react";
 import { useChainOptional } from "@/lib/chains/context";
 import { feedCatchupLabel, isFeedCatchingUp } from "@/lib/feed-status";
 import { formatDuration } from "@/lib/format";
+import { allowSoftFilters, keyLight } from "@/lib/dial-light";
 import { useAppReducedMotion } from "@/lib/settings/use-app-reduced-motion";
 import { useDashboardStore } from "@/lib/store";
+import { useQualityTier } from "@/lib/use-quality-tier";
 import {
   instrumentCanvasSize,
   materialGlowOpacity,
@@ -70,6 +72,10 @@ export function BlockMetronome({
   const uid = useId().replace(/:/g, "");
   const mode = resolveDisplayMode({ compact, large, stage });
   const size = instrumentCanvasSize(mode, 140);
+  const tier = useQualityTier();
+  // Soft blur is a per-frame GPU pass on a hand that moves every 250ms; mobile skips it.
+  const soft = allowSoftFilters(tier) ? `url(#${uid}-soft)` : undefined;
+  const light = keyLight();
   const catchingUp = isFeedCatchingUp(connection);
   const catchupNote = feedCatchupLabel(connection);
 
@@ -144,9 +150,9 @@ export function BlockMetronome({
       role="img"
       aria-label={aria}
     >
-      <svg viewBox={`0 0 ${VB} ${VB}`} className="h-full w-full" aria-hidden>
+      <svg viewBox={`0 0 ${VB} ${VB}`} className="h-full w-full" aria-hidden data-tier={tier}>
         <defs>
-          <radialGradient id={faceGrad} cx="42%" cy="38%" r="62%">
+          <radialGradient id={faceGrad} cx={light.cx} cy={light.cy} r="62%">
             <stop offset="0%" stopColor="var(--ink-soft)" stopOpacity="1" />
             <stop offset="55%" stopColor="var(--ink)" stopOpacity="1" />
             <stop offset="100%" stopColor="var(--ink)" stopOpacity="1" />
@@ -156,18 +162,20 @@ export function BlockMetronome({
             <stop offset="70%" stopColor={TONE_STROKE[tone]} stopOpacity={glow * 0.25} />
             <stop offset="100%" stopColor={TONE_STROKE[tone]} stopOpacity="0" />
           </radialGradient>
-          <radialGradient id={hubGrad} cx="40%" cy="35%" r="65%">
+          <radialGradient id={hubGrad} cx={light.cx} cy={light.cy} r="65%">
             <stop offset="0%" stopColor="var(--paper)" stopOpacity="0.95" />
             <stop offset="45%" stopColor={TONE_STROKE[tone]} stopOpacity="1" />
             <stop offset="100%" stopColor="var(--accent-dim)" stopOpacity="0.9" />
           </radialGradient>
-          <filter id={`${uid}-soft`} x="-40%" y="-40%" width="180%" height="180%">
-            <feGaussianBlur stdDeviation="2.2" result="b" />
-            <feMerge>
-              <feMergeNode in="b" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
+          {soft && (
+            <filter id={`${uid}-soft`} x="-40%" y="-40%" width="180%" height="180%">
+              <feGaussianBlur stdDeviation="2.2" result="b" />
+              <feMerge>
+                <feMergeNode in="b" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          )}
         </defs>
 
         {/* Outer ambient bloom */}
@@ -226,7 +234,7 @@ export function BlockMetronome({
           strokeDasharray={`${arcLen} ${circ}`}
           transform={`rotate(-90 ${CX} ${CY})`}
           opacity={0.25}
-          filter={`url(#${uid}-soft)`}
+          filter={soft}
         />
         <circle
           cx={CX}
@@ -322,7 +330,7 @@ export function BlockMetronome({
             cy={CY - (R - 12)}
             r={stage ? 3.2 : 2.6}
             fill={TONE_STROKE[tone]}
-            filter={`url(#${uid}-soft)`}
+            filter={soft}
           />
         </g>
 

@@ -3,9 +3,11 @@
 import { motion } from "framer-motion";
 import { useId } from "react";
 import { useChainOptional } from "@/lib/chains/context";
+import { allowSoftFilters, LIGHT_RIG } from "@/lib/dial-light";
 import { formatHashrate, formatPercent, formatPlainPercent } from "@/lib/format";
 import { useAppReducedMotion } from "@/lib/settings/use-app-reduced-motion";
 import { useDashboardStore } from "@/lib/store";
+import { useQualityTier } from "@/lib/use-quality-tier";
 import {
   forgeCoreRadius,
   instrumentCanvasSize,
@@ -50,6 +52,9 @@ export function HashrateForge({
   const uid = useId().replace(/:/g, "");
   const mode = resolveDisplayMode({ compact, large, stage });
   const size = instrumentCanvasSize(mode, 140);
+  const tier = useQualityTier();
+  // The core and slag are emissive and keep their own light; only the bloom pass is tiered.
+  const bloom = allowSoftFilters(tier) ? `url(#${uid}-bloom)` : undefined;
   const coreGrad = `forge-core-${uid}`;
   const heatGrad = `forge-heat-${uid}`;
   const rimGrad = `forge-rim-${uid}`;
@@ -125,7 +130,7 @@ export function HashrateForge({
       role="img"
       aria-label={aria}
     >
-      <svg viewBox={`0 0 ${VB} ${VB}`} className="h-full w-full" aria-hidden>
+      <svg viewBox={`0 0 ${VB} ${VB}`} className="h-full w-full" aria-hidden data-tier={tier}>
         <defs>
           <radialGradient id={coreGrad} cx="50%" cy="60%" r="50%">
             <stop
@@ -148,7 +153,7 @@ export function HashrateForge({
             />
             <stop offset="100%" stopColor="var(--ink)" stopOpacity="0" />
           </radialGradient>
-          <linearGradient id={rimGrad} x1="0%" y1="0%" x2="100%" y2="100%">
+          <linearGradient id={rimGrad} x1={LIGHT_RIG.rim.x1} y1={LIGHT_RIG.rim.y1} x2={LIGHT_RIG.rim.x2} y2={LIGHT_RIG.rim.y2}>
             <stop offset="0%" stopColor="var(--paper)" stopOpacity="0.22" />
             <stop offset="50%" stopColor="var(--line-strong)" stopOpacity="0.95" />
             <stop offset="100%" stopColor="var(--accent)" stopOpacity="0.3" />
@@ -165,13 +170,15 @@ export function HashrateForge({
               stopOpacity={0.55 + intensity * 0.3}
             />
           </linearGradient>
-          <filter id={`${uid}-bloom`} x="-40%" y="-40%" width="180%" height="180%">
-            <feGaussianBlur stdDeviation={stage ? 2.6 : 1.8} result="b" />
-            <feMerge>
-              <feMergeNode in="b" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
+          {bloom && (
+            <filter id={`${uid}-bloom`} x="-40%" y="-40%" width="180%" height="180%">
+              <feGaussianBlur stdDeviation={stage ? 2.6 : 1.8} result="b" />
+              <feMerge>
+                <feMergeNode in="b" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          )}
         </defs>
 
         <circle
@@ -203,7 +210,7 @@ export function HashrateForge({
           strokeDasharray={`${orbitDash} ${2 * Math.PI * ORBIT_R}`}
           transform={`rotate(-90 ${CX} ${CY})`}
           opacity={0.3}
-          filter={`url(#${uid}-bloom)`}
+          filter={bloom}
         />
         <circle
           cx={CX}
@@ -223,7 +230,7 @@ export function HashrateForge({
           cy={markerY}
           r={stage ? 5 : 4}
           fill={markerTone}
-          filter={`url(#${uid}-bloom)`}
+          filter={bloom}
           initial={false}
           animate={{ cx: markerX, cy: markerY }}
           transition={{ type: "spring", stiffness: 40, damping: 18 }}
@@ -272,14 +279,14 @@ export function HashrateForge({
           ry={slagH * 0.35}
           fill={`url(#${slagGrad})`}
           opacity={0.85}
-          filter={`url(#${uid}-bloom)`}
+          filter={bloom}
         />
 
         <motion.circle
           cx={CX}
           cy={CY + 6}
           fill="var(--accent)"
-          filter={`url(#${uid}-bloom)`}
+          filter={bloom}
           initial={false}
           animate={
             reduce

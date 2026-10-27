@@ -341,6 +341,8 @@ export function MempoolAtmosphere({
   const sampleCountRef = useRef(0);
   const histKeyRef = useRef("");
   const stageRef = useRef(stage);
+  /** Reduced motion paints once; data that arrives later must repaint through this. */
+  const redrawStaticRef = useRef<(() => void) | null>(null);
 
   const count = useDashboardStore((s) => s.live.mempoolCount);
   const pressure = useDashboardStore((s) => s.live.mempoolVsize);
@@ -496,13 +498,36 @@ export function MempoolAtmosphere({
       return;
     }
 
-    const fog = createAtmosphereFog(glCanvas);
-    fogRef.current = fog;
-    fogOkRef.current = !!fog;
-    setFogReady(!!fog);
-    fog?.resize();
+    const attach = () => {
+      const fog = createAtmosphereFog(glCanvas);
+      fogRef.current = fog;
+      fogOkRef.current = !!fog;
+      setFogReady(!!fog);
+      fog?.resize();
+      return fog;
+    };
+    let fog = attach();
     timeOriginRef.current = performance.now();
+
+    // Browser-driven context loss: preventDefault() asks for a restore event.
+    // Until it arrives the 2D loop paints the fallback sky, then fog re-attaches
+    // on the same canvas. The fog rig is created once per canvas, never per frame.
+    const onLost = (event: Event) => {
+      event.preventDefault();
+      fog?.destroy();
+      fog = null;
+      fogRef.current = null;
+      fogOkRef.current = false;
+      setFogReady(false);
+    };
+    const onRestored = () => {
+      fog = attach();
+    };
+    glCanvas.addEventListener("webglcontextlost", onLost);
+    glCanvas.addEventListener("webglcontextrestored", onRestored);
     return () => {
+      glCanvas.removeEventListener("webglcontextlost", onLost);
+      glCanvas.removeEventListener("webglcontextrestored", onRestored);
       fog?.destroy();
       if (fogRef.current === fog) {
         fogRef.current = null;
@@ -976,6 +1001,7 @@ export function MempoolAtmosphere({
       drawChrome(w, h);
     };
 
+    redrawStaticRef.current = drawStatic;
     if (reduce) {
       drawStatic();
     } else {
@@ -983,6 +1009,7 @@ export function MempoolAtmosphere({
     }
 
     return () => {
+      redrawStaticRef.current = null;
       cancelAnimationFrame(raf);
       ro.disconnect();
       document.removeEventListener("visibilitychange", onVis);
@@ -992,6 +1019,14 @@ export function MempoolAtmosphere({
   useEffect(() => {
     visibleRef.current = visible && !pausedByStage;
   }, [visible, pausedByStage]);
+
+  // Reduced motion has no frame loop, so repaint when the readings behind the
+  // picture change. Found on the review harness: the sky stayed black when the
+  // first histogram landed after mount.
+  useEffect(() => {
+    if (!reduce) return;
+    redrawStaticRef.current?.();
+  }, [reduce, feeHistogram, recentTxs, feeFastest, feeHalfHour, feeHour, feeEconomy, intensity, selectedId]);
 
   const hitTest = useCallback(
     (clientX: number, clientY: number): Particle | null => {
@@ -1081,6 +1116,7 @@ export function MempoolAtmosphere({
       }`}
       role="img"
       aria-label={aria}
+      data-fog={fogReady ? "ready" : "off"}
       onClick={onClick}
       onPointerMove={onPointerMove}
       onPointerLeave={onPointerLeave}
@@ -1089,6 +1125,7 @@ export function MempoolAtmosphere({
         <canvas
           key={glKey}
           ref={glCanvasRef}
+          data-atmosphere-fog
           className={`pointer-events-none absolute inset-0 h-full w-full ${
             fogReady ? "opacity-100" : "opacity-0"
           }`}
