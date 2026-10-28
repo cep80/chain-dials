@@ -126,7 +126,7 @@ function hype(now: number): Partial<LiveSnapshot> {
     feeFastest: 0.1, feeHalfHour: 0.1, feeHour: 0.1, feeEconomy: 0.1,
     baseFeeSeries: series(24, 0.8, 1.4, 31), prioritySeries: series(24, 0.4, 0.3, 37),
     mempoolCount: 1_180, mempoolPressure: 40, retargetProgress: 55, retargetBlocks: 44,
-    securityScore: 0.62, forgeLabel: "OI $4.2B", issuanceProgress: 48, supplyProgress: 34, inflationRate: 5.3,
+    securityScore: 0.35, forgeLabel: "$4.2B OI · $5.3B/24h", issuanceProgress: 48, supplyProgress: 34, inflationRate: 5.3,
     feedSource: "Review fixture", lastRestAt: now - 2_000, lastWsAt: null,
   };
 }

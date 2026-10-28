@@ -35,11 +35,13 @@ import {
 import { useChainOptional } from "@/lib/chains/context";
 import { feedCatchupLabel } from "@/lib/feed-status";
 import { ShareBar } from "@/components/share/ShareBar";
-import { useDashboardStore } from "@/lib/store";
+import { getMetricNumeric, useDashboardStore } from "@/lib/store";
 import {
   formatDuration,
   formatFee,
   formatHash,
+  formatHashrate,
+  formatInteger,
   formatPlainPercent,
 } from "@/lib/format";
 
@@ -293,7 +295,7 @@ export function InstrumentStage() {
         return `${sign}${f.toFixed(2)} bps`;
       }
       return live.mempoolCount != null
-        ? String(live.mempoolCount)
+        ? formatInteger(live.mempoolCount)
         : formatFee(live.feeFastest, "sat/vB");
     }
     if (active === "sigil") return formatHash(live.tipHash);
@@ -313,8 +315,9 @@ export function InstrumentStage() {
           ? `$${live.inflationRate.toFixed(1)}B`
           : formatPlainPercent(live.issuanceProgress, 0);
       }
-      return formatPlainPercent(live.issuanceProgress, 1);
+      return formatPlainPercent(getMetricNumeric(live, now, "halving_progress"), 1);
     }
+    if (active === "forge" && chain.id === "btc") return formatHashrate(live.hashrate);
     if (active === "forge")
       return (
         live.forgeLabel ??

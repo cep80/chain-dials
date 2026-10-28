@@ -1,144 +1,47 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { useAppReducedMotion } from "@/lib/settings/use-app-reduced-motion";
-import { useMemo } from "react";
+import { DialStageReadout, type DialProps } from "@/components/viz/DialPrimitives";
+import { FountainDial } from "@/components/viz/FountainDial";
 import { InstrumentFrame } from "@/components/viz/InstrumentFrame";
 import { formatInteger, formatPlainPercent } from "@/lib/format";
 import { useDashboardStore } from "@/lib/store";
 
-export function InflationFountain({
-  large = false,
-  compact = false,
-  stage = false,
-}: {
-  large?: boolean;
-  compact?: boolean;
-  stage?: boolean;
-}) {
-  const progress = useDashboardStore((s) => s.live.issuanceProgress) ?? 40;
+/** Inflation spray on a printed 0–8 % scale (extends in 2 % steps if inflation ever exceeds it). */
+export function InflationFountain({ large = false, compact = false, stage = false }: DialProps) {
+  const epoch = useDashboardStore((s) => s.live.issuanceProgress);
   const inflation = useDashboardStore((s) => s.live.inflationRate);
   const left = useDashboardStore((s) => s.live.retargetBlocks);
-  const label = useDashboardStore((s) => s.live.forgeLabel);
-  const boardPulse = useDashboardStore((s) => s.boardPulse);
-  const reduce = useAppReducedMotion();
 
-  const level = Math.max(0.15, Math.min(0.9, progress / 100));
-  // Spray density from inflation rate (~5-8% typical → mid spray)
-  const spray =
-    inflation != null
-      ? Math.max(0.35, Math.min(1.4, inflation / 6))
-      : 0.85;
-  const dropCount = Math.round((compact ? 5 : stage ? 14 : 9) * spray);
+  const epochKnown = epoch != null && Number.isFinite(epoch);
+  const inflKnown = inflation != null && Number.isFinite(inflation) && inflation >= 0;
+  const max = inflKnown ? Math.max(8, Math.ceil(inflation / 2) * 2) : 8;
+  const ticks = [0, .25, .5, .75, 1].map((at) => ({ at, label: `${+(max * at).toFixed(1)}%` }));
 
-  const drops = useMemo(
-    () =>
-      Array.from({ length: dropCount }, (_, i) => ({
-        x: 42 + (i % 5) * 4,
-        delay: (i % 7) * 0.18,
-        speed: 0.75 + (i % 4) * 0.2 * spray,
-      })),
-    [dropCount, spray],
-  );
+  const reading = inflKnown ? `${inflation.toFixed(1)}%` : epochKnown ? `Epoch ${formatPlainPercent(epoch, 0)}` : "Awaiting inflation";
+  const detail = [
+    epochKnown ? `Basin: epoch ${formatPlainPercent(epoch, 1)} complete` : "Epoch unavailable",
+    left != null ? `${formatInteger(left)} slots left` : null,
+    "Jet height: annual inflation",
+  ].filter(Boolean).join(" · ");
 
-  const h = stage ? 400 : large ? 230 : compact ? 100 : 200;
-  const w = stage ? 240 : large ? 144 : compact ? 64 : 125;
+  const art = <FountainDial
+    {...{ large, compact, stage }}
+    label={`Inflation fountain. ${inflKnown ? `Inflation ${inflation.toFixed(1)} percent a year.` : "Inflation unavailable."} ${epochKnown ? `Epoch ${epoch.toFixed(0)} percent complete.` : "Epoch unavailable."}`}
+    level={epochKnown ? epoch / 100 : null}
+    levelTitle="EPOCH %"
+    spray={inflKnown ? inflation / max : null}
+    sprayTitle="INFLATION / YR"
+    sprayTicks={ticks}
+    sprayValue={inflKnown ? `${inflation.toFixed(1)}%` : undefined}
+  />;
 
-  const reading =
-    inflation != null
-      ? `${inflation.toFixed(1)}%`
-      : formatPlainPercent(progress, 1);
-
-  const fountain = (
-    <div
-      className={`relative overflow-hidden rounded-[12px] border border-line/80 bg-ink shadow-[0_0_36px_color-mix(in_oklab,var(--accent)_10%,transparent)] ${
-        reduce ? "" : "instrument-live-glow"
-      }`}
-      style={{ width: stage ? `min(${w}px, 82vw, ${w / h * 52}svh)` : w, maxWidth: "100%", aspectRatio: w / h, height: "auto" }}
-      role="img"
-      aria-label={`Inflation fountain. Epoch ${progress.toFixed(0)} percent. Inflation ${inflation?.toFixed(1) ?? "unknown"} percent.`}
-    >
-      <svg viewBox="0 0 100 140" className="h-full w-full">
-        <motion.rect
-          x={18}
-          width={64}
-          fill="var(--accent)"
-          opacity={0.35}
-          initial={false}
-          animate={{ y: 140 - level * 70, height: level * 70 }}
-          transition={reduce ? { duration: 0 } : { type: "spring", stiffness: 40, damping: 18 }}
-        />
-        <rect x={46} y={40} width={8} height={50} fill="var(--line-strong)" rx={2} />
-        <ellipse cx={50} cy={40} rx={10} ry={4} fill="var(--accent)" opacity={0.8} />
-        {!reduce &&
-          drops.map((d, i) => (
-            <motion.circle
-              key={i}
-              cx={d.x}
-              r={1.2 + spray * 0.4}
-              fill="var(--accent)"
-              animate={{
-                cy: [42, 42 + 55 + (i % 3) * 6],
-                opacity: [0, 0.9, 0],
-              }}
-              transition={{
-                duration: 1.2 / d.speed,
-                repeat: Infinity,
-                delay: d.delay,
-                ease: "easeIn",
-              }}
-            />
-          ))}
-        {!reduce && boardPulse > 0 && (
-          <motion.circle
-            key={boardPulse}
-            cx={50}
-            cy={100}
-            r={8}
-            fill="none"
-            stroke="var(--accent)"
-            initial={{ r: 8, opacity: 0.8 }}
-            animate={{ r: 36, opacity: 0 }}
-            transition={{ duration: 0.9 }}
-          />
-        )}
-      </svg>
-    </div>
-  );
-
-  if (compact) return fountain;
-  if (stage) {
-    return (
-      <div className="flex flex-col items-center gap-6">
-        {fountain}
-        <p className="instrument-stage-reading mono text-5xl font-medium text-paper md:text-7xl">
-          {formatPlainPercent(progress, 1)}
-        </p>
-        <p className="text-xs uppercase tracking-[0.2em] text-paper-muted">
-          through epoch
-          {inflation != null ? ` · ${inflation.toFixed(1)}% inflation spray` : ""}
-          {left != null ? ` · ${formatInteger(left)} slots left` : ""}
-        </p>
-        {label ? (
-          <p className="max-w-sm text-center text-[11px] text-paper-muted">{label}</p>
-        ) : null}
-      </div>
-    );
-  }
-
-  return (
-    <InstrumentFrame
-      title="Fountain"
-      subtitle={
-        inflation != null
-          ? `Epoch water · spray from ${inflation.toFixed(1)}% inflation`
-          : "Epoch water · spray = inflation"
-      }
-      reading={reading}
-      large={large}
-      instrumentId="issuance"
-    >
-      {fountain}
-    </InstrumentFrame>
-  );
+  if (compact) return art;
+  if (stage) return <DialStageReadout reading={reading} detail={detail}>{art}</DialStageReadout>;
+  return <InstrumentFrame
+    title="Fountain"
+    subtitle={epochKnown ? `Basin = epoch ${formatPlainPercent(epoch, 0)} · jet = inflation` : "Basin = epoch · jet = inflation"}
+    reading={reading}
+    large={large}
+    instrumentId="issuance"
+  >{art}</InstrumentFrame>;
 }

@@ -30,6 +30,6 @@ describe("review fixtures", () => {
     expect(reviewFixture("btc", "nominal", now).live.hashrate).toBeGreaterThan(0);
     expect(reviewFixture("eth", "nominal", now).live.baseFeeSeries).toHaveLength(24);
     expect(reviewFixture("sol", "nominal", now).live.inflationRate).toBe(4.6);
-    expect(reviewFixture("hype", "nominal", now).live.forgeLabel).toBe("OI $4.2B");
+    expect(reviewFixture("hype", "nominal", now).live.forgeLabel).toBe("$4.2B OI · $5.3B/24h");
   });
 });

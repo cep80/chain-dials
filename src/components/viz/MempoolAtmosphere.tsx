@@ -665,7 +665,7 @@ export function MempoolAtmosphere({
     };
 
     const drawIsobars = (w: number, h: number, fees: FeeLadder) => {
-      if (!stageRef.current) return;
+      const stageOn = stageRef.current;
       const unit = feeUnitRef.current;
       const marks: { rate: number | null; label: string; rgb: readonly [number, number, number] }[] = [
         { rate: fees.fastest, label: "next block", rgb: BAND_COLORS[3]! },
@@ -673,11 +673,11 @@ export function MempoolAtmosphere({
         { rate: fees.hour, label: "~1h", rgb: BAND_COLORS[1]! },
         { rate: fees.economy, label: "economy", rgb: BAND_COLORS[0]! },
       ];
-      ctx.font = "10px var(--font-mono), ui-monospace, monospace";
+      ctx.font = `${stageOn ? 11 : 9}px var(--font-mono), ui-monospace, monospace`;
       for (const m of marks) {
         if (m.rate == null || !(m.rate > 0)) continue;
         const y = altitudeY(m.rate, h, fees);
-        ctx.strokeStyle = rgba(m.rgb, 0.16);
+        ctx.strokeStyle = rgba(m.rgb, 0.28);
         ctx.lineWidth = 1;
         ctx.setLineDash([3, 7]);
         ctx.beginPath();
@@ -687,9 +687,9 @@ export function MempoolAtmosphere({
         ctx.setLineDash([]);
         const tag = `${formatFee(m.rate, unit)} · ${m.label}`;
         const tw = ctx.measureText(tag).width;
-        ctx.fillStyle = "rgba(10,12,16,0.45)";
+        ctx.fillStyle = "rgba(8,10,14,0.72)";
         ctx.fillRect(w - tw - 16, y - 8, tw + 10, 14);
-        ctx.fillStyle = rgba(m.rgb, 0.7);
+        ctx.fillStyle = rgba(m.rgb, 0.95);
         ctx.fillText(tag, w - tw - 11, y + 3);
       }
     };
@@ -776,17 +776,17 @@ export function MempoolAtmosphere({
 
     const drawChrome = (w: number, h: number) => {
       if (stageRef.current) {
-        ctx.fillStyle = "rgba(247,147,26,0.7)";
-        ctx.font = "10px var(--font-mono), ui-monospace, monospace";
+        ctx.fillStyle = "rgba(247,147,26,0.9)";
+        ctx.font = "11px var(--font-mono), ui-monospace, monospace";
         ctx.fillText("HIGH FEE", 10, 16);
-        ctx.fillStyle = "rgba(168,161,149,0.65)";
+        ctx.fillStyle = "rgba(200,194,182,0.8)";
         ctx.fillText("LOW FEE", 10, h - 10);
       } else {
-        ctx.fillStyle = "rgba(247,147,26,0.55)";
+        ctx.fillStyle = "rgba(247,147,26,0.85)";
         ctx.font = "9px var(--font-mono), ui-monospace, monospace";
-        ctx.fillText("high fee ↑", 8, 14);
-        ctx.fillStyle = "rgba(168,161,149,0.6)";
-        ctx.fillText("low fee ↓", 8, h - 8);
+        ctx.fillText("HIGH FEE ↑", 8, 14);
+        ctx.fillStyle = "rgba(200,194,182,0.8)";
+        ctx.fillText("LOW FEE ↓", 8, h - 8);
       }
 
       // Vignette for TV depth
@@ -836,7 +836,6 @@ export function MempoolAtmosphere({
         drawSky(w, h, intensityNow);
         drawVolumetricMist(w, h, fees, intensityNow, clearBreathRef.current);
       }
-      drawIsobars(w, h, fees);
 
       const selected = selectedRef.current;
       const hover = hoverRef.current;
@@ -921,6 +920,9 @@ export function MempoolAtmosphere({
         }
       }
 
+      // Fee tags sit above the samples so a crowded band never hides its scale.
+      drawIsobars(w, h, fees);
+
       // Congestion frame when > ~1 block of vsize waiting
       const pressureNow = pressurePctRef.current;
       if (pressureNow != null && pressureNow > 100) {
@@ -988,16 +990,22 @@ export function MempoolAtmosphere({
         drawSky(w, h, intensityRef.current);
         drawVolumetricMist(w, h, fees, intensityRef.current, 0);
       }
-      drawIsobars(w, h, fees);
       for (const m of densityRef.current) {
         ctx.beginPath();
         ctx.fillStyle = rgba(BAND_COLORS[m.band]!, m.alpha);
         ctx.arc(m.x, m.y, m.r, 0, Math.PI * 2);
         ctx.fill();
       }
-      for (const p of particlesRef.current) {
+      // No frame loop to fade samples in: settle each one at its fee altitude,
+      // spread across the width by a fixed sequence so the still frame is stable.
+      particlesRef.current.forEach((p, i) => {
+        if (p.dying) return;
+        p.alpha = 1;
+        p.x = (((i * 0.618034) % 1) * 0.88 + 0.06) * w;
+        p.y = clamp(altitudeY(p.feeRate, h, fees), 4, h - 4);
         drawParticle(p, p.txid === selectedRef.current, false);
-      }
+      });
+      drawIsobars(w, h, fees);
       drawChrome(w, h);
     };
 

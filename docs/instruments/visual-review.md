@@ -1,3 +1,37 @@
+# Instrument visual review, 28 Oct 2026: art pass
+
+Second pass, following the "next pass" plan below. Judged on the harness at
+1440 board, 1920 stage, neutral light, no data and 390 mobile. Tests passed
+throughout; the findings here are a person's call from the captures.
+
+## What changed
+
+| Instrument | Before | Now |
+| --- | --- | --- |
+| SOL Inflation Fountain, HYPE Volume Fountain | Grey box with a stick; invented `40%` when empty | Shared `FountainDial`: glass tank whose water is the basin reading, lit jet whose apex is the spray reading, both scales printed |
+| SOL Stake Reef | Green strokes in a box; `?? 0.4` fallback | Coral colonies in a bezel porthole, height follows vote stake, dashed 400M SOL line, epoch orbit |
+| HYPE OI Vault | Random bars; `?? 0.4` fallback | Vault door with a window holding one bar per $1B of open interest; outer arc is gas |
+| HYPE Funding Tide | Synthetic sine when data missing, no scale | Signed chart around a printed zero line, bps scale, median, longs-pay above, shorts-pay below |
+| SOL Priority Jets | Bars on a linear scale, no axis | Flame jets on a logarithmic µLamports/CU scale with p50 and p90 lines |
+| HYPE Hash Tape | 28 of 64 digits on a scrolling strip, clipped | All 64 digits punched as 4-bit columns on two strips of paper tape |
+| SOL Leader Ribbon | Monospace text in a box | Ring ribbon whose width at each of 64 points follows the hash digit |
+| BTC Block Metronome | Progress ring and hand showing the same number | One hand, minute numerals, overdue laps as bezel studs, tone-tinted face |
+| BTC Block Sigil | Thin strokes on a flat disc | Engraved sigil on a bezel plate; outer ring carries all 64 digits |
+| BTC Issuance Hourglass | Flat triangles, small in a wide cell; `?? 0` | Wide composition: curved bulbs on a frame, epoch scale, 21M issued tube |
+| BTC Hashrate Forge | Glow blob on an orbit; `0.35` fallback | Crucible under a segmented heat scale, epoch orbit tinted by the retarget |
+| BTC Mempool Atmosphere | Samples invisible in still motion; fee labels stage-only | Samples settle at fee altitude in still motion; sat/vB isobars on the board |
+| Shared `DialBezel` | Face transparent at the key light: dark blot on every dial | Opaque base under the lit gradient |
+| Stage header | `-` for BTC Issuance and Forge; mempool count without commas | Halving progress, hashrate, formatted count |
+
+Findings 1 to 6 below are resolved. Finding 7 (Block Mosaic keeps a blue hue in
+neutral light) stays as is: it is variation inside a material and allowed.
+
+## Still open
+
+- Mempool Atmosphere is the one instrument without a chamber frame; on the
+  board, samples above the fastest fee crowd the top edge.
+- Live motion has not been reviewed on a TV. Captures are still frames.
+
 # Instrument visual review, 27 Oct 2026
 
 Reviewed on `/review/instruments` from the reference captures in

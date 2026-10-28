@@ -14,7 +14,7 @@ harness counts.
 | 2 Review harness | `/review/instruments` | built |
 | 3 Lighting, shadows, fog | one light rig, quality tiers, fog context-loss | done |
 | 4 Ground and surfaces | frame glass, stage well, calibration marks | existing, documented |
-| 5 Vegetation | the instrument art itself, shape rules per family | rules written, art unchanged |
+| 5 Vegetation | the instrument art itself, shape rules per family | redrawn: see visual-review.md, 28 Oct |
 | 6 Asset pipeline | `docs/instruments/ATTRIBUTION.md` | recorded |
 | 7 Performance and robustness | frame metrics, resource inventory, context loss | done |
 | 8 Review in motion | harness spec and `docs/instruments/visual-review.md` | run |

@@ -1,178 +1,114 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { useId, useMemo } from "react";
-import { useAppReducedMotion } from "@/lib/settings/use-app-reduced-motion";
+import { DialCanvas, DialStageReadout, type DialProps } from "@/components/viz/DialPrimitives";
 import { InstrumentFrame } from "@/components/viz/InstrumentFrame";
 import { formatInteger, formatPlainPercent } from "@/lib/format";
 import { useDashboardStore } from "@/lib/store";
-import { signedTideHeight } from "@/lib/viz-scale";
+
+const LEFT = 40;
+const RIGHT = 292;
+const MID = 112;
+const AMP = 62;
 
 function formatBps(v: number | null | undefined): string {
-  if (v == null || !Number.isFinite(v)) return "-";
-  const sign = v > 0 ? "+" : "";
-  return `${sign}${v.toFixed(2)} bps`;
+  if (v == null || !Number.isFinite(v)) return "—";
+  return `${v > 0 ? "+" : ""}${v.toFixed(2)} bps`;
 }
 
 function median(values: number[]): number | null {
   if (!values.length) return null;
   const sorted = [...values].sort((a, b) => a - b);
   const middle = Math.floor(sorted.length / 2);
-  return sorted.length % 2 === 0
-    ? (sorted[middle - 1]! + sorted[middle]!) / 2
-    : sorted[middle]!;
+  return sorted.length % 2 === 0 ? (sorted[middle - 1]! + sorted[middle]!) / 2 : sorted[middle]!;
 }
 
-export function FundingTide({
-  large = false,
-  compact = false,
-  stage = false,
-}: {
-  large?: boolean;
-  compact?: boolean;
-  stage?: boolean;
-}) {
-  const fundingSeries = useDashboardStore((s) => s.live.baseFeeSeries);
-  const prioritySeries = useDashboardStore((s) => s.live.prioritySeries);
+/** A tidy step for the printed bps scale. */
+function niceCeil(v: number) {
+  const steps = [0.25, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 8, 10, 15, 20, 30, 40, 50, 100];
+  return steps.find((s) => s >= v) ?? Math.ceil(v / 100) * 100;
+}
+
+/**
+ * Signed funding around a printed zero line: above zero longs pay shorts,
+ * below zero shorts pay longs. Both halves share one scale.
+ */
+export function FundingTide({ large = false, compact = false, stage = false }: DialProps) {
+  // The HYPE adapter carries the funding series, in bps, on baseFeeSeries.
+  const raw = useDashboardStore((s) => s.live.baseFeeSeries);
   const pressure = useDashboardStore((s) => s.live.mempoolPressure);
   const count = useDashboardStore((s) => s.live.mempoolCount);
-  const reduce = useAppReducedMotion();
   const uid = useId().replace(/:/g, "");
 
-  const latestFunding =
-    fundingSeries.length > 0 ? fundingSeries[fundingSeries.length - 1]! : null;
-  const medianFunding = median(fundingSeries);
+  const series = useMemo(() => raw.filter((v) => Number.isFinite(v)), [raw]);
+  const latest = series.at(-1) ?? null;
+  const med = median(series);
+  const cap = niceCeil(Math.max(0.25, ...series.map((v) => Math.abs(v))) * 1.1);
+  const y = (v: number) => MID - Math.max(-1, Math.min(1, v / cap)) * AMP;
+  const x = (i: number) => LEFT + (series.length > 1 ? i / (series.length - 1) : 0.5) * (RIGHT - LEFT);
 
-  const absCap = Math.max(
-    ...fundingSeries.map((v) => Math.abs(v)),
-    0.5,
-  );
-  const tideAnchor = latestFunding ?? medianFunding;
-  const tide = signedTideHeight(tideAnchor, absCap);
+  const { line, area } = useMemo(() => {
+    if (series.length < 2) return { line: "", area: "" };
+    const pts = series.map((v, i) => `${x(i).toFixed(2)},${y(v).toFixed(2)}`);
+    const l = `M${pts.join(" L")}`;
+    return { line: l, area: `${l} L${x(series.length - 1)},${MID} L${x(0)},${MID}Z` };
+    // x and y are pure functions of series and cap.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [series, cap]);
 
-  const wave = useMemo(() => {
-    const series =
-      fundingSeries.length >= 3
-        ? fundingSeries
-        : Array.from({ length: 12 }, (_, i) => Math.sin(i * 0.7) * 0.4);
-    const max = Math.max(...series.map((v) => Math.abs(v)), 0.3);
-    const pts = series.map((v, i) => ({
-      x: (i / Math.max(1, series.length - 1)) * 100,
-      y: 100 - Math.min(88, ((v + max) / (max * 2)) * 50 + tide * 18),
-    }));
-    const d = pts
-      .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`)
-      .join(" ");
-    return `${d} L 100 100 L 0 100 Z`;
-  }, [fundingSeries, tide]);
+  const reading = latest != null ? formatBps(latest) : "Awaiting funding";
+  const ticks = [1, .5, 0, -.5, -1];
 
-  const foam = useMemo(() => {
-    const tips = prioritySeries.length
-      ? prioritySeries.slice(-(compact ? 6 : 12))
-      : Array.from({ length: 8 }, (_, i) => 0.05 + (i % 3) * 0.02);
-    const max = Math.max(...tips, 0.01);
-    return tips.map((t, i) => ({
-      id: `hype-foam-${i}`,
-      x: 8 + (i / Math.max(1, tips.length - 1)) * 84,
-      y: 100 - tide * 100 - 3 - (t / max) * 12,
-      w: 2.2 + (t / max) * 2,
-    }));
-  }, [prioritySeries, tide, compact]);
+  const art = <DialCanvas {...{ large, compact, stage }} wide label={`Funding tide. Latest ${reading}. Above the zero line longs pay shorts; below it shorts pay longs.`}>
+    <defs>
+      <linearGradient id={`${uid}-chamber`} x1="0" y1="0" x2="1" y2="1"><stop stopColor="#142629" /><stop offset=".6" stopColor="#070d10" /><stop offset="1" stopColor="#122226" /></linearGradient>
+      <linearGradient id={`${uid}-long`} x1="0" y1={MID - AMP} x2="0" y2={MID} gradientUnits="userSpaceOnUse"><stop stopColor="var(--accent)" stopOpacity=".7" /><stop offset="1" stopColor="var(--accent)" stopOpacity=".05" /></linearGradient>
+      <linearGradient id={`${uid}-short`} x1="0" y1={MID} x2="0" y2={MID + AMP} gradientUnits="userSpaceOnUse"><stop stopColor="#ff5c5c" stopOpacity=".05" /><stop offset="1" stopColor="#ff5c5c" stopOpacity=".5" /></linearGradient>
+      <clipPath id={`${uid}-above`}><rect x={LEFT} y={MID - AMP - 4} width={RIGHT - LEFT} height={AMP + 4} /></clipPath>
+      <clipPath id={`${uid}-below`}><rect x={LEFT} y={MID} width={RIGHT - LEFT} height={AMP + 4} /></clipPath>
+    </defs>
+    <path d="M17 18 H303 L314 29 V204 L301 219 H19 L6 206 V29 Z" fill={`url(#${uid}-chamber)`} stroke="#7a8fac" strokeOpacity=".35" strokeWidth=".7" />
+    <path d="M19 22 H301 M10 33 V198 M19 215 H299" fill="none" stroke="#e1ebff" strokeOpacity=".14" strokeWidth=".6" />
+    <text x="25" y="37" className="dial-tiny">FUNDING TIDE</text>
+    <text x="294" y="37" textAnchor="end" className="dial-tiny">BPS / HOUR</text>
 
-  const w = stage ? 640 : large ? 320 : compact ? 120 : 280;
-  const h = stage ? 340 : large ? 192 : compact ? 72 : 168;
-  const reading = formatBps(latestFunding);
+    {ticks.map((t) => <g key={t}>
+      <path d={`M${LEFT} ${y(t * cap)} H${RIGHT}`} stroke={t === 0 ? "#dfe9f7" : "#7890b8"} strokeOpacity={t === 0 ? .45 : .15} strokeWidth={t === 0 ? .7 : .5} strokeDasharray={t === 0 ? undefined : "2 4"} />
+      <text x={LEFT - 4} y={y(t * cap) + 2} textAnchor="end" className="dial-tiny" opacity=".85">{t === 0 ? "0" : `${t > 0 ? "+" : "−"}${+(Math.abs(t) * cap).toFixed(2)}`}</text>
+    </g>)}
+    <text x={RIGHT - 2} y={MID - AMP + 8} textAnchor="end" className="dial-tiny" opacity=".7">LONGS PAY ↑</text>
+    <text x={RIGHT - 2} y={MID + AMP - 3} textAnchor="end" className="dial-tiny" opacity=".7">SHORTS PAY ↓</text>
 
-  const body = (
-    <div
-      className={`relative overflow-hidden rounded-[12px] border border-line/80 bg-ink shadow-[0_0_40px_color-mix(in_oklab,var(--accent)_8%,transparent)] ${
-        reduce ? "" : "instrument-live-glow"
-      }`}
-      style={{ width: stage ? `min(${w}px, 82vw, ${w / h * 52}svh)` : w, maxWidth: "100%", aspectRatio: w / h, height: "auto" }}
-      role="img"
-      aria-label={`Funding tide. ${reading}.`}
-    >
-      <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="h-full w-full">
-        <defs>
-          <linearGradient id={`hypeTideFill-${uid}`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--paper)" stopOpacity="0.22" />
-            <stop offset="20%" stopColor="var(--accent)" stopOpacity="0.68" />
-            <stop offset="100%" stopColor="var(--accent-dim)" stopOpacity="0.16" />
-          </linearGradient>
-          <linearGradient id={`hypeSky-${uid}`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--ink-soft)" stopOpacity="0.95" />
-            <stop offset="100%" stopColor="var(--ink)" stopOpacity="1" />
-          </linearGradient>
-        </defs>
-        <rect width="100" height="100" fill={`url(#hypeSky-${uid})`} />
-        <motion.path
-          d={wave}
-          fill={`url(#hypeTideFill-${uid})`}
-          initial={false}
-          animate={reduce ? undefined : { opacity: [0.88, 1, 0.88] }}
-          transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
-        />
-        {foam.map((f) => (
-          <motion.rect
-            key={f.id}
-            x={f.x - f.w / 2}
-            y={f.y}
-            width={f.w}
-            height={1.25}
-            rx={0.55}
-            fill="var(--paper)"
-            opacity={0.32}
-            animate={
-              reduce
-                ? undefined
-                : { opacity: [0.15, 0.42, 0.15], y: [f.y, f.y - 1.3, f.y] }
-            }
-            transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
-          />
-        ))}
-      </svg>
-      {!compact && (
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 flex justify-between p-2 mono text-[9px] uppercase tracking-wider text-paper-muted">
-          <span>48h funding</span>
-          <span>gas foam</span>
-        </div>
-      )}
-    </div>
-  );
+    {line && <g>
+      <path d={area} fill={`url(#${uid}-long)`} clipPath={`url(#${uid}-above)`} />
+      <path d={area} fill={`url(#${uid}-short)`} clipPath={`url(#${uid}-below)`} />
+      <path d={line} fill="none" stroke="var(--accent)" strokeOpacity=".14" strokeWidth="6" strokeLinejoin="round" />
+      <path d={line} fill="none" stroke="#e8fffa" strokeOpacity=".9" strokeWidth="1.2" strokeLinejoin="round" clipPath={`url(#${uid}-above)`} />
+      <path d={line} fill="none" stroke="#ffb3b3" strokeOpacity=".9" strokeWidth="1.2" strokeLinejoin="round" clipPath={`url(#${uid}-below)`} />
+      {series.map((v, i) => <circle key={i} cx={x(i)} cy={y(v)} r=".9" fill={v >= 0 ? "#e8fffa" : "#ffb3b3"} opacity=".6" />)}
+    </g>}
+    {med != null && series.length > 1 && <g>
+      <path d={`M${LEFT} ${y(med)} H${RIGHT}`} stroke="var(--accent)" strokeOpacity=".45" strokeWidth=".5" strokeDasharray="6 3" />
+      <text x={LEFT + 3} y={y(med) + (med >= 0 ? 8 : -3)} className="dial-tiny" fill="#c9f5ea">MEDIAN</text>
+    </g>}
+    {latest != null && <g>
+      <circle cx={x(series.length - 1)} cy={y(latest)} r="5" fill="var(--accent)" opacity=".2" />
+      <circle cx={x(series.length - 1)} cy={y(latest)} r="2.6" fill="#f2fffb" className="dial-signal" />
+    </g>}
+    {latest == null && <text x="166" y={MID - 6} textAnchor="middle" className="dial-label">AWAITING FUNDING</text>}
 
-  if (compact) return body;
-  if (stage) {
-    return (
-      <div className="flex w-full flex-col items-center gap-5">
-        {body}
-        <p className="instrument-stage-reading mono text-5xl font-medium text-paper md:text-7xl">
-          {formatBps(latestFunding)}
-        </p>
-        <p className="text-xs uppercase tracking-[0.2em] text-paper-muted">
-          HYPE funding · hourly history
-          {medianFunding != null ? ` · median ${formatBps(medianFunding)}` : ""}
-          {pressure != null
-            ? ` · gas fullness ${formatPlainPercent(pressure, 0)}`
-            : ""}
-          {count != null ? ` · ${formatInteger(count)} perps` : ""}
-        </p>
-        <p className="text-center text-[11px] text-paper-muted">
-          Wave is Hyperliquid HYPE funding history (hourly). Positive: longs
-          pay shorts. Foam is HyperEVM priority tips.
-        </p>
-      </div>
-    );
-  }
+    <path d={`M${LEFT} 186 H${RIGHT}`} stroke="#8598ba" strokeOpacity=".28" strokeWidth=".5" />
+    <text x={LEFT} y="204" className="dial-tiny">{series.length ? `${series.length} SAMPLES` : "NO SAMPLES"}</text>
+    <text x="293" y="204" textAnchor="end" className="dial-tiny">NOW →</text>
+  </DialCanvas>;
 
-  return (
-    <InstrumentFrame
-      title="Tide"
-      subtitle="HYPE funding history · click to expand"
-      reading={reading}
-      large={large}
-      instrumentId="atmosphere"
-    >
-      {body}
-    </InstrumentFrame>
-  );
+  if (compact) return art;
+  if (stage) return <DialStageReadout reading={reading} detail={[
+    "HYPE perp funding, hourly",
+    med != null ? `median ${formatBps(med)}` : null,
+    "Above zero: longs pay shorts",
+    pressure != null ? `gas ${formatPlainPercent(pressure, 0)} full` : null,
+    count != null ? `${formatInteger(count)} perps` : null,
+  ].filter(Boolean).join(" · ")}>{art}</DialStageReadout>;
+  return <InstrumentFrame title="Tide" subtitle="HYPE funding · above zero longs pay" reading={reading} large={large} instrumentId="atmosphere">{art}</InstrumentFrame>;
 }

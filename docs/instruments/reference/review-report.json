@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-10-27T17:40:46.133Z",
+  "capturedAt": "2026-10-28T11:36:40.439Z",
   "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.8010.12 Safari/537.36",
   "viewport": {
     "width": 1440,
@@ -16,16 +16,16 @@
       "light": "accent",
       "scenario": "nominal",
       "frames": {
-        "samples": 55,
+        "samples": 53,
         "medianMs": 16.7,
         "p95Ms": 16.7,
         "fps": 60
       },
       "inventory": {
-        "nodes": 370,
-        "svgElements": 221,
-        "svgFilters": 4,
-        "svgGradients": 12,
+        "nodes": 726,
+        "svgElements": 581,
+        "svgFilters": 0,
+        "svgGradients": 23,
         "canvases": 1,
         "canvasPixels": 52302,
         "canvasBytesEstimate": 209208,
@@ -48,13 +48,13 @@
         "samples": 54,
         "medianMs": 16.7,
         "p95Ms": 16.8,
-        "fps": 60.01
+        "fps": 60
       },
       "inventory": {
-        "nodes": 370,
-        "svgElements": 221,
-        "svgFilters": 4,
-        "svgGradients": 12,
+        "nodes": 726,
+        "svgElements": 581,
+        "svgFilters": 0,
+        "svgGradients": 23,
         "canvases": 1,
         "canvasPixels": 52302,
         "canvasBytesEstimate": 209208,
@@ -74,16 +74,16 @@
       "light": "accent",
       "scenario": "nominal",
       "frames": {
-        "samples": 53,
+        "samples": 48,
         "medianMs": 16.7,
-        "p95Ms": 16.8,
-        "fps": 60
+        "p95Ms": 16.7,
+        "fps": 56.48
       },
       "inventory": {
-        "nodes": 369,
-        "svgElements": 223,
-        "svgFilters": 4,
-        "svgGradients": 12,
+        "nodes": 723,
+        "svgElements": 581,
+        "svgFilters": 0,
+        "svgGradients": 23,
         "canvases": 1,
         "canvasPixels": 45000,
         "canvasBytesEstimate": 180000,
@@ -103,16 +103,16 @@
       "light": "neutral",
       "scenario": "nominal",
       "frames": {
-        "samples": 53,
+        "samples": 55,
         "medianMs": 16.7,
-        "p95Ms": 16.7,
+        "p95Ms": 16.8,
         "fps": 60
       },
       "inventory": {
-        "nodes": 369,
-        "svgElements": 223,
-        "svgFilters": 4,
-        "svgGradients": 12,
+        "nodes": 723,
+        "svgElements": 581,
+        "svgFilters": 0,
+        "svgGradients": 23,
         "canvases": 1,
         "canvasPixels": 45000,
         "canvasBytesEstimate": 180000,
@@ -132,16 +132,16 @@
       "light": "accent",
       "scenario": "late",
       "frames": {
-        "samples": 24,
+        "samples": 25,
         "medianMs": 16.7,
-        "p95Ms": 16.7,
-        "fps": 60.02
+        "p95Ms": 16.8,
+        "fps": 60.01
       },
       "inventory": {
-        "nodes": 374,
-        "svgElements": 225,
-        "svgFilters": 4,
-        "svgGradients": 12,
+        "nodes": 732,
+        "svgElements": 587,
+        "svgFilters": 0,
+        "svgGradients": 23,
         "canvases": 1,
         "canvasPixels": 45000,
         "canvasBytesEstimate": 180000,
@@ -158,77 +158,77 @@
     {
       "chain": "btc",
       "view": "board",
-      "light": "neutral",
-      "scenario": "late",
-      "frames": {
-        "samples": 25,
-        "medianMs": 16.7,
-        "p95Ms": 16.7,
-        "fps": 60.01
-      },
-      "inventory": {
-        "nodes": 374,
-        "svgElements": 225,
-        "svgFilters": 4,
-        "svgGradients": 12,
-        "canvases": 1,
-        "canvasPixels": 45000,
-        "canvasBytesEstimate": 180000,
-        "runningAnimations": 0
-      },
-      "readings": [
-        "26:00",
-        "48,213 tx",
-        "000000…f5e4c9",
-        "37.3%",
-        "910.0 EH/s"
-      ]
-    },
-    {
-      "chain": "btc",
-      "view": "wall",
-      "light": "accent",
-      "scenario": "late",
-      "frames": {
-        "samples": 24,
-        "medianMs": 16.7,
-        "p95Ms": 16.7,
-        "fps": 60
-      },
-      "inventory": {
-        "nodes": 373,
-        "svgElements": 227,
-        "svgFilters": 4,
-        "svgGradients": 12,
-        "canvases": 1,
-        "canvasPixels": 45000,
-        "canvasBytesEstimate": 180000,
-        "runningAnimations": 0
-      },
-      "readings": [
-        "26:00",
-        "48,213 tx",
-        "000000…f5e4c9",
-        "37.3%",
-        "910.0 EH/s"
-      ]
-    },
-    {
-      "chain": "btc",
-      "view": "wall",
       "light": "neutral",
       "scenario": "late",
       "frames": {
         "samples": 24,
         "medianMs": 16.7,
         "p95Ms": 16.8,
-        "fps": 59.99
+        "fps": 60
       },
       "inventory": {
-        "nodes": 373,
-        "svgElements": 227,
-        "svgFilters": 4,
-        "svgGradients": 12,
+        "nodes": 732,
+        "svgElements": 587,
+        "svgFilters": 0,
+        "svgGradients": 23,
+        "canvases": 1,
+        "canvasPixels": 45000,
+        "canvasBytesEstimate": 180000,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "26:00",
+        "48,213 tx",
+        "000000…f5e4c9",
+        "37.3%",
+        "910.0 EH/s"
+      ]
+    },
+    {
+      "chain": "btc",
+      "view": "wall",
+      "light": "accent",
+      "scenario": "late",
+      "frames": {
+        "samples": 16,
+        "medianMs": 16.7,
+        "p95Ms": 50,
+        "fps": 45.71
+      },
+      "inventory": {
+        "nodes": 729,
+        "svgElements": 587,
+        "svgFilters": 0,
+        "svgGradients": 23,
+        "canvases": 1,
+        "canvasPixels": 45000,
+        "canvasBytesEstimate": 180000,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "26:00",
+        "48,213 tx",
+        "000000…f5e4c9",
+        "37.3%",
+        "910.0 EH/s"
+      ]
+    },
+    {
+      "chain": "btc",
+      "view": "wall",
+      "light": "neutral",
+      "scenario": "late",
+      "frames": {
+        "samples": 25,
+        "medianMs": 16.7,
+        "p95Ms": 16.8,
+        "fps": 60.01
+      },
+      "inventory": {
+        "nodes": 729,
+        "svgElements": 587,
+        "svgFilters": 0,
+        "svgGradients": 23,
         "canvases": 1,
         "canvasPixels": 45000,
         "canvasBytesEstimate": 180000,
@@ -254,10 +254,10 @@
         "fps": 60
       },
       "inventory": {
-        "nodes": 335,
-        "svgElements": 186,
-        "svgFilters": 3,
-        "svgGradients": 10,
+        "nodes": 593,
+        "svgElements": 448,
+        "svgFilters": 0,
+        "svgGradients": 23,
         "canvases": 1,
         "canvasPixels": 45000,
         "canvasBytesEstimate": 180000,
@@ -267,8 +267,8 @@
         "…",
         "-",
         "-",
-        "0.0%",
-        "-"
+        "Awaiting height",
+        "Awaiting hashrate"
       ]
     },
     {
@@ -280,13 +280,13 @@
         "samples": 24,
         "medianMs": 16.7,
         "p95Ms": 16.7,
-        "fps": 59.99
+        "fps": 60
       },
       "inventory": {
-        "nodes": 335,
-        "svgElements": 186,
-        "svgFilters": 3,
-        "svgGradients": 10,
+        "nodes": 593,
+        "svgElements": 448,
+        "svgFilters": 0,
+        "svgGradients": 23,
         "canvases": 1,
         "canvasPixels": 45000,
         "canvasBytesEstimate": 180000,
@@ -296,8 +296,8 @@
         "…",
         "-",
         "-",
-        "0.0%",
-        "-"
+        "Awaiting height",
+        "Awaiting hashrate"
       ]
     },
     {
@@ -306,16 +306,16 @@
       "light": "accent",
       "scenario": "empty",
       "frames": {
-        "samples": 16,
+        "samples": 24,
         "medianMs": 16.7,
-        "p95Ms": 50,
-        "fps": 45.73
+        "p95Ms": 16.8,
+        "fps": 60
       },
       "inventory": {
-        "nodes": 334,
-        "svgElements": 188,
-        "svgFilters": 3,
-        "svgGradients": 10,
+        "nodes": 590,
+        "svgElements": 448,
+        "svgFilters": 0,
+        "svgGradients": 23,
         "canvases": 1,
         "canvasPixels": 45000,
         "canvasBytesEstimate": 180000,
@@ -325,8 +325,8 @@
         "…",
         "-",
         "-",
-        "0.0%",
-        "-"
+        "Awaiting height",
+        "Awaiting hashrate"
       ]
     },
     {
@@ -336,15 +336,15 @@
       "scenario": "empty",
       "frames": {
         "samples": 24,
-        "medianMs": 16.7,
-        "p95Ms": 16.7,
-        "fps": 60
+        "medianMs": 16.6,
+        "p95Ms": 16.8,
+        "fps": 60.02
       },
       "inventory": {
-        "nodes": 334,
-        "svgElements": 188,
-        "svgFilters": 3,
-        "svgGradients": 10,
+        "nodes": 590,
+        "svgElements": 448,
+        "svgFilters": 0,
+        "svgGradients": 23,
         "canvases": 1,
         "canvasPixels": 45000,
         "canvasBytesEstimate": 180000,
@@ -354,8 +354,8 @@
         "…",
         "-",
         "-",
-        "0.0%",
-        "-"
+        "Awaiting height",
+        "Awaiting hashrate"
       ]
     },
     {
@@ -364,14 +364,14 @@
       "light": "accent",
       "scenario": "nominal",
       "frames": {
-        "samples": 54,
+        "samples": 52,
         "medianMs": 16.7,
         "p95Ms": 16.7,
-        "fps": 60.01
+        "fps": 57.78
       },
       "inventory": {
-        "nodes": 1099,
-        "svgElements": 960,
+        "nodes": 1102,
+        "svgElements": 963,
         "svgFilters": 0,
         "svgGradients": 16,
         "canvases": 0,
@@ -396,11 +396,11 @@
         "samples": 54,
         "medianMs": 16.7,
         "p95Ms": 16.8,
-        "fps": 60
+        "fps": 60.01
       },
       "inventory": {
-        "nodes": 1099,
-        "svgElements": 960,
+        "nodes": 1102,
+        "svgElements": 963,
         "svgFilters": 0,
         "svgGradients": 16,
         "canvases": 0,
@@ -424,12 +424,12 @@
       "frames": {
         "samples": 46,
         "medianMs": 16.7,
-        "p95Ms": 33.28,
-        "fps": 54.13
+        "p95Ms": 50,
+        "fps": 51.11
       },
       "inventory": {
-        "nodes": 1096,
-        "svgElements": 960,
+        "nodes": 1099,
+        "svgElements": 963,
         "svgFilters": 0,
         "svgGradients": 16,
         "canvases": 0,
@@ -454,11 +454,11 @@
         "samples": 54,
         "medianMs": 16.7,
         "p95Ms": 16.8,
-        "fps": 60.01
+        "fps": 59.99
       },
       "inventory": {
-        "nodes": 1096,
-        "svgElements": 960,
+        "nodes": 1099,
+        "svgElements": 963,
         "svgFilters": 0,
         "svgGradients": 16,
         "canvases": 0,
@@ -486,8 +486,8 @@
         "fps": 60
       },
       "inventory": {
-        "nodes": 1099,
-        "svgElements": 960,
+        "nodes": 1102,
+        "svgElements": 963,
         "svgFilters": 0,
         "svgGradients": 16,
         "canvases": 0,
@@ -511,12 +511,12 @@
       "frames": {
         "samples": 24,
         "medianMs": 16.7,
-        "p95Ms": 16.7,
-        "fps": 60.02
+        "p95Ms": 16.8,
+        "fps": 60
       },
       "inventory": {
-        "nodes": 1099,
-        "svgElements": 960,
+        "nodes": 1102,
+        "svgElements": 963,
         "svgFilters": 0,
         "svgGradients": 16,
         "canvases": 0,
@@ -538,14 +538,14 @@
       "light": "accent",
       "scenario": "late",
       "frames": {
-        "samples": 20,
+        "samples": 18,
         "medianMs": 16.7,
-        "p95Ms": 49.9,
-        "fps": 48
+        "p95Ms": 50,
+        "fps": 46.96
       },
       "inventory": {
-        "nodes": 1096,
-        "svgElements": 960,
+        "nodes": 1099,
+        "svgElements": 963,
         "svgFilters": 0,
         "svgGradients": 16,
         "canvases": 0,
@@ -568,13 +568,13 @@
       "scenario": "late",
       "frames": {
         "samples": 24,
-        "medianMs": 16.7,
-        "p95Ms": 16.7,
-        "fps": 60.02
+        "medianMs": 16.6,
+        "p95Ms": 16.8,
+        "fps": 60
       },
       "inventory": {
-        "nodes": 1096,
-        "svgElements": 960,
+        "nodes": 1099,
+        "svgElements": 963,
         "svgFilters": 0,
         "svgGradients": 16,
         "canvases": 0,
@@ -594,6 +594,35 @@
       "chain": "eth",
       "view": "board",
       "light": "accent",
+      "scenario": "empty",
+      "frames": {
+        "samples": 24,
+        "medianMs": 16.6,
+        "p95Ms": 16.8,
+        "fps": 60.02
+      },
+      "inventory": {
+        "nodes": 596,
+        "svgElements": 457,
+        "svgFilters": 0,
+        "svgGradients": 16,
+        "canvases": 0,
+        "canvasPixels": 0,
+        "canvasBytesEstimate": 0,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "-",
+        "Awaiting base fee",
+        "-",
+        "Burn unavailable",
+        "Awaiting security data"
+      ]
+    },
+    {
+      "chain": "eth",
+      "view": "board",
+      "light": "neutral",
       "scenario": "empty",
       "frames": {
         "samples": 24,
@@ -602,37 +631,8 @@
         "fps": 60
       },
       "inventory": {
-        "nodes": 593,
-        "svgElements": 454,
-        "svgFilters": 0,
-        "svgGradients": 16,
-        "canvases": 0,
-        "canvasPixels": 0,
-        "canvasBytesEstimate": 0,
-        "runningAnimations": 0
-      },
-      "readings": [
-        "-",
-        "Awaiting base fee",
-        "-",
-        "Burn unavailable",
-        "Awaiting security data"
-      ]
-    },
-    {
-      "chain": "eth",
-      "view": "board",
-      "light": "neutral",
-      "scenario": "empty",
-      "frames": {
-        "samples": 25,
-        "medianMs": 16.7,
-        "p95Ms": 16.7,
-        "fps": 60.01
-      },
-      "inventory": {
-        "nodes": 593,
-        "svgElements": 454,
+        "nodes": 596,
+        "svgElements": 457,
         "svgFilters": 0,
         "svgGradients": 16,
         "canvases": 0,
@@ -654,14 +654,14 @@
       "light": "accent",
       "scenario": "empty",
       "frames": {
-        "samples": 24,
+        "samples": 23,
         "medianMs": 16.7,
-        "p95Ms": 16.8,
-        "fps": 60.02
+        "p95Ms": 16.7,
+        "fps": 59.99
       },
       "inventory": {
-        "nodes": 590,
-        "svgElements": 454,
+        "nodes": 593,
+        "svgElements": 457,
         "svgFilters": 0,
         "svgGradients": 16,
         "canvases": 0,
@@ -685,12 +685,12 @@
       "frames": {
         "samples": 24,
         "medianMs": 16.7,
-        "p95Ms": 16.7,
-        "fps": 59.99
+        "p95Ms": 16.8,
+        "fps": 60.02
       },
       "inventory": {
-        "nodes": 590,
-        "svgElements": 454,
+        "nodes": 593,
+        "svgElements": 457,
         "svgFilters": 0,
         "svgGradients": 16,
         "canvases": 0,
@@ -712,16 +712,422 @@
       "light": "accent",
       "scenario": "nominal",
       "frames": {
-        "samples": 53,
+        "samples": 54,
         "medianMs": 16.7,
         "p95Ms": 16.7,
+        "fps": 60
+      },
+      "inventory": {
+        "nodes": 1344,
+        "svgElements": 1204,
+        "svgFilters": 0,
+        "svgGradients": 24,
+        "canvases": 0,
+        "canvasPixels": 0,
+        "canvasBytesEstimate": 0,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "0:00",
+        "1200 µLamports/CU",
+        "000000…f5e4c9",
+        "4.6%",
+        "380M SOL staked"
+      ]
+    },
+    {
+      "chain": "sol",
+      "view": "board",
+      "light": "neutral",
+      "scenario": "nominal",
+      "frames": {
+        "samples": 54,
+        "medianMs": 16.7,
+        "p95Ms": 16.8,
+        "fps": 59.99
+      },
+      "inventory": {
+        "nodes": 1344,
+        "svgElements": 1204,
+        "svgFilters": 0,
+        "svgGradients": 24,
+        "canvases": 0,
+        "canvasPixels": 0,
+        "canvasBytesEstimate": 0,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "0:00",
+        "1200 µLamports/CU",
+        "000000…f5e4c9",
+        "4.6%",
+        "380M SOL staked"
+      ]
+    },
+    {
+      "chain": "sol",
+      "view": "wall",
+      "light": "accent",
+      "scenario": "nominal",
+      "frames": {
+        "samples": 49,
+        "medianMs": 16.7,
+        "p95Ms": 33.3,
+        "fps": 55.47
+      },
+      "inventory": {
+        "nodes": 1341,
+        "svgElements": 1204,
+        "svgFilters": 0,
+        "svgGradients": 24,
+        "canvases": 0,
+        "canvasPixels": 0,
+        "canvasBytesEstimate": 0,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "0:00",
+        "1200 µLamports/CU",
+        "000000…f5e4c9",
+        "4.6%",
+        "380M SOL staked"
+      ]
+    },
+    {
+      "chain": "sol",
+      "view": "wall",
+      "light": "neutral",
+      "scenario": "nominal",
+      "frames": {
+        "samples": 55,
+        "medianMs": 16.7,
+        "p95Ms": 16.7,
+        "fps": 60.01
+      },
+      "inventory": {
+        "nodes": 1341,
+        "svgElements": 1204,
+        "svgFilters": 0,
+        "svgGradients": 24,
+        "canvases": 0,
+        "canvasPixels": 0,
+        "canvasBytesEstimate": 0,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "0:00",
+        "1200 µLamports/CU",
+        "000000…f5e4c9",
+        "4.6%",
+        "380M SOL staked"
+      ]
+    },
+    {
+      "chain": "sol",
+      "view": "board",
+      "light": "accent",
+      "scenario": "late",
+      "frames": {
+        "samples": 24,
+        "medianMs": 16.7,
+        "p95Ms": 16.7,
+        "fps": 60
+      },
+      "inventory": {
+        "nodes": 1344,
+        "svgElements": 1204,
+        "svgFilters": 0,
+        "svgGradients": 24,
+        "canvases": 0,
+        "canvasPixels": 0,
+        "canvasBytesEstimate": 0,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "0:01",
+        "1200 µLamports/CU",
+        "000000…f5e4c9",
+        "4.6%",
+        "380M SOL staked"
+      ]
+    },
+    {
+      "chain": "sol",
+      "view": "board",
+      "light": "neutral",
+      "scenario": "late",
+      "frames": {
+        "samples": 24,
+        "medianMs": 16.7,
+        "p95Ms": 16.8,
+        "fps": 60
+      },
+      "inventory": {
+        "nodes": 1344,
+        "svgElements": 1204,
+        "svgFilters": 0,
+        "svgGradients": 24,
+        "canvases": 0,
+        "canvasPixels": 0,
+        "canvasBytesEstimate": 0,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "0:01",
+        "1200 µLamports/CU",
+        "000000…f5e4c9",
+        "4.6%",
+        "380M SOL staked"
+      ]
+    },
+    {
+      "chain": "sol",
+      "view": "wall",
+      "light": "accent",
+      "scenario": "late",
+      "frames": {
+        "samples": 15,
+        "medianMs": 16.7,
+        "p95Ms": 83.24,
+        "fps": 42.86
+      },
+      "inventory": {
+        "nodes": 1341,
+        "svgElements": 1204,
+        "svgFilters": 0,
+        "svgGradients": 24,
+        "canvases": 0,
+        "canvasPixels": 0,
+        "canvasBytesEstimate": 0,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "0:01",
+        "1200 µLamports/CU",
+        "000000…f5e4c9",
+        "4.6%",
+        "380M SOL staked"
+      ]
+    },
+    {
+      "chain": "sol",
+      "view": "wall",
+      "light": "neutral",
+      "scenario": "late",
+      "frames": {
+        "samples": 23,
+        "medianMs": 16.7,
+        "p95Ms": 16.8,
+        "fps": 60.01
+      },
+      "inventory": {
+        "nodes": 1341,
+        "svgElements": 1204,
+        "svgFilters": 0,
+        "svgGradients": 24,
+        "canvases": 0,
+        "canvasPixels": 0,
+        "canvasBytesEstimate": 0,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "0:01",
+        "1200 µLamports/CU",
+        "000000…f5e4c9",
+        "4.6%",
+        "380M SOL staked"
+      ]
+    },
+    {
+      "chain": "sol",
+      "view": "board",
+      "light": "accent",
+      "scenario": "empty",
+      "frames": {
+        "samples": 25,
+        "medianMs": 16.7,
+        "p95Ms": 16.8,
+        "fps": 60.01
+      },
+      "inventory": {
+        "nodes": 623,
+        "svgElements": 483,
+        "svgFilters": 0,
+        "svgGradients": 24,
+        "canvases": 0,
+        "canvasPixels": 0,
+        "canvasBytesEstimate": 0,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "-",
+        "Awaiting fee samples",
+        "-",
+        "Awaiting inflation",
+        "Awaiting stake data"
+      ]
+    },
+    {
+      "chain": "sol",
+      "view": "board",
+      "light": "neutral",
+      "scenario": "empty",
+      "frames": {
+        "samples": 24,
+        "medianMs": 16.7,
+        "p95Ms": 16.7,
+        "fps": 60
+      },
+      "inventory": {
+        "nodes": 623,
+        "svgElements": 483,
+        "svgFilters": 0,
+        "svgGradients": 24,
+        "canvases": 0,
+        "canvasPixels": 0,
+        "canvasBytesEstimate": 0,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "-",
+        "Awaiting fee samples",
+        "-",
+        "Awaiting inflation",
+        "Awaiting stake data"
+      ]
+    },
+    {
+      "chain": "sol",
+      "view": "wall",
+      "light": "accent",
+      "scenario": "empty",
+      "frames": {
+        "samples": 24,
+        "medianMs": 16.7,
+        "p95Ms": 16.7,
+        "fps": 60
+      },
+      "inventory": {
+        "nodes": 620,
+        "svgElements": 483,
+        "svgFilters": 0,
+        "svgGradients": 24,
+        "canvases": 0,
+        "canvasPixels": 0,
+        "canvasBytesEstimate": 0,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "-",
+        "Awaiting fee samples",
+        "-",
+        "Awaiting inflation",
+        "Awaiting stake data"
+      ]
+    },
+    {
+      "chain": "sol",
+      "view": "wall",
+      "light": "neutral",
+      "scenario": "empty",
+      "frames": {
+        "samples": 23,
+        "medianMs": 16.7,
+        "p95Ms": 16.7,
+        "fps": 60.01
+      },
+      "inventory": {
+        "nodes": 620,
+        "svgElements": 483,
+        "svgFilters": 0,
+        "svgGradients": 24,
+        "canvases": 0,
+        "canvasPixels": 0,
+        "canvasBytesEstimate": 0,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "-",
+        "Awaiting fee samples",
+        "-",
+        "Awaiting inflation",
+        "Awaiting stake data"
+      ]
+    },
+    {
+      "chain": "hype",
+      "view": "board",
+      "light": "accent",
+      "scenario": "nominal",
+      "frames": {
+        "samples": 54,
+        "medianMs": 16.7,
+        "p95Ms": 16.8,
+        "fps": 60
+      },
+      "inventory": {
+        "nodes": 1412,
+        "svgElements": 1273,
+        "svgFilters": 0,
+        "svgGradients": 25,
+        "canvases": 0,
+        "canvasPixels": 0,
+        "canvasBytesEstimate": 0,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "0:00",
+        "+2.43 bps",
+        "000000…f5e4c9",
+        "$5.3B",
+        "OI $4.2B"
+      ]
+    },
+    {
+      "chain": "hype",
+      "view": "board",
+      "light": "neutral",
+      "scenario": "nominal",
+      "frames": {
+        "samples": 55,
+        "medianMs": 16.7,
+        "p95Ms": 16.8,
+        "fps": 60
+      },
+      "inventory": {
+        "nodes": 1412,
+        "svgElements": 1273,
+        "svgFilters": 0,
+        "svgGradients": 25,
+        "canvases": 0,
+        "canvasPixels": 0,
+        "canvasBytesEstimate": 0,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "0:00",
+        "+2.43 bps",
+        "000000…f5e4c9",
+        "$5.3B",
+        "OI $4.2B"
+      ]
+    },
+    {
+      "chain": "hype",
+      "view": "wall",
+      "light": "accent",
+      "scenario": "nominal",
+      "frames": {
+        "samples": 53,
+        "medianMs": 16.7,
+        "p95Ms": 16.8,
         "fps": 58.9
       },
       "inventory": {
-        "nodes": 388,
-        "svgElements": 215,
+        "nodes": 1409,
+        "svgElements": 1273,
         "svgFilters": 0,
-        "svgGradients": 5,
+        "svgGradients": 25,
         "canvases": 0,
         "canvasPixels": 0,
         "canvasBytesEstimate": 0,
@@ -729,86 +1135,28 @@
       },
       "readings": [
         "0:00",
-        "1200 µLamports/CU",
+        "+2.43 bps",
         "000000…f5e4c9",
-        "4.6%",
-        "380M SOL staked"
+        "$5.3B",
+        "OI $4.2B"
       ]
     },
     {
-      "chain": "sol",
-      "view": "board",
+      "chain": "hype",
+      "view": "wall",
       "light": "neutral",
       "scenario": "nominal",
       "frames": {
         "samples": 54,
         "medianMs": 16.7,
         "p95Ms": 16.7,
-        "fps": 60.01
-      },
-      "inventory": {
-        "nodes": 388,
-        "svgElements": 215,
-        "svgFilters": 0,
-        "svgGradients": 5,
-        "canvases": 0,
-        "canvasPixels": 0,
-        "canvasBytesEstimate": 0,
-        "runningAnimations": 0
-      },
-      "readings": [
-        "0:00",
-        "1200 µLamports/CU",
-        "000000…f5e4c9",
-        "4.6%",
-        "380M SOL staked"
-      ]
-    },
-    {
-      "chain": "sol",
-      "view": "wall",
-      "light": "accent",
-      "scenario": "nominal",
-      "frames": {
-        "samples": 48,
-        "medianMs": 16.7,
-        "p95Ms": 49.97,
-        "fps": 53.34
-      },
-      "inventory": {
-        "nodes": 385,
-        "svgElements": 215,
-        "svgFilters": 0,
-        "svgGradients": 5,
-        "canvases": 0,
-        "canvasPixels": 0,
-        "canvasBytesEstimate": 0,
-        "runningAnimations": 0
-      },
-      "readings": [
-        "0:00",
-        "1200 µLamports/CU",
-        "000000…f5e4c9",
-        "4.6%",
-        "380M SOL staked"
-      ]
-    },
-    {
-      "chain": "sol",
-      "view": "wall",
-      "light": "neutral",
-      "scenario": "nominal",
-      "frames": {
-        "samples": 53,
-        "medianMs": 16.7,
-        "p95Ms": 16.7,
         "fps": 60
       },
       "inventory": {
-        "nodes": 385,
-        "svgElements": 215,
+        "nodes": 1409,
+        "svgElements": 1273,
         "svgFilters": 0,
-        "svgGradients": 5,
+        "svgGradients": 25,
         "canvases": 0,
         "canvasPixels": 0,
         "canvasBytesEstimate": 0,
@@ -816,133 +1164,46 @@
       },
       "readings": [
         "0:00",
-        "1200 µLamports/CU",
+        "+2.43 bps",
         "000000…f5e4c9",
-        "4.6%",
-        "380M SOL staked"
+        "$5.3B",
+        "OI $4.2B"
       ]
     },
     {
-      "chain": "sol",
+      "chain": "hype",
       "view": "board",
       "light": "accent",
-      "scenario": "late",
-      "frames": {
-        "samples": 23,
-        "medianMs": 16.7,
-        "p95Ms": 16.7,
-        "fps": 60.01
-      },
-      "inventory": {
-        "nodes": 388,
-        "svgElements": 215,
-        "svgFilters": 0,
-        "svgGradients": 5,
-        "canvases": 0,
-        "canvasPixels": 0,
-        "canvasBytesEstimate": 0,
-        "runningAnimations": 0
-      },
-      "readings": [
-        "0:01",
-        "1200 µLamports/CU",
-        "000000…f5e4c9",
-        "4.6%",
-        "380M SOL staked"
-      ]
-    },
-    {
-      "chain": "sol",
-      "view": "board",
-      "light": "neutral",
       "scenario": "late",
       "frames": {
         "samples": 24,
-        "medianMs": 16.7,
-        "p95Ms": 16.7,
-        "fps": 59.99
-      },
-      "inventory": {
-        "nodes": 388,
-        "svgElements": 215,
-        "svgFilters": 0,
-        "svgGradients": 5,
-        "canvases": 0,
-        "canvasPixels": 0,
-        "canvasBytesEstimate": 0,
-        "runningAnimations": 0
-      },
-      "readings": [
-        "0:01",
-        "1200 µLamports/CU",
-        "000000…f5e4c9",
-        "4.6%",
-        "380M SOL staked"
-      ]
-    },
-    {
-      "chain": "sol",
-      "view": "wall",
-      "light": "accent",
-      "scenario": "late",
-      "frames": {
-        "samples": 19,
-        "medianMs": 16.7,
-        "p95Ms": 50,
-        "fps": 47.5
-      },
-      "inventory": {
-        "nodes": 385,
-        "svgElements": 215,
-        "svgFilters": 0,
-        "svgGradients": 5,
-        "canvases": 0,
-        "canvasPixels": 0,
-        "canvasBytesEstimate": 0,
-        "runningAnimations": 0
-      },
-      "readings": [
-        "0:01",
-        "1200 µLamports/CU",
-        "000000…f5e4c9",
-        "4.6%",
-        "380M SOL staked"
-      ]
-    },
-    {
-      "chain": "sol",
-      "view": "wall",
-      "light": "neutral",
-      "scenario": "late",
-      "frames": {
-        "samples": 23,
         "medianMs": 16.7,
         "p95Ms": 16.8,
-        "fps": 60.01
+        "fps": 60
       },
       "inventory": {
-        "nodes": 385,
-        "svgElements": 215,
+        "nodes": 1412,
+        "svgElements": 1273,
         "svgFilters": 0,
-        "svgGradients": 5,
+        "svgGradients": 25,
         "canvases": 0,
         "canvasPixels": 0,
         "canvasBytesEstimate": 0,
         "runningAnimations": 0
       },
       "readings": [
-        "0:01",
-        "1200 µLamports/CU",
+        "0:02",
+        "+2.43 bps",
         "000000…f5e4c9",
-        "4.6%",
-        "380M SOL staked"
+        "$5.3B",
+        "OI $4.2B"
       ]
     },
     {
-      "chain": "sol",
+      "chain": "hype",
       "view": "board",
-      "light": "accent",
-      "scenario": "empty",
+      "light": "neutral",
+      "scenario": "late",
       "frames": {
         "samples": 24,
         "medianMs": 16.7,
@@ -950,329 +1211,68 @@
         "fps": 60
       },
       "inventory": {
-        "nodes": 334,
-        "svgElements": 167,
+        "nodes": 1412,
+        "svgElements": 1273,
         "svgFilters": 0,
-        "svgGradients": 5,
+        "svgGradients": 25,
         "canvases": 0,
         "canvasPixels": 0,
         "canvasBytesEstimate": 0,
         "runningAnimations": 0
       },
       "readings": [
-        "-",
-        "-",
-        "-",
-        "40.0%",
-        "40% reef"
+        "0:02",
+        "+2.43 bps",
+        "000000…f5e4c9",
+        "$5.3B",
+        "OI $4.2B"
       ]
     },
     {
-      "chain": "sol",
-      "view": "board",
+      "chain": "hype",
+      "view": "wall",
+      "light": "accent",
+      "scenario": "late",
+      "frames": {
+        "samples": 18,
+        "medianMs": 16.7,
+        "p95Ms": 49.9,
+        "fps": 49.1
+      },
+      "inventory": {
+        "nodes": 1409,
+        "svgElements": 1273,
+        "svgFilters": 0,
+        "svgGradients": 25,
+        "canvases": 0,
+        "canvasPixels": 0,
+        "canvasBytesEstimate": 0,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "0:02",
+        "+2.43 bps",
+        "000000…f5e4c9",
+        "$5.3B",
+        "OI $4.2B"
+      ]
+    },
+    {
+      "chain": "hype",
+      "view": "wall",
       "light": "neutral",
-      "scenario": "empty",
+      "scenario": "late",
       "frames": {
         "samples": 25,
         "medianMs": 16.7,
-        "p95Ms": 16.7,
-        "fps": 60
-      },
-      "inventory": {
-        "nodes": 334,
-        "svgElements": 167,
-        "svgFilters": 0,
-        "svgGradients": 5,
-        "canvases": 0,
-        "canvasPixels": 0,
-        "canvasBytesEstimate": 0,
-        "runningAnimations": 0
-      },
-      "readings": [
-        "-",
-        "-",
-        "-",
-        "40.0%",
-        "40% reef"
-      ]
-    },
-    {
-      "chain": "sol",
-      "view": "wall",
-      "light": "accent",
-      "scenario": "empty",
-      "frames": {
-        "samples": 23,
-        "medianMs": 16.7,
-        "p95Ms": 16.7,
-        "fps": 59.99
-      },
-      "inventory": {
-        "nodes": 331,
-        "svgElements": 167,
-        "svgFilters": 0,
-        "svgGradients": 5,
-        "canvases": 0,
-        "canvasPixels": 0,
-        "canvasBytesEstimate": 0,
-        "runningAnimations": 0
-      },
-      "readings": [
-        "-",
-        "-",
-        "-",
-        "40.0%",
-        "40% reef"
-      ]
-    },
-    {
-      "chain": "sol",
-      "view": "wall",
-      "light": "neutral",
-      "scenario": "empty",
-      "frames": {
-        "samples": 24,
-        "medianMs": 16.7,
-        "p95Ms": 16.7,
-        "fps": 59.99
-      },
-      "inventory": {
-        "nodes": 331,
-        "svgElements": 167,
-        "svgFilters": 0,
-        "svgGradients": 5,
-        "canvases": 0,
-        "canvasPixels": 0,
-        "canvasBytesEstimate": 0,
-        "runningAnimations": 0
-      },
-      "readings": [
-        "-",
-        "-",
-        "-",
-        "40.0%",
-        "40% reef"
-      ]
-    },
-    {
-      "chain": "hype",
-      "view": "board",
-      "light": "accent",
-      "scenario": "nominal",
-      "frames": {
-        "samples": 53,
-        "medianMs": 16.7,
-        "p95Ms": 16.8,
-        "fps": 58.89
-      },
-      "inventory": {
-        "nodes": 361,
-        "svgElements": 187,
-        "svgFilters": 0,
-        "svgGradients": 5,
-        "canvases": 0,
-        "canvasPixels": 0,
-        "canvasBytesEstimate": 0,
-        "runningAnimations": 0
-      },
-      "readings": [
-        "0:00",
-        "+2.43 bps",
-        "000000…f5e4c9",
-        "$5.3B",
-        "OI $4.2B"
-      ]
-    },
-    {
-      "chain": "hype",
-      "view": "board",
-      "light": "neutral",
-      "scenario": "nominal",
-      "frames": {
-        "samples": 54,
-        "medianMs": 16.7,
-        "p95Ms": 16.8,
-        "fps": 60
-      },
-      "inventory": {
-        "nodes": 361,
-        "svgElements": 187,
-        "svgFilters": 0,
-        "svgGradients": 5,
-        "canvases": 0,
-        "canvasPixels": 0,
-        "canvasBytesEstimate": 0,
-        "runningAnimations": 0
-      },
-      "readings": [
-        "0:00",
-        "+2.43 bps",
-        "000000…f5e4c9",
-        "$5.3B",
-        "OI $4.2B"
-      ]
-    },
-    {
-      "chain": "hype",
-      "view": "wall",
-      "light": "accent",
-      "scenario": "nominal",
-      "frames": {
-        "samples": 54,
-        "medianMs": 16.7,
-        "p95Ms": 16.7,
-        "fps": 60.01
-      },
-      "inventory": {
-        "nodes": 358,
-        "svgElements": 187,
-        "svgFilters": 0,
-        "svgGradients": 5,
-        "canvases": 0,
-        "canvasPixels": 0,
-        "canvasBytesEstimate": 0,
-        "runningAnimations": 0
-      },
-      "readings": [
-        "0:00",
-        "+2.43 bps",
-        "000000…f5e4c9",
-        "$5.3B",
-        "OI $4.2B"
-      ]
-    },
-    {
-      "chain": "hype",
-      "view": "wall",
-      "light": "neutral",
-      "scenario": "nominal",
-      "frames": {
-        "samples": 54,
-        "medianMs": 16.7,
-        "p95Ms": 16.7,
-        "fps": 60.01
-      },
-      "inventory": {
-        "nodes": 358,
-        "svgElements": 187,
-        "svgFilters": 0,
-        "svgGradients": 5,
-        "canvases": 0,
-        "canvasPixels": 0,
-        "canvasBytesEstimate": 0,
-        "runningAnimations": 0
-      },
-      "readings": [
-        "0:00",
-        "+2.43 bps",
-        "000000…f5e4c9",
-        "$5.3B",
-        "OI $4.2B"
-      ]
-    },
-    {
-      "chain": "hype",
-      "view": "board",
-      "light": "accent",
-      "scenario": "late",
-      "frames": {
-        "samples": 24,
-        "medianMs": 16.7,
-        "p95Ms": 16.7,
-        "fps": 60
-      },
-      "inventory": {
-        "nodes": 361,
-        "svgElements": 187,
-        "svgFilters": 0,
-        "svgGradients": 5,
-        "canvases": 0,
-        "canvasPixels": 0,
-        "canvasBytesEstimate": 0,
-        "runningAnimations": 0
-      },
-      "readings": [
-        "0:02",
-        "+2.43 bps",
-        "000000…f5e4c9",
-        "$5.3B",
-        "OI $4.2B"
-      ]
-    },
-    {
-      "chain": "hype",
-      "view": "board",
-      "light": "neutral",
-      "scenario": "late",
-      "frames": {
-        "samples": 24,
-        "medianMs": 16.7,
-        "p95Ms": 16.8,
-        "fps": 60
-      },
-      "inventory": {
-        "nodes": 361,
-        "svgElements": 187,
-        "svgFilters": 0,
-        "svgGradients": 5,
-        "canvases": 0,
-        "canvasPixels": 0,
-        "canvasBytesEstimate": 0,
-        "runningAnimations": 0
-      },
-      "readings": [
-        "0:02",
-        "+2.43 bps",
-        "000000…f5e4c9",
-        "$5.3B",
-        "OI $4.2B"
-      ]
-    },
-    {
-      "chain": "hype",
-      "view": "wall",
-      "light": "accent",
-      "scenario": "late",
-      "frames": {
-        "samples": 19,
-        "medianMs": 16.7,
-        "p95Ms": 50,
-        "fps": 49.59
-      },
-      "inventory": {
-        "nodes": 358,
-        "svgElements": 187,
-        "svgFilters": 0,
-        "svgGradients": 5,
-        "canvases": 0,
-        "canvasPixels": 0,
-        "canvasBytesEstimate": 0,
-        "runningAnimations": 0
-      },
-      "readings": [
-        "0:02",
-        "+2.43 bps",
-        "000000…f5e4c9",
-        "$5.3B",
-        "OI $4.2B"
-      ]
-    },
-    {
-      "chain": "hype",
-      "view": "wall",
-      "light": "neutral",
-      "scenario": "late",
-      "frames": {
-        "samples": 23,
-        "medianMs": 16.7,
         "p95Ms": 16.8,
         "fps": 60.01
       },
       "inventory": {
-        "nodes": 358,
-        "svgElements": 187,
+        "nodes": 1409,
+        "svgElements": 1273,
         "svgFilters": 0,
-        "svgGradients": 5,
+        "svgGradients": 25,
         "canvases": 0,
         "canvasPixels": 0,
         "canvasBytesEstimate": 0,
@@ -1298,10 +1298,10 @@
         "fps": 60
       },
       "inventory": {
-        "nodes": 345,
-        "svgElements": 177,
+        "nodes": 1088,
+        "svgElements": 949,
         "svgFilters": 0,
-        "svgGradients": 5,
+        "svgGradients": 25,
         "canvases": 0,
         "canvasPixels": 0,
         "canvasBytesEstimate": 0,
@@ -1309,15 +1309,73 @@
       },
       "readings": [
         "-",
+        "Awaiting funding",
         "-",
-        "-",
-        "—",
-        "40% vault"
+        "Awaiting volume",
+        "Awaiting open interest"
       ]
     },
     {
       "chain": "hype",
       "view": "board",
+      "light": "neutral",
+      "scenario": "empty",
+      "frames": {
+        "samples": 24,
+        "medianMs": 16.7,
+        "p95Ms": 16.7,
+        "fps": 60
+      },
+      "inventory": {
+        "nodes": 1088,
+        "svgElements": 949,
+        "svgFilters": 0,
+        "svgGradients": 25,
+        "canvases": 0,
+        "canvasPixels": 0,
+        "canvasBytesEstimate": 0,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "-",
+        "Awaiting funding",
+        "-",
+        "Awaiting volume",
+        "Awaiting open interest"
+      ]
+    },
+    {
+      "chain": "hype",
+      "view": "wall",
+      "light": "accent",
+      "scenario": "empty",
+      "frames": {
+        "samples": 16,
+        "medianMs": 16.7,
+        "p95Ms": 50,
+        "fps": 45.72
+      },
+      "inventory": {
+        "nodes": 1085,
+        "svgElements": 949,
+        "svgFilters": 0,
+        "svgGradients": 25,
+        "canvases": 0,
+        "canvasPixels": 0,
+        "canvasBytesEstimate": 0,
+        "runningAnimations": 0
+      },
+      "readings": [
+        "-",
+        "Awaiting funding",
+        "-",
+        "Awaiting volume",
+        "Awaiting open interest"
+      ]
+    },
+    {
+      "chain": "hype",
+      "view": "wall",
       "light": "neutral",
       "scenario": "empty",
       "frames": {
@@ -1327,10 +1385,10 @@
         "fps": 60.02
       },
       "inventory": {
-        "nodes": 345,
-        "svgElements": 177,
+        "nodes": 1085,
+        "svgElements": 949,
         "svgFilters": 0,
-        "svgGradients": 5,
+        "svgGradients": 25,
         "canvases": 0,
         "canvasPixels": 0,
         "canvasBytesEstimate": 0,
@@ -1338,68 +1396,10 @@
       },
       "readings": [
         "-",
+        "Awaiting funding",
         "-",
-        "-",
-        "—",
-        "40% vault"
-      ]
-    },
-    {
-      "chain": "hype",
-      "view": "wall",
-      "light": "accent",
-      "scenario": "empty",
-      "frames": {
-        "samples": 23,
-        "medianMs": 16.7,
-        "p95Ms": 16.8,
-        "fps": 60.01
-      },
-      "inventory": {
-        "nodes": 342,
-        "svgElements": 177,
-        "svgFilters": 0,
-        "svgGradients": 5,
-        "canvases": 0,
-        "canvasPixels": 0,
-        "canvasBytesEstimate": 0,
-        "runningAnimations": 0
-      },
-      "readings": [
-        "-",
-        "-",
-        "-",
-        "—",
-        "40% vault"
-      ]
-    },
-    {
-      "chain": "hype",
-      "view": "wall",
-      "light": "neutral",
-      "scenario": "empty",
-      "frames": {
-        "samples": 25,
-        "medianMs": 16.7,
-        "p95Ms": 16.8,
-        "fps": 60.01
-      },
-      "inventory": {
-        "nodes": 342,
-        "svgElements": 177,
-        "svgFilters": 0,
-        "svgGradients": 5,
-        "canvases": 0,
-        "canvasPixels": 0,
-        "canvasBytesEstimate": 0,
-        "runningAnimations": 0
-      },
-      "readings": [
-        "-",
-        "-",
-        "-",
-        "—",
-        "40% vault"
+        "Awaiting volume",
+        "Awaiting open interest"
       ]
     }
   ],

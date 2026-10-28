@@ -53,9 +53,9 @@ export function DialBezel({ children, ticks = 64 }: { children?: ReactNode; tick
         <stop offset="1" stopColor="#0b111b" />
       </linearGradient>
       <radialGradient id={`${uid}-face`} cx={light.cx} cy={light.cy} r="75%">
-        <stop stopColor="var(--accent)" stopOpacity=".13" />
-        <stop offset=".55" stopColor="#0b131f" />
-        <stop offset="1" stopColor="#050910" />
+        <stop stopColor="var(--accent)" stopOpacity=".16" />
+        <stop offset=".55" stopColor="#0b131f" stopOpacity="0" />
+        <stop offset="1" stopColor="#050910" stopOpacity=".92" />
       </radialGradient>
       <linearGradient id={`${uid}-glass`} x1="0" y1="0" x2=".7" y2="1">
         <stop stopColor="#e6f0ff" stopOpacity=".09" />
@@ -65,6 +65,8 @@ export function DialBezel({ children, ticks = 64 }: { children?: ReactNode; tick
     </defs>
     <circle cx="120" cy={120 + LIGHT_RIG.shadow.dy} r="112" fill="#000" opacity={LIGHT_RIG.shadow.opacity} />
     <circle cx="120" cy="120" r="111" fill={`url(#${uid}-metal)`} stroke="#a4b9d2" strokeOpacity=".2" strokeWidth=".6" />
+    {/* Opaque base: the lit gradient tints the face instead of letting the frame show through. */}
+    <circle cx="120" cy="120" r="106" fill="#0b131f" />
     <circle cx="120" cy="120" r="106" fill={`url(#${uid}-face)`} stroke="#02050a" strokeWidth="2" />
     <circle cx="120" cy="120" r="103" fill="none" stroke="#cfddf0" strokeOpacity=".15" strokeWidth=".5" />
     <circle cx="120" cy="120" r="77" fill="none" stroke="var(--accent)" strokeOpacity=".1" strokeWidth=".5" />
