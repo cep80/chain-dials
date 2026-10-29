@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Metadata } from "next";
 import { LegalDoc } from "@/components/legal/LegalDoc";
 import { SITE_NAME, supportEmail } from "@/lib/site";
@@ -24,6 +25,7 @@ export default function PrivacyPage() {
           Optional accounts (email/password) power Pro checkout, saved layouts,
           and synced alert rules. Billing is handled by Stripe.
         </li>
+        <li>You can delete your account and its saved data at any time from the Account page.</li>
         <li>We do not sell personal information.</li>
         <li>
           Favorites and small UI preferences stay on your device
@@ -94,10 +96,28 @@ export default function PrivacyPage() {
         behavior.
       </p>
 
+      <h2>Accounts and deleting your data</h2>
+      <p>
+        An account stores your email address, a password hash, your Pro status
+        with its Stripe customer and subscription IDs, and anything you save to
+        it: layouts, alert rules, wall packs and desks.
+      </p>
+      <p>
+        To delete it, sign in and open <Link href="/account">Account</Link>, choose
+        Delete account, and confirm with your password. This works the same in
+        the website and the iOS and Android apps. Your sign-in and every saved
+        item are removed right away. An active Pro subscription is cancelled at
+        the same moment, without a refund for the current period. Stripe keeps
+        its own records of past payments as the law requires. If you cannot
+        sign in, email us from the address on the account and we will delete it
+        for you.
+      </p>
+
       <h2>Your choices</h2>
       <ul>
         <li>Stop using the app or site at any time.</li>
         <li>Clear local storage / uninstall to wipe device preferences.</li>
+        <li>Delete your account from the Account page.</li>
         <li>
           Contact us at{" "}
           <a href={`mailto:${email}`}>{email}</a> for privacy questions.

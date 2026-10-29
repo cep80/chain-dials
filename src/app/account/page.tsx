@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import { Suspense, useState } from "react";
+import { DeleteAccount } from "@/components/account/DeleteAccount";
 import { AppShell } from "@/components/shell/AppShell";
 import { PRO_PRICE_LABEL } from "@/lib/pro";
 
@@ -22,6 +23,11 @@ function AccountBody() {
   if (status !== "authenticated" || !data?.user) {
     return (
       <div className="rounded-[14px] border border-line bg-ink-elevated p-6">
+        {params.get("deleted") === "1" ? (
+          <p className="mb-4 rounded-[12px] border border-up/40 bg-up/10 px-4 py-3 text-sm text-paper" role="status">
+            Your account and its saved data have been deleted.
+          </p>
+        ) : null}
         <p className="text-paper">You’re signed out.</p>
         <div className="mt-4 flex flex-wrap gap-3">
           <Link
@@ -185,6 +191,8 @@ function AccountBody() {
           See the Pro page
         </button>
       </div>
+
+      <DeleteAccount pro={Boolean(user.pro)} />
     </div>
   );
 }

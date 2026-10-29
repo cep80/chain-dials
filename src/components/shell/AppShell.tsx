@@ -182,7 +182,10 @@ export function AppShell({
       </a>
       <div className="sticky top-0 z-40 border-b border-line/80 bg-ink/80 backdrop-blur-md pt-[env(safe-area-inset-top,0px)]">
         <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-3 md:flex-row md:items-center md:justify-between md:px-6">
-          <nav className="flex flex-wrap items-center gap-4 text-sm">
+          {/* Phones: one swipeable row, not a sticky header that wraps to three
+              rows. The fade marks more links offscreen; the end padding lets the
+              last link scroll clear of it. */}
+          <nav className="-mx-4 flex min-w-0 items-center gap-4 overflow-x-auto whitespace-nowrap px-4 pr-10 text-sm [mask-image:linear-gradient(to_right,black_calc(100%-2.5rem),transparent)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [&>*]:shrink-0 md:mx-0 md:flex-wrap md:overflow-visible md:px-0 md:[mask-image:none]">
             <Hint tip="nav.suite">
               <Link href="/" className="font-bold tracking-tight text-paper">
                 Chain<span className="text-accent">Dials</span>

@@ -88,6 +88,22 @@ export async function cbSignup(
   return (await res.json()) as CargoSession;
 }
 
+/**
+ * Delete the signed-in user's CargoBase account. CargoBase checks the password
+ * again and refuses studio owners/admins (409). Removes the auth user and its
+ * sessions only; rows in app tables are the caller's to delete.
+ */
+export async function cbDeleteUser(token: string, password: string): Promise<void> {
+  requireConfig();
+  const res = await fetch(`${BASE}/auth/v1/user`, {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ password }),
+    cache: "no-store",
+  });
+  if (!res.ok) throw new CargoError(res.status, await readError(res));
+}
+
 /** Exchange a refresh token. Access tokens last an hour; sessions last longer. */
 export async function cbRefresh(
   refreshToken: string,

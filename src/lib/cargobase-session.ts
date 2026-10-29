@@ -10,6 +10,7 @@ import { isProActive } from "@/lib/pro";
  */
 export type CargoUser = {
   id: string;
+  email: string;
   token: string;
   pro: boolean;
 };
@@ -36,6 +37,7 @@ export async function requireCargoUser(
   return {
     user: {
       id: token.sub,
+      email: token.email ?? "",
       token: token.cbAccess,
       pro: isProActive(token.proStatus, token.proCurrentPeriodEnd),
     },

@@ -80,5 +80,5 @@ export function supportEmail(): string {
 export const LEGAL = {
   privacyPath: "/privacy",
   termsPath: "/terms",
-  effectiveDate: "July 28, 2026",
+  effectiveDate: "October 29, 2026",
 } as const;
