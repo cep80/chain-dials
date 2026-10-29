@@ -3,33 +3,44 @@ import { getToken } from "next-auth/jwt";
 import { isProActive } from "@/lib/pro";
 
 /**
- * The signed-in user's CargoBase credentials, for API routes.
+ * The signed-in user's Supabase credentials, for API routes.
  *
  * Read from the NextAuth JWT rather than from `auth()`: the session object is
- * serialised to the browser, and the CargoBase access token must not be.
+ * serialised to the browser, and the Supabase access token must not be.
  */
-export type CargoUser = {
+export type SessionUser = {
   id: string;
   email: string;
   token: string;
   pro: boolean;
 };
 
+/**
+ * Auth.js names the session cookie by the protocol of the request that set it
+ * (`__Secure-` prefix over HTTPS), reading the forwarded protocol because of
+ * trustHost. Decide the same way here; keying off NODE_ENV instead loses the
+ * session on any production build served over plain HTTP.
+ */
+export function isSecureRequest(req: Request): boolean {
+  const forwarded = req.headers.get("x-forwarded-proto")?.split(",")[0]?.trim();
+  return (forwarded ?? new URL(req.url).protocol.replace(/:$/, "")) === "https";
+}
+
 async function readToken(req: Request) {
   return getToken({
     // getToken only needs the cookies off the request.
     req: req as unknown as Parameters<typeof getToken>[0]["req"],
     secret: process.env.AUTH_SECRET,
-    secureCookie: process.env.NODE_ENV === "production",
+    secureCookie: isSecureRequest(req),
   });
 }
 
 /** Signed-in user, or a 401 response. */
-export async function requireCargoUser(
+export async function requireUser(
   req: Request,
-): Promise<{ user: CargoUser } | { error: NextResponse }> {
+): Promise<{ user: SessionUser } | { error: NextResponse }> {
   const token = await readToken(req);
-  if (!token?.sub || !token.cbAccess) {
+  if (!token?.sub || !token.sbAccess) {
     return {
       error: NextResponse.json({ error: "Sign in required" }, { status: 401 }),
     };
@@ -38,7 +49,7 @@ export async function requireCargoUser(
     user: {
       id: token.sub,
       email: token.email ?? "",
-      token: token.cbAccess,
+      token: token.sbAccess,
       pro: isProActive(token.proStatus, token.proCurrentPeriodEnd),
     },
   };
@@ -48,8 +59,8 @@ export async function requireCargoUser(
 export async function requireProUser(
   req: Request,
   feature: string,
-): Promise<{ user: CargoUser } | { error: NextResponse }> {
-  const gate = await requireCargoUser(req);
+): Promise<{ user: SessionUser } | { error: NextResponse }> {
+  const gate = await requireUser(req);
   if ("error" in gate) return gate;
   if (!gate.user.pro) {
     return {

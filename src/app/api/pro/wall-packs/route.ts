@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { cbRest } from "@/lib/cargobase";
-import { requireProUser } from "@/lib/cargobase-session";
+import { sbRest } from "@/lib/supabase";
+import { requireProUser } from "@/lib/supabase-session";
 import { normalizeWallPack } from "@/lib/wall-packs";
 
 export const dynamic = "force-dynamic";
@@ -14,7 +14,7 @@ export async function GET(req: Request) {
   const gate = await requireProUser(req, "wall packs");
   if ("error" in gate) return gate.error;
 
-  const rows = await cbRest<PackRow[]>(
+  const rows = await sbRest<PackRow[]>(
     "wall_packs?select=payload&order=updated_at.desc",
     { token: gate.user.token },
   );
@@ -48,13 +48,13 @@ export async function PUT(req: Request) {
 
   // Replace the caller's set. Not a transaction — see the note in the alerts
   // route — but both halves are scoped to the caller by row-level security.
-  await cbRest("wall_packs?id=not.is.null", {
+  await sbRest("wall_packs?id=not.is.null", {
     method: "DELETE",
     token: gate.user.token,
   });
 
   if (packs.length > 0) {
-    await cbRest("wall_packs", {
+    await sbRest("wall_packs", {
       method: "POST",
       token: gate.user.token,
       body: packs.map((pack) => ({ name: pack.name, payload: pack })),

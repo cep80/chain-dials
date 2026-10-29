@@ -42,7 +42,7 @@ describe("Pro monetization baseline (shipped free vs Pro)", () => {
     // The entitlement check lives in the shared requireProUser gate rather than
     // being repeated per route, so assert each route goes through it and that
     // the gate itself is the thing consulting isProActive.
-    const gate = readSrc("src/lib/cargobase-session.ts");
+    const gate = readSrc("src/lib/supabase-session.ts");
     expect(gate).toMatch(/isProActive/);
     expect(gate).toMatch(/Pro subscription required for/);
 

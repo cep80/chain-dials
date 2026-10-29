@@ -51,6 +51,21 @@ Copy `.env.example` to `.env.local` and set:
 - `NEXT_PUBLIC_PARTNER_*`: labeled affiliate slot
 - `CAP_SERVER_URL`: Capacitor production WebView origin
 - Optional `COINGECKO_DEMO_API_KEY` / `COINGECKO_API_KEY` for price history rate limits
+- `AUTH_SECRET`, `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`: accounts and Pro
+- `STRIPE_SECRET_KEY`, `STRIPE_PRICE_ID`, `STRIPE_WEBHOOK_SECRET`: Pro billing
+
+## Accounts (Supabase)
+
+Accounts, Pro entitlement and saved data live in the Supabase project
+`chain-dials`. NextAuth is the session layer; API routes act as the user with
+their Supabase token, so row-level security keeps users apart.
+
+- Schema and policies: `supabase/migrations/` (apply with `supabase db push`)
+- `profiles` holds entitlement and is read-only to users; only the server's
+  secret key writes it. A trigger creates it at sign-up.
+- Every user-owned row cascades from `auth.users`, so account deletion removes it all.
+- `npm run verify:rls` checks the database refuses anonymous reads and
+  self-granted Pro (with `VERIFY_EMAIL` / `VERIFY_PASSWORD` for a test account).
 
 ## Stack
 
@@ -60,3 +75,4 @@ Copy `.env.example` to `.env.local` and set:
 - Bitcoin: mempool.space REST + WebSocket
 - ETH / SOL: public RPCs + CoinGecko (proxied under `/api/suite`)
 - Hyperliquid: HyperEVM JSON-RPC tip/fees + `api.hyperliquid.xyz` perp info (funding, OI, volume)
+- Accounts: Supabase (Auth + Postgres) behind NextAuth; billing: Stripe

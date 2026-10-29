@@ -10,13 +10,13 @@ Use with [MOBILE.md](./MOBILE.md). Goal: ship **1.0.0** to App Store + Play Stor
 | 1 | Production site live | `https://chaindials.com` loads boards + `/api/*` |
 | 2 | Privacy + Terms live | `/privacy` and `/terms` return 200 |
 | 3 | Env on host | `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_SUPPORT_EMAIL` set |
-| 3a | Backend env on host | `AUTH_SECRET`, `CARGOBASE_URL`, `CARGOBASE_ANON_KEY`, `CARGOBASE_SERVICE_ROLE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_PRICE_ID`, `STRIPE_WEBHOOK_SECRET` set |
+| 3a | Backend env on host | `AUTH_SECRET`, `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_PRICE_ID`, `STRIPE_WEBHOOK_SECRET` set |
 | 3b | Health green | `GET /api/health` returns 200 with `backend: "ok"`, `auth_secret: true`, `billing: true` |
 | 3c | Stripe webhook | Live-mode endpoint `https://chaindials.com/api/billing/webhook` registered; test checkout flips an account to Pro |
 | 3d | Stripe price matches UI | The live `STRIPE_PRICE_ID` charges `PRO_PRICE_USD` from `src/lib/pro.ts` ($3/mo), which is what every Pro label shows |
-| 3e | Entitlement locked | `db/migrations/001_lock_profile_entitlement.sql` applied in the CargoBase studio; `VERIFY_EMAIL=… VERIFY_PASSWORD=… npm run verify:rls` passes with a non-Pro account |
-| 3f | Live policies on record | Output of `db/export-policies.sql` reconciled with `db/schema.sql` |
-| 3g | Account deletion live | CargoBase auth redeployed with `DELETE /v1/user` (cargobase `services/auth/delete_user.go`); deleting a throwaway account from `/account` succeeds and its rows are gone |
+| 3e | Entitlement locked | `VERIFY_EMAIL=… VERIFY_PASSWORD=… npm run verify:rls` passes with a non-Pro account (users cannot write `profiles`) |
+| 3f | Schema in sync | `supabase db diff --linked` reports no changes against `supabase/migrations` |
+| 3g | Email for auth | Custom SMTP set in Supabase (Auth → SMTP) so password reset and confirmation mail reach real users; the built-in sender only delivers to your own team |
 | 4 | Native shells synced to prod | `npm run cap:prod` |
 | 5 | Icons / splash | `npm run cap:assets` then `cap:prod` |
 | 6 | Signing | Apple Team + Android upload keystore |

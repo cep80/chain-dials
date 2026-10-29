@@ -39,6 +39,11 @@ export function SignInForm() {
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
+      {params.get("reset") === "1" ? (
+        <p className="rounded-[12px] border border-up/40 bg-up/10 px-4 py-3 text-sm text-paper" role="status">
+          Password updated. Sign in with the new one.
+        </p>
+      ) : null}
       <label className="block text-sm">
         <span className="text-paper-muted">Email</span>
         <input
@@ -70,6 +75,11 @@ export function SignInForm() {
       >
         {busy ? "Signing in…" : "Sign in"}
       </button>
+      <p className="text-center text-sm">
+        <Link href="/account/forgot" className="text-paper-muted hover:text-paper">
+          Forgot password?
+        </Link>
+      </p>
       <p className="text-center text-sm text-paper-muted">
         New here?{" "}
         <Link href="/account/signup" className="text-accent hover:underline">

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { CargoError, cbAdmin, cbSignup } from "@/lib/cargobase";
+import { SupabaseError, sbSignup } from "@/lib/supabase";
 import { clientIp, rateLimit, rateLimitResponse } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
@@ -38,34 +38,18 @@ export async function POST(req: Request) {
 
   const email = parsed.data.email.toLowerCase().trim();
 
-  let userId: string;
   try {
-    const session = await cbSignup(email, parsed.data.password);
-    userId = session.user.id;
+    // The profile, which carries entitlement, is created by a database trigger
+    // on auth.users, so nothing here writes it.
+    await sbSignup(email, parsed.data.password);
   } catch (err) {
-    // CargoBase answers 409 for a taken address. Swallowing it keeps the reply
-    // identical either way, so this endpoint cannot be used to test whether an
-    // address has an account.
-    if (err instanceof CargoError && err.status === 409) {
+    // A taken address comes back as 422 user_already_exists. Swallowing it
+    // keeps the reply identical either way, so this endpoint cannot be used to
+    // test whether an address has an account.
+    if (err instanceof SupabaseError && err.code === "user_already_exists") {
       return NextResponse.json(GENERIC_OK, { status: 201 });
     }
     throw err;
-  }
-
-  // The profile carries entitlement, which the user must not be able to set for
-  // themselves, so it is written with the service role rather than their token.
-  try {
-    await cbAdmin("profiles", {
-      method: "POST",
-      body: {
-        user_id: userId,
-        email,
-        pro_status: "none",
-      },
-    });
-  } catch {
-    // A missing profile reads as "not Pro" and is recreated by the billing
-    // webhook on first purchase, so this is not worth failing the signup for.
   }
 
   return NextResponse.json(GENERIC_OK, { status: 201 });

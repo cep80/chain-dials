@@ -1,12 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { cbAdmin, cbDeleteUser, cbLogin, CargoError } from "@/lib/cargobase";
-import { requireCargoUser } from "@/lib/cargobase-session";
+import { sbDeleteUser, sbLogin, SupabaseError } from "@/lib/supabase";
+import { requireUser } from "@/lib/supabase-session";
 import { clientIp, rateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import { getProfile, getStripe, stripeConfigured } from "@/lib/stripe";
-
-// Every table holding rows a user owns. A new user-owned table belongs here.
-const USER_TABLES = ["layouts", "alert_rules", "wall_packs", "desk_packs", "profiles"] as const;
 
 const bodySchema = z.object({ password: z.string().min(1).max(200) });
 
@@ -14,15 +11,13 @@ const bodySchema = z.object({ password: z.string().min(1).max(200) });
  * Delete the signed-in account (App Store 5.1.1(v), Google Play account
  * deletion policy).
  *
- * Ordered so nothing irreversible happens until every step that can fail
- * cleanly has passed: the password is checked, then billing is stopped, then
- * the CargoBase user is deleted. Only the last step, removing app rows, runs
- * after the account is gone; it uses the service role and a failure there is
- * logged for manual cleanup rather than surfaced, because the account no
- * longer exists to retry from.
+ * The password is checked and billing stopped before the irreversible step,
+ * so a wrong password or a Stripe failure leaves everything intact. Deleting
+ * the Supabase user then removes every row the user owns: each app table
+ * references auth.users with ON DELETE CASCADE.
  */
 export async function DELETE(req: Request) {
-  const gate = await requireCargoUser(req);
+  const gate = await requireUser(req);
   if ("error" in gate) return gate.error;
   const { user } = gate;
 
@@ -37,9 +32,9 @@ export async function DELETE(req: Request) {
 
   let verified = false;
   try {
-    verified = Boolean(user.email && (await cbLogin(user.email, password)));
+    verified = Boolean(user.email && (await sbLogin(user.email, password)));
   } catch (err) {
-    if (err instanceof CargoError && err.status === 429) {
+    if (err instanceof SupabaseError && err.status === 429) {
       return NextResponse.json({ error: "Too many attempts. Try again later." }, { status: 429 });
     }
     throw err;
@@ -67,31 +62,10 @@ export async function DELETE(req: Request) {
   }
 
   try {
-    await cbDeleteUser(user.token, password);
+    await sbDeleteUser(user.id);
   } catch (err) {
-    if (err instanceof CargoError && err.status === 409) {
-      return NextResponse.json(
-        { error: "This account administers the backend and cannot be deleted here." },
-        { status: 409 },
-      );
-    }
-    if (err instanceof CargoError && err.status === 429) {
-      return NextResponse.json({ error: "Too many attempts. Try again later." }, { status: 429 });
-    }
-    console.error("account delete: cargobase delete failed", { userId: user.id, err });
+    console.error("account delete: supabase delete failed", { userId: user.id, err });
     return NextResponse.json({ error: "Could not delete the account. Try again shortly." }, { status: 502 });
-  }
-
-  const leftovers: string[] = [];
-  for (const table of USER_TABLES) {
-    try {
-      await cbAdmin(`${table}?user_id=eq.${encodeURIComponent(user.id)}`, { method: "DELETE" });
-    } catch {
-      leftovers.push(table);
-    }
-  }
-  if (leftovers.length) {
-    console.error("account delete: rows left for manual cleanup", { userId: user.id, tables: leftovers });
   }
 
   return NextResponse.json({ ok: true });

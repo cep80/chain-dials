@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Checks that the CargoBase database refuses what the app relies on it to refuse.
+ * Checks that the Supabase database refuses what the app relies on it to refuse.
  *
  *   node --env-file=.env.local scripts/verify-rls.mjs
  *
@@ -14,12 +14,12 @@
  * and only the bad value stopped it.
  */
 
-const BASE = (process.env.CARGOBASE_URL ?? "").replace(/\/+$/, "");
-const ANON = process.env.CARGOBASE_ANON_KEY ?? "";
+const BASE = (process.env.SUPABASE_URL ?? "").replace(/\/+$/, "");
+const ANON = process.env.SUPABASE_PUBLISHABLE_KEY ?? "";
 const TABLES = ["profiles", "layouts", "alert_rules", "wall_packs", "desk_packs"];
 
 if (!BASE || !ANON) {
-  console.error("Set CARGOBASE_URL and CARGOBASE_ANON_KEY (e.g. --env-file=.env.local).");
+  console.error("Set SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY (e.g. --env-file=.env.local).");
   process.exit(2);
 }
 
@@ -68,9 +68,9 @@ if (!email || !password) {
   console.log("\naccount probes skipped: set VERIFY_EMAIL and VERIFY_PASSWORD");
 } else {
   console.log(`\naccount ${email}`);
-  const login = await fetch(`${BASE}/auth/v1/login`, {
+  const login = await fetch(`${BASE}/auth/v1/token?grant_type=password`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", apikey: ANON },
     body: JSON.stringify({ email, password }),
   });
   if (!login.ok) {
@@ -92,7 +92,7 @@ if (!email || !password) {
       body: { pro_status: current.pro_status },
     });
     if (upd.status < 400 && Array.isArray(upd.json) && upd.json.length > 0) {
-      fail("user can UPDATE own profile, so can set pro_status=active (run db/migrations/001)");
+      fail("user can UPDATE own profile, so can set pro_status=active (see supabase/migrations)");
     } else {
       pass(`profile update refused (${upd.status}${upd.json?.code ? ` ${upd.json.code}` : ""})`);
     }
@@ -104,7 +104,7 @@ if (!email || !password) {
     body: { user_id: user.id, pro_status: null },
   });
   if (ins.json?.code === "23502") {
-    fail("user can INSERT a profile, so can create one with pro_status=active (run db/migrations/001)");
+    fail("user can INSERT a profile, so can create one with pro_status=active (see supabase/migrations)");
   } else if (ins.status < 400) {
     fail(`profile insert unexpectedly succeeded (${ins.status}); inspect and delete the row`);
   } else {

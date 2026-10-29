@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => {
-  class CargoError extends Error {
+  class SupabaseError extends Error {
     status: number;
     constructor(status: number, message: string) {
       super(message);
@@ -9,22 +9,22 @@ const mocks = vi.hoisted(() => {
     }
   }
   return {
-    CargoError,
-    cbAdmin: vi.fn(),
-    cbDeleteUser: vi.fn(),
-    cbLogin: vi.fn(),
-    requireCargoUser: vi.fn(),
+    SupabaseError,
+    sbAdmin: vi.fn(),
+    sbDeleteUser: vi.fn(),
+    sbLogin: vi.fn(),
+    requireUser: vi.fn(),
     getProfile: vi.fn(),
     customersDel: vi.fn(),
   };
 });
-vi.mock("@/lib/cargobase", () => ({
-  cbAdmin: mocks.cbAdmin,
-  cbDeleteUser: mocks.cbDeleteUser,
-  cbLogin: mocks.cbLogin,
-  CargoError: mocks.CargoError,
+vi.mock("@/lib/supabase", () => ({
+  sbAdmin: mocks.sbAdmin,
+  sbDeleteUser: mocks.sbDeleteUser,
+  sbLogin: mocks.sbLogin,
+  SupabaseError: mocks.SupabaseError,
 }));
-vi.mock("@/lib/cargobase-session", () => ({ requireCargoUser: mocks.requireCargoUser }));
+vi.mock("@/lib/supabase-session", () => ({ requireUser: mocks.requireUser }));
 vi.mock("@/lib/rate-limit", () => ({
   clientIp: () => "test",
   rateLimit: () => ({ ok: true }),
@@ -45,69 +45,69 @@ const request = (body: unknown = { password: "pw" }) =>
   });
 
 beforeEach(() => {
-  for (const m of [mocks.cbAdmin, mocks.cbDeleteUser, mocks.cbLogin, mocks.getProfile, mocks.customersDel]) m.mockReset();
-  mocks.requireCargoUser.mockReset().mockResolvedValue({ user: { id: "u1", email: "a@b.co", token: "t", pro: true } });
-  mocks.cbLogin.mockResolvedValue({ access_token: "x" });
+  for (const m of [mocks.sbAdmin, mocks.sbDeleteUser, mocks.sbLogin, mocks.getProfile, mocks.customersDel]) m.mockReset();
+  mocks.requireUser.mockReset().mockResolvedValue({ user: { id: "u1", email: "a@b.co", token: "t", pro: true } });
+  mocks.sbLogin.mockResolvedValue({ access_token: "x" });
   mocks.getProfile.mockResolvedValue({ user_id: "u1", stripe_customer_id: "cus_1" });
 });
 
 describe("account deletion", () => {
-  it("cancels billing, deletes the user, then removes every owned row", async () => {
+  it("cancels billing, then deletes the user by id", async () => {
     const order: string[] = [];
     mocks.customersDel.mockImplementation(async () => order.push("stripe"));
-    mocks.cbDeleteUser.mockImplementation(async () => order.push("auth"));
-    mocks.cbAdmin.mockImplementation(async (path: string) => order.push(path.split("?")[0]));
+    mocks.sbDeleteUser.mockImplementation(async () => order.push("auth"));
 
     const res = await DELETE(request());
     expect(res.status).toBe(200);
-    expect(order).toEqual(["stripe", "auth", "layouts", "alert_rules", "wall_packs", "desk_packs", "profiles"]);
-    for (const [path, opts] of mocks.cbAdmin.mock.calls) {
-      expect(path).toContain("user_id=eq.u1");
-      expect(opts).toEqual({ method: "DELETE" });
-    }
+    expect(order).toEqual(["stripe", "auth"]);
+    expect(mocks.sbDeleteUser).toHaveBeenCalledWith("u1");
+    // Rows go with the user via ON DELETE CASCADE; nothing deletes them by hand.
+    expect(mocks.sbAdmin).not.toHaveBeenCalled();
   });
 
   it("touches nothing when the password is wrong", async () => {
-    mocks.cbLogin.mockResolvedValue(null);
+    mocks.sbLogin.mockResolvedValue(null);
     const res = await DELETE(request());
     expect(res.status).toBe(401);
     expect(mocks.customersDel).not.toHaveBeenCalled();
-    expect(mocks.cbDeleteUser).not.toHaveBeenCalled();
-    expect(mocks.cbAdmin).not.toHaveBeenCalled();
+    expect(mocks.sbDeleteUser).not.toHaveBeenCalled();
   });
 
   it("deletes nothing if billing cannot be cancelled", async () => {
     mocks.customersDel.mockRejectedValue(new Error("stripe down"));
     const res = await DELETE(request());
     expect(res.status).toBe(502);
-    expect(mocks.cbDeleteUser).not.toHaveBeenCalled();
-    expect(mocks.cbAdmin).not.toHaveBeenCalled();
+    expect(mocks.sbDeleteUser).not.toHaveBeenCalled();
   });
 
   it("treats an already-deleted Stripe customer as cancelled", async () => {
     mocks.customersDel.mockRejectedValue(Object.assign(new Error("gone"), { code: "resource_missing" }));
     expect((await DELETE(request())).status).toBe(200);
-    expect(mocks.cbDeleteUser).toHaveBeenCalled();
+    expect(mocks.sbDeleteUser).toHaveBeenCalled();
   });
 
-  it("keeps app data when the backend refuses an admin account", async () => {
-    mocks.cbDeleteUser.mockRejectedValue(new mocks.CargoError(409, "owner"));
-    const res = await DELETE(request());
-    expect(res.status).toBe(409);
-    expect(mocks.cbAdmin).not.toHaveBeenCalled();
-  });
-
-  it("still succeeds when row cleanup fails after the account is gone", async () => {
-    mocks.cbAdmin.mockRejectedValue(new Error("rest down"));
-    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+  it("skips Stripe for an account that never paid", async () => {
+    mocks.getProfile.mockResolvedValue({ user_id: "u1", stripe_customer_id: null });
     expect((await DELETE(request())).status).toBe(200);
-    expect(spy).toHaveBeenCalledWith(expect.stringContaining("manual cleanup"), expect.anything());
+    expect(mocks.customersDel).not.toHaveBeenCalled();
+  });
+
+  it("reports a failed delete instead of claiming success", async () => {
+    mocks.sbDeleteUser.mockRejectedValue(new mocks.SupabaseError(500, "boom"));
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    expect((await DELETE(request())).status).toBe(502);
     spy.mockRestore();
+  });
+
+  it("rate-limits password checks it cannot make", async () => {
+    mocks.sbLogin.mockRejectedValue(new mocks.SupabaseError(429, "slow down"));
+    expect((await DELETE(request())).status).toBe(429);
+    expect(mocks.sbDeleteUser).not.toHaveBeenCalled();
   });
 
   it("requires a password and a session", async () => {
     expect((await DELETE(request({}))).status).toBe(400);
-    mocks.requireCargoUser.mockResolvedValue({ error: new Response(null, { status: 401 }) });
+    mocks.requireUser.mockResolvedValue({ error: new Response(null, { status: 401 }) });
     expect((await DELETE(request())).status).toBe(401);
   });
 });

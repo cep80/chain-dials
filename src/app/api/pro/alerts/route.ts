@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { ALERT_KINDS } from "@/lib/alerts/kinds";
 import { alertRuleError } from "@/lib/alerts/runtime";
-import { cbRest } from "@/lib/cargobase";
-import { requireProUser } from "@/lib/cargobase-session";
+import { sbRest } from "@/lib/supabase";
+import { requireProUser } from "@/lib/supabase-session";
 
 export const dynamic = "force-dynamic";
 
@@ -48,7 +48,7 @@ export async function GET(req: Request) {
     .filter(Boolean)
     .join("&");
 
-  const rows = await cbRest<RuleRow[]>(query, { token: gate.user.token });
+  const rows = await sbRest<RuleRow[]>(query, { token: gate.user.token });
   return NextResponse.json({ rules: rows.map(toRule) });
 }
 
@@ -80,7 +80,7 @@ export async function PUT(req: Request) {
   // Apply updates and inserts before removing obsolete rules. A failed insert
   // can leave an earlier update in place, but can no longer erase the old set.
   const list = chainIds.map((chainId) => `"${chainId}"`).join(",");
-  const previous = chainIds.length ? await cbRest<RuleRow[]>(
+  const previous = chainIds.length ? await sbRest<RuleRow[]>(
     `${SELECT}&chain_id=in.(${encodeURIComponent(list)})`, { token: gate.user.token },
   ) : [];
   const byKey = new Map(previous.map((row) => [`${row.chain_id}:${row.kind}`, row]));
@@ -92,7 +92,7 @@ export async function PUT(req: Request) {
         enabled: rule.enabled,
         params: rule.params ?? {},
     };
-    await cbRest(old ? `alert_rules?id=eq.${encodeURIComponent(old.id)}` : "alert_rules", {
+    await sbRest(old ? `alert_rules?id=eq.${encodeURIComponent(old.id)}` : "alert_rules", {
       method: old ? "PATCH" : "POST",
       token: gate.user.token,
       body: old ? { enabled: body.enabled, params: body.params } : body,
@@ -101,12 +101,12 @@ export async function PUT(req: Request) {
   const keep = new Set(submittedKeys);
   for (const row of previous) {
     if (keep.has(`${row.chain_id}:${row.kind}`)) continue;
-    await cbRest(`alert_rules?id=eq.${encodeURIComponent(row.id)}`, {
+    await sbRest(`alert_rules?id=eq.${encodeURIComponent(row.id)}`, {
       method: "DELETE", token: gate.user.token,
     });
   }
 
-  const rows = await cbRest<RuleRow[]>(`${SELECT}&order=created_at.asc`, {
+  const rows = await sbRest<RuleRow[]>(`${SELECT}&order=created_at.asc`, {
     token: gate.user.token,
   });
   return NextResponse.json({ rules: rows.map(toRule) });

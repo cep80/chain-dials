@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { cbAdmin } from "@/lib/cargobase";
+import { sbAdmin } from "@/lib/supabase";
 import type Stripe from "stripe";
 import {
   findUserIdForSubscription,
@@ -33,7 +33,7 @@ async function resolveCheckoutUserId(
     return null;
   }
 
-  const bound = await cbAdmin<{ user_id: string }[]>(
+  const bound = await sbAdmin<{ user_id: string }[]>(
     `profiles?select=user_id&stripe_customer_id=eq.${encodeURIComponent(customerId)}&user_id=neq.${encodeURIComponent(metaUserId)}&limit=1`,
     {},
   );
@@ -47,7 +47,7 @@ async function resolveCheckoutUserId(
   }
 
   if (!profile.stripe_customer_id) {
-    await cbAdmin(`profiles?user_id=eq.${encodeURIComponent(metaUserId)}`, {
+    await sbAdmin(`profiles?user_id=eq.${encodeURIComponent(metaUserId)}`, {
       method: "PATCH",
       body: { stripe_customer_id: customerId },
     });
@@ -102,7 +102,7 @@ export async function POST(req: Request) {
         const userId = await findUserIdForSubscription(sub);
         if (userId) {
           if (event.type === "customer.subscription.deleted") {
-            await cbAdmin(`profiles?user_id=eq.${encodeURIComponent(userId)}`, {
+            await sbAdmin(`profiles?user_id=eq.${encodeURIComponent(userId)}`, {
               method: "PATCH",
               body: { pro_status: "canceled", stripe_subscription_id: sub.id },
             });

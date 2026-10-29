@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { cbRest } from "@/lib/cargobase";
-import { requireProUser } from "@/lib/cargobase-session";
+import { sbRest } from "@/lib/supabase";
+import { requireProUser } from "@/lib/supabase-session";
 
 export const dynamic = "force-dynamic";
 
@@ -44,7 +44,7 @@ export async function GET(req: Request) {
     .filter(Boolean)
     .join("&");
 
-  const rows = await cbRest<LayoutRow[]>(query, { token: gate.user.token });
+  const rows = await sbRest<LayoutRow[]>(query, { token: gate.user.token });
   return NextResponse.json({ layouts: rows.map(toLayout) });
 }
 
@@ -64,7 +64,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid layout payload" }, { status: 400 });
   }
 
-  const existing = await cbRest<{ id: string }[]>("layouts?select=id", {
+  const existing = await sbRest<{ id: string }[]>("layouts?select=id", {
     token: gate.user.token,
   });
   if (existing.length >= MAX_LAYOUTS) {
@@ -74,7 +74,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const [row] = await cbRest<LayoutRow[]>("layouts", {
+  const [row] = await sbRest<LayoutRow[]>("layouts", {
     method: "POST",
     token: gate.user.token,
     representation: true,
@@ -101,7 +101,7 @@ export async function DELETE(req: Request) {
 
   // RLS scopes the delete to the caller, so a wrong id deletes nothing rather
   // than someone else's layout. Representation tells us which it was.
-  const deleted = await cbRest<LayoutRow[]>(
+  const deleted = await sbRest<LayoutRow[]>(
     `layouts?id=eq.${encodeURIComponent(id)}`,
     { method: "DELETE", token: gate.user.token, representation: true },
   );

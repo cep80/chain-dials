@@ -100,7 +100,9 @@ export default function PrivacyPage() {
       <p>
         An account stores your email address, a password hash, your Pro status
         with its Stripe customer and subscription IDs, and anything you save to
-        it: layouts, alert rules, wall packs and desks.
+        it: layouts, alert rules, wall packs and desks. Account data is stored
+        with Supabase, our database and authentication provider, on servers in
+        the United States.
       </p>
       <p>
         To delete it, sign in and open <Link href="/account">Account</Link>, choose

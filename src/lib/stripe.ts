@@ -1,5 +1,5 @@
 import Stripe from "stripe";
-import { cbAdmin } from "@/lib/cargobase";
+import { sbAdmin } from "@/lib/supabase";
 
 let stripeSingleton: Stripe | null = null;
 
@@ -49,7 +49,7 @@ const PROFILE_COLS =
  * therefore has to scope itself by user_id explicitly — RLS is not doing it.
  */
 export async function getProfile(userId: string): Promise<Profile | null> {
-  const rows = await cbAdmin<Profile[]>(
+  const rows = await sbAdmin<Profile[]>(
     `profiles?select=${PROFILE_COLS}&user_id=eq.${encodeURIComponent(userId)}&limit=1`,
     {},
   );
@@ -63,7 +63,7 @@ export async function ensureProfile(
 ): Promise<Profile> {
   const existing = await getProfile(userId);
   if (existing) return existing;
-  const [row] = await cbAdmin<Profile[]>("profiles", {
+  const [row] = await sbAdmin<Profile[]>("profiles", {
     method: "POST",
     representation: true,
     body: { user_id: userId, email: email ?? null, pro_status: "none" },
@@ -91,7 +91,7 @@ export async function ensureStripeCustomer(user: {
 
   // Conditional on the column still being null, so two concurrent checkouts
   // cannot both bind a customer. The loser reads back the winner's id.
-  const claimed = await cbAdmin<Profile[]>(
+  const claimed = await sbAdmin<Profile[]>(
     `profiles?user_id=eq.${encodeURIComponent(user.id)}&stripe_customer_id=is.null`,
     {
       method: "PATCH",
@@ -136,7 +136,7 @@ export async function syncSubscriptionToUser(
       : subscription.customer?.id;
 
   await ensureProfile(userId);
-  await cbAdmin(`profiles?user_id=eq.${encodeURIComponent(userId)}`, {
+  await sbAdmin(`profiles?user_id=eq.${encodeURIComponent(userId)}`, {
     method: "PATCH",
     body: {
       stripe_subscription_id: subscription.id,
@@ -159,7 +159,7 @@ export async function findUserIdForSubscription(
   if (!customerId) return null;
 
   // Prefer durable customer binding over mutable metadata.
-  const byCustomer = await cbAdmin<Profile[]>(
+  const byCustomer = await sbAdmin<Profile[]>(
     `profiles?select=${PROFILE_COLS}&stripe_customer_id=eq.${encodeURIComponent(customerId)}&limit=1`,
     {},
   );

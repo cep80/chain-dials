@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { cargobaseConfigured, getApiHealthUrl } from "@/lib/cargobase";
+import { supabaseConfigured, supabaseHealthy } from "@/lib/supabase";
 
 export const dynamic = "force-dynamic";
 
@@ -10,20 +10,13 @@ export const dynamic = "force-dynamic";
  * key material stay out of the response, because this endpoint is public.
  */
 export async function GET() {
-  const configured = cargobaseConfigured();
+  const configured = supabaseConfigured();
 
-  let backend: "ok" | "down" | "unconfigured" = configured ? "down" : "unconfigured";
-  if (configured) {
-    try {
-      const res = await fetch(getApiHealthUrl(), {
-        cache: "no-store",
-        signal: AbortSignal.timeout(5000),
-      });
-      backend = res.ok ? "ok" : "down";
-    } catch {
-      backend = "down";
-    }
-  }
+  const backend: "ok" | "down" | "unconfigured" = !configured
+    ? "unconfigured"
+    : (await supabaseHealthy())
+      ? "ok"
+      : "down";
 
   const body = {
     status: backend === "ok" ? "ok" : "degraded",

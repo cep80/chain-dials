@@ -12,10 +12,10 @@ declare module "next-auth" {
 
   interface User {
     proStatus?: string;
-    /** CargoBase tokens, carried from authorize() into the JWT. */
-    cbAccess?: string;
-    cbRefresh?: string;
-    cbExpiresAt?: number;
+    /** Supabase tokens, carried from authorize() into the JWT. */
+    sbAccess?: string;
+    sbRefresh?: string;
+    sbExpiresAt?: number;
   }
 }
 
@@ -26,11 +26,11 @@ declare module "next-auth/jwt" {
     proCurrentPeriodEnd?: string | null;
     proCheckedAt?: number;
     /**
-     * The CargoBase access token this session acts with. API routes use it so
+     * The Supabase access token this session acts with. API routes use it so
      * PostgREST applies row-level security as the signed-in user.
      */
-    cbAccess?: string;
-    cbRefresh?: string;
-    cbExpiresAt?: number;
+    sbAccess?: string;
+    sbRefresh?: string;
+    sbExpiresAt?: number;
   }
 }
