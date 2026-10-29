@@ -1,13 +1,7 @@
 import type { ChainId } from "@/lib/chains/types";
+import { NOSTR_RELAYS } from "@/lib/share/nostr-relays";
 
-/** Public write relays for one-tap NIP-07 publish. */
-export const NOSTR_RELAYS = [
-  "wss://relay.damus.io",
-  "wss://nos.lol",
-  "wss://relay.primal.net",
-  "wss://relay.snort.social",
-  "wss://nostr.wine",
-] as const;
+export { NOSTR_RELAYS };
 
 export type NostrUnsignedEvent = {
   kind: number;

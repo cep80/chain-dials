@@ -122,7 +122,7 @@ export function InstrumentOfTheDay() {
             {chain.shortName} · {copy.frameTitle}
           </h2>
           <p className="mt-2 max-w-lg text-sm leading-relaxed text-paper-muted">
-            {copy.subtitle}. {copy.narrative}
+            {/[.?!]$/.test(copy.subtitle) ? copy.subtitle : `${copy.subtitle}.`}{" "}{copy.narrative}
           </p>
           <div className="mt-4 flex flex-wrap items-center gap-3">
             <ShareBar

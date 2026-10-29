@@ -10,7 +10,7 @@ import { useAltChainStore } from "@/lib/chains/alt-store";
 import { useChainOptional } from "@/lib/chains/context";
 import { freshnessLabel, SUITE } from "@/lib/chains/registry";
 import { formatRelativeAge } from "@/lib/format";
-import { isProEnabled } from "@/lib/pro";
+import { isProEnabled, PRO_PRICE_USD } from "@/lib/pro";
 import { useDashboardStore } from "@/lib/store";
 
 export function AppShell({
@@ -278,7 +278,7 @@ export function AppShell({
                     Pro
                     {!isProEnabled() ? (
                       <span className="ml-1 text-[10px] uppercase tracking-wider opacity-60">
-                        $3
+                        ${PRO_PRICE_USD}
                       </span>
                     ) : null}
                   </Link>

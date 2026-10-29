@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { highestBlock } from "@/lib/chain-tip";
 import {
   blocksToHalving,
   estimateHalvingDate,
@@ -325,8 +326,12 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
 
     get().hydrate();
 
-    const ingestBlock = (height: number, hash?: string, timestamp?: number) => {
+    /** Applies a tip reading. Returns false for one older than the tip we hold. */
+    const ingestBlock = (height: number, hash?: string, timestamp?: number): boolean => {
       const prev = get().live.blockHeight;
+      // Every source can lag: a cached REST body, or a stream that reconnects
+      // to a node a few blocks behind. The tip only moves forward.
+      if (prev != null && height < prev) return false;
       const tipTimestamp = timestamp
         ? timestamp < 1e12
           ? timestamp * 1000
@@ -366,6 +371,7 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
           },
         });
       }
+      return true;
     };
 
     const ingestMempool = (
@@ -486,8 +492,7 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
       });
       follow<Awaited<ReturnType<typeof mempoolRest.recentBlocks>>>("blocks", "/v1/blocks", (data) => {
         const tip = data[0];
-        // A cached REST response must not roll back a newer streamed tip.
-        if (tip && (get().live.blockHeight == null || tip.height >= get().live.blockHeight!)) ingestBlock(tip.height, tip.id, tip.timestamp);
+        if (tip) ingestBlock(tip.height, tip.id, tip.timestamp);
       });
       follow<RecentMempoolTx[]>("transactions", "/mempool/recent", (data) => applyRecentTxSample(set, asRecentRaw(data)), 8_000);
       follow<MempoolBlockProjection[]>("projections", "/v1/fees/mempool-blocks", (data) => {
@@ -518,19 +523,17 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
           timestamp?: number;
         }>(msg.block);
         if (block && typeof block.height === "number") {
-          ingestBlock(block.height, block.id ?? block.hash, block.timestamp);
-          markStreamReading("blocks");
+          if (ingestBlock(block.height, block.id ?? block.hash, block.timestamp)) markStreamReading("blocks");
         }
 
         const blocks = parseWsField<
           { height?: number; id?: string; timestamp?: number }[]
         >(msg.blocks);
         if (Array.isArray(blocks) && blocks.length) {
-          const b = blocks[0];
-          if (b && typeof b.height === "number") {
-            ingestBlock(b.height, b.id, b.timestamp);
-            markStreamReading("blocks");
-          }
+          // The init message lists recent blocks oldest-first, so the tip is
+          // the highest, not blocks[0].
+          const b = highestBlock(blocks);
+          if (b && ingestBlock(b.height, b.id, b.timestamp)) markStreamReading("blocks");
         }
 
         const mempoolInfo = parseWsField<{ size?: number; bytes?: number }>(

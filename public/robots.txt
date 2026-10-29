@@ -1,5 +1,7 @@
 User-agent: *
 Allow: /
 Disallow: /review/
+Disallow: /api/
+Disallow: /account
 
 Sitemap: https://chaindials.com/sitemap.xml

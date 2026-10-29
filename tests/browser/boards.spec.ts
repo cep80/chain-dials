@@ -23,3 +23,17 @@ for (const chain of ["btc", "eth", "sol", "hype"]) {
     expect(errors).toEqual([]);
   });
 }
+
+test("unknown routes and chains get a 404 with links back to every board", async ({ page }) => {
+  await mockFeeds(page);
+  for (const path of ["/no-such-page", "/doge"]) {
+    const res = await page.goto(path);
+    expect(res?.status()).toBe(404);
+    await expect(page.getByRole("heading", { name: "No dial at this address" })).toBeVisible();
+    for (const name of ["Bitcoin", "Ethereum", "Solana", "Hyperliquid"]) {
+      await expect(page.getByRole("link", { name, exact: true })).toBeVisible();
+    }
+  }
+  await page.getByRole("link", { name: "Solana", exact: true }).click();
+  await expect(page).toHaveURL(/\/sol$/);
+});

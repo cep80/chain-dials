@@ -37,8 +37,6 @@ yarn-error.log*
 !.env.example
 
 # local sqlite
-prisma/*.db
-prisma/*.db-journal
 /dev.db
 /dev.db-journal
 
@@ -68,3 +66,6 @@ ios/DerivedData/
 .capacitor/
 
 .vercel
+
+# Store captures: regenerate with npm run store:screenshots
+/docs/store/screenshots/

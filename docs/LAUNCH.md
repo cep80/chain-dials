@@ -6,9 +6,16 @@ Use with [MOBILE.md](./MOBILE.md). Goal: ship **1.0.0** to App Store + Play Stor
 
 | # | Check | Done when |
 |---|--------|-----------|
+| 0 | Domain registered | `chaindials.com` resolves (it returned NXDOMAIN from the .com registry on 2026-10-28) and is attached to the Vercel project. Everything below, the native shells and the store URLs depend on it. |
 | 1 | Production site live | `https://chaindials.com` loads boards + `/api/*` |
 | 2 | Privacy + Terms live | `/privacy` and `/terms` return 200 |
 | 3 | Env on host | `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_SUPPORT_EMAIL` set |
+| 3a | Backend env on host | `AUTH_SECRET`, `CARGOBASE_URL`, `CARGOBASE_ANON_KEY`, `CARGOBASE_SERVICE_ROLE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_PRICE_ID`, `STRIPE_WEBHOOK_SECRET` set |
+| 3b | Health green | `GET /api/health` returns 200 with `backend: "ok"`, `auth_secret: true`, `billing: true` |
+| 3c | Stripe webhook | Live-mode endpoint `https://chaindials.com/api/billing/webhook` registered; test checkout flips an account to Pro |
+| 3d | Stripe price matches UI | The live `STRIPE_PRICE_ID` charges `PRO_PRICE_USD` from `src/lib/pro.ts` ($3/mo), which is what every Pro label shows |
+| 3e | Entitlement locked | `db/migrations/001_lock_profile_entitlement.sql` applied in the CargoBase studio; `VERIFY_EMAIL=… VERIFY_PASSWORD=… npm run verify:rls` passes with a non-Pro account |
+| 3f | Live policies on record | Output of `db/export-policies.sql` reconciled with `db/schema.sql` |
 | 4 | Native shells synced to prod | `npm run cap:prod` |
 | 5 | Icons / splash | `npm run cap:assets` then `cap:prod` |
 | 6 | Signing | Apple Team + Android upload keystore |
@@ -35,7 +42,7 @@ Confirm `ios/App/App/capacitor.config.json` and Android copy show `"url": "https
 6. Data safety: answers in [store/data-safety.md](./store/data-safety.md)
 7. Privacy policy URL: `https://chaindials.com/privacy`
 8. Content rating questionnaire (utility / finance informational)
-9. Upload phone + tablet screenshots (see listing doc)
+9. Upload phone screenshots and the feature graphic from `docs/store/screenshots/` (regenerate with `npm run build && npm run start`, then `npm run store:screenshots`)
 10. Roll out Internal testing → Closed → Production
 
 ## iOS (App Store Connect)
@@ -47,7 +54,7 @@ Confirm `ios/App/App/capacitor.config.json` and Android copy show `"url": "https
 5. Ascryption: **ITSAppUsesNonExemptEncryption = NO** (already in Info.plist)
 6. Privacy Policy URL: `https://chaindials.com/privacy`
 7. App Privacy nutrition labels: [store/app-privacy.md](./store/app-privacy.md)
-8. Screenshots for 6.7" and 6.1" (and iPad if you keep iPad orientations)
+8. Screenshots: `docs/store/screenshots/ios-6.9/` (1290×2796, accepted for the 6.9" slot). Add iPad shots only if you keep iPad orientations
 9. Review notes: “App loads live network observatory at chaindials.com over HTTPS. No login.”
 
 ## Support

@@ -94,3 +94,18 @@ test("hidden boards pause requests and resume with fresh readings", async ({ pag
   await page.evaluate(() => { Object.defineProperty(document, "visibilityState", { value: "visible", configurable: true }); document.dispatchEvent(new Event("visibilitychange")); });
   await expect.poll(() => requests.length).toBeGreaterThan(before);
 });
+
+test("the streamed oldest-first block list never rolls the tip back", async ({ page }) => {
+  await mockFeeds(page);
+  const now = Math.floor(Date.now() / 1000);
+  // mempool.space's init message: recent blocks, oldest first, tip last.
+  const blocks = Array.from({ length: 8 }, (_, i) => ({ height: 899_993 + i, id: `b${i}`, timestamp: now - (7 - i) * 600 }));
+  await page.routeWebSocket(/mempool/, (socket) => {
+    setTimeout(() => socket.send(JSON.stringify({ blocks })), 300);
+  });
+  await page.goto("/btc");
+  await expect(page.getByText("900,000").first()).toBeVisible();
+  await page.waitForTimeout(1_000);
+  await expect(page.getByText("899,993")).toHaveCount(0);
+  await expect(page.getByText("900,000").first()).toBeVisible();
+});
