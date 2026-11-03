@@ -21,6 +21,7 @@ export type TipId =
   | "nav.controlRoom"
   | "nav.forensics"
   | "nav.desk"
+  | "nav.solo"
   | "nav.pro"
   | "nav.account"
   | "nav.settings"
@@ -127,6 +128,10 @@ const BASE: Record<TipId, TipBody> = {
   "nav.desk": {
     title: "Desk",
     body: "Forensics desk packs: pin txs/addresses, export markdown. Local free; Pro syncs to your account.",
+  },
+  "nav.solo": {
+    title: "Solo",
+    body: "Live solo mining odds for every class of miner, from a Bitaxe to a hydro rack, plus your own rig.",
   },
   "nav.pro": {
     title: "Pro",

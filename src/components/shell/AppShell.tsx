@@ -271,6 +271,14 @@ export function AppShell({
                         Desk
                       </Link>
                     </Hint>
+                    <Hint tip="nav.solo">
+                      <Link
+                        href="/btc/solo"
+                        className="min-h-11 inline-flex items-center text-paper-muted transition hover:text-paper"
+                      >
+                        Solo
+                      </Link>
+                    </Hint>
                   </>
                 ) : null}
                 <Hint tip="nav.pro">
