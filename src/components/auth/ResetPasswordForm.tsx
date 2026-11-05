@@ -24,10 +24,12 @@ function readRecoveryFragment(): LinkState {
 }
 
 // The fragment is stripped right after it is read, so the first read is kept
-// here; the server has no fragment and always reports "reading". Cleared on
-// unmount so a later visit reads its own link.
+// here; the server has no fragment and always reports "reading". Cleared after
+// unmount so a later visit reads its own link, a tick late because Strict Mode
+// unmounts and remounts at once, after the fragment has gone.
 const READING: LinkState = { kind: "reading" };
 let captured: LinkState | null = null;
+let pendingClear: ReturnType<typeof setTimeout> | undefined;
 const emptySubscribe = () => () => {};
 const clientSnapshot = () => (captured ??= readRecoveryFragment());
 const serverSnapshot = () => READING;
@@ -41,11 +43,14 @@ export function ResetPasswordForm() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    clearTimeout(pendingClear);
     if (window.location.hash) {
       window.history.replaceState(null, "", window.location.pathname);
     }
     return () => {
-      captured = null;
+      pendingClear = setTimeout(() => {
+        captured = null;
+      }, 0);
     };
   }, []);
 

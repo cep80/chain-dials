@@ -1,18 +1,17 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/auth";
 import {
   ensureStripeCustomer,
   getStripe,
   stripeCheckoutConfigured, ensureProfile } from "@/lib/stripe";
 import { requestOrigin } from "@/lib/site";
+import { requireUser } from "@/lib/supabase-session";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
-  const session = await auth();
-  if (!session?.user?.id || !session.user.email) {
-    return NextResponse.json({ error: "Sign in required" }, { status: 401 });
-  }
+  const gate = await requireUser(req);
+  if ("error" in gate) return gate.error;
+  const { user } = gate;
 
   if (!stripeCheckoutConfigured()) {
     return NextResponse.json(
@@ -21,10 +20,10 @@ export async function POST(req: Request) {
     );
   }
 
-  const profile = await ensureProfile(session.user.id, session.user.email);
+  const profile = await ensureProfile(user.id, user.email);
   const customerId = await ensureStripeCustomer({
-    id: session.user.id,
-    email: session.user.email ?? profile.email ?? "",
+    id: user.id,
+    email: user.email || profile.email || "",
     stripeCustomerId: profile.stripe_customer_id,
   });
   const stripe = getStripe();

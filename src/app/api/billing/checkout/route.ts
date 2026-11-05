@@ -1,19 +1,19 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/auth";
 import { isChainId } from "@/lib/chains/registry";
+import { isProActive } from "@/lib/pro";
 import {
   ensureStripeCustomer,
   getStripe,
   stripeCheckoutConfigured, ensureProfile } from "@/lib/stripe";
 import { requestOrigin } from "@/lib/site";
+import { requireUser } from "@/lib/supabase-session";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
-  const session = await auth();
-  if (!session?.user?.id || !session.user.email) {
-    return NextResponse.json({ error: "Sign in required" }, { status: 401 });
-  }
+  const gate = await requireUser(req);
+  if ("error" in gate) return gate.error;
+  const { user } = gate;
 
   if (!stripeCheckoutConfigured()) {
     return NextResponse.json(
@@ -25,7 +25,9 @@ export async function POST(req: Request) {
     );
   }
 
-  if (session.user.pro) {
+  // Read fresh: the session cookie can lag a purchase made a moment ago.
+  const profile = await ensureProfile(user.id, user.email);
+  if (isProActive(profile.pro_status, profile.pro_current_period_end)) {
     return NextResponse.json(
       { error: "You already have Pro." },
       { status: 400 },
@@ -40,10 +42,9 @@ export async function POST(req: Request) {
     // empty body ok
   }
 
-  const profile = await ensureProfile(session.user.id, session.user.email);
   const customerId = await ensureStripeCustomer({
-    id: session.user.id,
-    email: session.user.email ?? profile.email ?? "",
+    id: user.id,
+    email: user.email || profile.email || "",
     stripeCustomerId: profile.stripe_customer_id,
   });
   const stripe = getStripe();
@@ -56,11 +57,11 @@ export async function POST(req: Request) {
     line_items: [{ price: priceId, quantity: 1 }],
     success_url: `${base}/account?checkout=success`,
     cancel_url: `${base}/${chain}/pro?checkout=cancel`,
-    client_reference_id: session.user.id,
+    client_reference_id: user.id,
     subscription_data: {
-      metadata: { userId: session.user.id },
+      metadata: { userId: user.id },
     },
-    metadata: { userId: session.user.id },
+    metadata: { userId: user.id },
     allow_promotion_codes: true,
   });
 

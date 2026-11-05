@@ -125,14 +125,19 @@ export async function sbSignup(
   return (await res.json()) as SupabaseSession;
 }
 
-/** Exchange a refresh token. Access tokens last an hour; sessions last longer. */
+/**
+ * Exchange a refresh token. Access tokens last an hour; sessions last longer.
+ * Returns null only when Supabase refuses the token itself (400); a 429 or 5xx
+ * throws, because the token may still be good.
+ */
 export async function sbRefresh(
   refreshToken: string,
 ): Promise<SupabaseSession | null> {
   const res = await authPost("token?grant_type=refresh_token", {
     refresh_token: refreshToken,
   });
-  if (!res.ok) return null;
+  if (res.status === 400) return null;
+  if (!res.ok) throw await toError(res);
   return (await res.json()) as SupabaseSession;
 }
 

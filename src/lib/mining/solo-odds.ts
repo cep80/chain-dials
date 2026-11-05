@@ -82,7 +82,8 @@ export function formatChance(p: number | null | undefined): string {
   if (p >= 0.9995) return ">99.9%";
   if (p >= 0.001) {
     const pct = p * 100;
-    return `${pct >= 10 ? pct.toFixed(0) : pct.toFixed(1)}%`;
+    // Whole percents only in the middle: 99.6 must not round up to a certain 100.
+    return `${pct >= 10 && pct < 99.5 ? pct.toFixed(0) : pct.toFixed(1)}%`;
   }
   return `1 in ${compact(1 / p)}`;
 }

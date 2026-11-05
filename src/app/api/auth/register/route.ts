@@ -49,6 +49,12 @@ export async function POST(req: Request) {
     if (err instanceof SupabaseError && err.code === "user_already_exists") {
       return NextResponse.json(GENERIC_OK, { status: 201 });
     }
+    if (err instanceof SupabaseError && err.status === 429) {
+      return NextResponse.json(
+        { error: "Too many sign-ups right now. Try again shortly." },
+        { status: 429 },
+      );
+    }
     throw err;
   }
 

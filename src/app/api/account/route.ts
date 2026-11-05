@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { sbDeleteUser, sbLogin, SupabaseError } from "@/lib/supabase";
+import { sbAdmin, sbDeleteUser, sbLogin, SupabaseError } from "@/lib/supabase";
 import { requireUser } from "@/lib/supabase-session";
 import { clientIp, rateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import { getProfile, getStripe, stripeConfigured } from "@/lib/stripe";
@@ -46,9 +46,17 @@ export async function DELETE(req: Request) {
   // Deleting the customer cancels any subscription at once, so a deleted
   // account is never billed again. No proration refund is issued.
   const profile = await getProfile(user.id);
-  if (profile?.stripe_customer_id && stripeConfigured()) {
+  const customerId = profile?.stripe_customer_id;
+  if (customerId) {
+    if (!stripeConfigured()) {
+      console.error("account delete: customer on file but Stripe not configured", { userId: user.id });
+      return NextResponse.json(
+        { error: "Could not cancel billing. Nothing was deleted; try again shortly." },
+        { status: 503 },
+      );
+    }
     try {
-      await getStripe().customers.del(profile.stripe_customer_id);
+      await getStripe().customers.del(customerId);
     } catch (err) {
       const missing = (err as { code?: string }).code === "resource_missing";
       if (!missing) {
@@ -62,6 +70,19 @@ export async function DELETE(req: Request) {
   }
 
   try {
+    // If the delete below fails the account lives on, and it must not point at
+    // a customer that no longer exists or every later checkout would fail.
+    if (customerId) {
+      await sbAdmin(`profiles?user_id=eq.${encodeURIComponent(user.id)}`, {
+        method: "PATCH",
+        body: {
+          stripe_customer_id: null,
+          stripe_subscription_id: null,
+          pro_status: "canceled",
+          pro_current_period_end: null,
+        },
+      });
+    }
     await sbDeleteUser(user.id);
   } catch (err) {
     console.error("account delete: supabase delete failed", { userId: user.id, err });

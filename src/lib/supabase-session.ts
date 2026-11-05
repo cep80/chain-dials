@@ -6,7 +6,9 @@ import { isProActive } from "@/lib/pro";
  * The signed-in user's Supabase credentials, for API routes.
  *
  * Read from the NextAuth JWT rather than from `auth()`: the session object is
- * serialised to the browser, and the Supabase access token must not be.
+ * serialised to the browser, and the Supabase access token must not be. API
+ * routes also cannot persist what `auth()` does: it can rotate the refresh
+ * token, and without the new cookie the next refresh replays a spent one.
  */
 export type SessionUser = {
   id: string;

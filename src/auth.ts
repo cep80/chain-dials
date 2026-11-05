@@ -69,17 +69,23 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.sbRefresh &&
         (!token.sbExpiresAt || Date.now() > token.sbExpiresAt - REFRESH_SKEW_MS)
       ) {
-        const next = await sbRefresh(token.sbRefresh);
-        if (next) {
-          token.sbAccess = next.access_token;
-          token.sbRefresh = next.refresh_token;
-          token.sbExpiresAt = Date.now() + next.expires_in * 1000;
-        } else {
-          // The refresh token was revoked or replayed. Drop the credentials so
-          // the session stops acting as a user it can no longer prove it is.
-          delete token.sbAccess;
-          delete token.sbRefresh;
-          delete token.sbExpiresAt;
+        try {
+          const next = await sbRefresh(token.sbRefresh);
+          if (next) {
+            token.sbAccess = next.access_token;
+            token.sbRefresh = next.refresh_token;
+            token.sbExpiresAt = Date.now() + next.expires_in * 1000;
+          } else {
+            // The refresh token was revoked or replayed. Drop the credentials so
+            // the session stops acting as a user it can no longer prove it is.
+            delete token.sbAccess;
+            delete token.sbRefresh;
+            delete token.sbExpiresAt;
+          }
+        } catch (err) {
+          // A throttle or outage says nothing about the token, so keep it and
+          // try again on the next pass.
+          console.error("session refresh failed", err);
         }
       }
 

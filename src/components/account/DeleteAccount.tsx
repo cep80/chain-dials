@@ -26,10 +26,16 @@ export function DeleteAccount({ pro }: { pro: boolean }) {
         setBusy(false);
         return;
       }
+    } catch {
+      setError("Network error. Check your connection and try again.");
+      setBusy(false);
+      return;
+    }
+    // The account is gone from here on, so stay busy: there is nothing to retry.
+    try {
       await signOut({ callbackUrl: "/account?deleted=1" });
     } catch {
-      setError("Network error. Nothing was deleted.");
-      setBusy(false);
+      setError("Your account is deleted, but this device is still signed in. Use Sign out to finish.");
     }
   };
 

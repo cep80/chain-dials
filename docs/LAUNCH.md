@@ -16,7 +16,7 @@ Use with [MOBILE.md](./MOBILE.md). Goal: ship **1.0.0** to App Store + Play Stor
 | 3d | Stripe price matches UI | The live `STRIPE_PRICE_ID` charges `PRO_PRICE_USD` from `src/lib/pro.ts` ($3/mo), which is what every Pro label shows |
 | 3e | Entitlement locked | `VERIFY_EMAIL=… VERIFY_PASSWORD=… npm run verify:rls` passes with a non-Pro account (users cannot write `profiles`) |
 | 3f | Schema in sync | `supabase db diff --linked` reports no changes against `supabase/migrations` |
-| 3g | Email for auth | Custom SMTP set in Supabase (Auth → SMTP) so password reset and confirmation mail reach real users; the built-in sender only delivers to your own team |
+| 3g | Email for auth | Custom SMTP set in Supabase (Auth → SMTP) so password reset and confirmation mail reach real users; the built-in sender only delivers to your own team. Set the hourly email limit (Auth → Rate Limits) to match `email_sent` in `supabase/config.toml`: it covers the whole project, and a refused reset still tells the user a link is on its way |
 | 4 | Native shells synced to prod | `npm run cap:prod` |
 | 5 | Icons / splash | `npm run cap:assets` then `cap:prod` |
 | 6 | Signing | Apple Team + Android upload keystore |

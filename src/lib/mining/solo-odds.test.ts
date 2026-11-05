@@ -62,6 +62,9 @@ describe("formatters", () => {
     expect(formatOneIn(0.75)).toBe("75%");
     expect(formatChance(0.0123)).toBe("1.2%");
     expect(formatChance(0.42)).toBe("42%");
+    expect(formatChance(0.994)).toBe("99%");
+    expect(formatChance(0.996)).toBe("99.6%");
+    expect(formatChance(0.9994)).toBe("99.9%");
     expect(formatChance(0.99999)).toBe(">99.9%");
     expect(formatChance(1e-7)).toBe("1 in 10M");
     expect(formatChance(null)).toBe("-");

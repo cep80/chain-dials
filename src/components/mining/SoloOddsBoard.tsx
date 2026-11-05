@@ -62,6 +62,8 @@ export function SoloOddsBoard() {
   const [filter, setFilter] = useState<Filter>("all");
   const [prefs, setPrefs] = useState<Prefs>(DEFAULT_PREFS);
   const [hydrated, setHydrated] = useState(false);
+  // What is typed in Units, so the field can sit empty mid-edit.
+  const [unitsDraft, setUnitsDraft] = useState<string | null>(null);
 
   useEffect(() => {
     const t = window.setTimeout(() => {
@@ -158,8 +160,13 @@ export function SoloOddsBoard() {
               min={1}
               step={1}
               className="mono mt-1 block w-20 rounded-[8px] border border-line bg-ink px-2 py-1.5"
-              value={prefs.rigCount}
-              onChange={(e) => setPrefs((p) => ({ ...p, rigCount: Math.max(1, Math.round(Number(e.target.value) || 1)) }))}
+              value={unitsDraft ?? prefs.rigCount}
+              onChange={(e) => {
+                setUnitsDraft(e.target.value);
+                const units = Math.round(Number(e.target.value));
+                if (units >= 1) setPrefs((p) => ({ ...p, rigCount: units }));
+              }}
+              onBlur={() => setUnitsDraft(null)}
             />
           </label>
           <label className="text-sm text-paper">
