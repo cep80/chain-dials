@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { blockSubsidyBtc } from "@/lib/bitcoin";
 import { formatDifficulty, formatHashrate, formatRelativeAge, formatUsd } from "@/lib/format";
@@ -192,6 +193,15 @@ export function SoloOddsBoard() {
           <RigStat label="Per year" value={formatChance(rig.odds?.perYear)} />
           <RigStat label="Expected wait" value={formatExpectedWait(rig.odds?.expectedSeconds)} />
         </div>
+        <p className="mt-4 text-sm text-paper-muted">
+          Mining solo?{" "}
+          <Link
+            href={`/btc/watch?kind=solo&ths=${encodeURIComponent(String(prefs.rigThs * prefs.rigCount))}`}
+            className="font-semibold text-accent hover:underline"
+          >
+            Tell me if I hit a block →
+          </Link>
+        </p>
       </section>
 
       <div className="-mx-1 flex flex-wrap gap-2" role="group" aria-label="Filter miners">

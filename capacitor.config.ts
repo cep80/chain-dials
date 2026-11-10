@@ -50,6 +50,10 @@ const config: CapacitorConfig = {
     Keyboard: {
       resize: "body",
     },
+    PushNotifications: {
+      // Show watch notifications even while the app is open.
+      presentationOptions: ["badge", "sound", "banner", "list"],
+    },
   },
   ios: {
     contentInset: "automatic",

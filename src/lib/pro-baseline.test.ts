@@ -34,8 +34,7 @@ describe("Pro monetization baseline (shipped free vs Pro)", () => {
     expect(chart).toMatch(/\.csv/);
   });
 
-  it("Pro APIs gate cloud extras (alerts, layouts, wall packs, desks)", () => {
-    const alerts = readSrc("src/app/api/pro/alerts/route.ts");
+  it("Pro APIs gate cloud extras (layouts, wall packs, desks)", () => {
     const layouts = readSrc("src/app/api/pro/layouts/route.ts");
     const walls = readSrc("src/app/api/pro/wall-packs/route.ts");
     const desks = readSrc("src/app/api/pro/desks/route.ts");
@@ -46,10 +45,9 @@ describe("Pro monetization baseline (shipped free vs Pro)", () => {
     expect(gate).toMatch(/isProActive/);
     expect(gate).toMatch(/Pro subscription required for/);
 
-    for (const route of [alerts, layouts, walls, desks]) {
+    for (const route of [layouts, walls, desks]) {
       expect(route).toMatch(/requireProUser\(/);
     }
-    expect(alerts).toMatch(/"alert rules"/);
     expect(layouts).toMatch(/"saved layouts"/);
     expect(walls).toMatch(/wall packs/i);
     expect(desks).toMatch(/forensics desks/i);
@@ -60,11 +58,13 @@ describe("Pro monetization baseline (shipped free vs Pro)", () => {
     const teaser = readSrc("src/components/monetization/ProTeaser.tsx");
     expect(proPage).toMatch(/wall/i);
     expect(proPage).toMatch(/free/i);
-    expect(proPage).toMatch(/instrument/i);
     expect(proPage).toMatch(/control room|wall pack/i);
-    expect(proPage).toMatch(/layout/i);
+    expect(proPage).toMatch(/transaction tracking/i);
+    expect(proPage).toMatch(/one watch/i);
+    expect(proPage).not.toMatch(/alert/i);
     expect(teaser).toMatch(/Free boards|Boards stay free/i);
-    expect(teaser).toMatch(/wall pack|control room|instrument/i);
+    expect(teaser).toMatch(/wall pack|control room/i);
+    expect(teaser).not.toMatch(/alert/i);
   });
 
   it("display price is optional-extras tier (shipped constants)", () => {

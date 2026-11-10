@@ -201,6 +201,8 @@ type RestOptions = {
   body?: unknown;
   /** Ask PostgREST to return the affected rows. */
   representation?: boolean;
+  /** POST as an upsert, merging on the conflict target named in `on_conflict`. */
+  upsert?: boolean;
   token: string;
 };
 
@@ -212,7 +214,11 @@ async function rest<T>(
   requireConfig();
   const headers: Record<string, string> = { ...auth, Accept: "application/json" };
   if (opts.body !== undefined) headers["Content-Type"] = "application/json";
-  if (opts.representation) headers["Prefer"] = "return=representation";
+  const prefer = [
+    opts.representation ? "return=representation" : "",
+    opts.upsert ? "resolution=merge-duplicates" : "",
+  ].filter(Boolean);
+  if (prefer.length) headers["Prefer"] = prefer.join(",");
 
   const res = await fetch(`${BASE}/rest/v1/${path}`, {
     method: opts.method ?? "GET",

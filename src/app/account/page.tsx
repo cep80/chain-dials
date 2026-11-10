@@ -155,10 +155,10 @@ function AccountBody() {
             </button>
           )}
           <Link
-            href="/btc/alerts"
+            href="/btc/watch"
             className="rounded-full border border-line px-4 py-2 text-sm text-paper hover:border-accent"
           >
-            Alerts
+            Watches
           </Link>
           <button
             type="button"
@@ -177,12 +177,12 @@ function AccountBody() {
         <p className="font-semibold text-paper">What Pro is (and isn’t)</p>
         <ul className="mt-2 list-disc space-y-1 pl-5">
           <li>
-            Pro: control-room wall packs, instrument-state alerts, desk sync,
-            named layouts
+            Pro: watches on your transactions, wallets, and solo miner, plus
+            control-room wall packs and desk sync
           </li>
           <li>
             Free: live boards, single-chain wall, full history, CSV, Trace,
-            local desks + export
+            local desks + export, saved layouts, one watch
           </li>
           <li>Stay free anytime. The dials don’t require a subscription.</li>
         </ul>
@@ -209,7 +209,7 @@ export default function AccountPage() {
           Your Chain Dials account
         </h1>
         <p className="mt-2 text-paper-muted">
-          Sign-in and optional Pro billing for synced alerts and layouts. Live
+          Sign-in for watches, plus optional Pro billing. Live
           boards never require an account or payment.
         </p>
         <div className="mt-8">

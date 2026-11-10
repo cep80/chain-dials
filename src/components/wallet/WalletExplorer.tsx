@@ -228,6 +228,14 @@ function ActivityRow({
       </td>
       <td className="py-2 pr-3 text-xs text-paper-muted">
         {activityStatus(tx, chainId)}
+        {chainId === "btc" && tx.confirmed === false && /^[0-9a-f]{64}$/i.test(tx.id) ? (
+          <Link
+            href={`/btc/watch?kind=tx&target=${tx.id}`}
+            className="ml-2 text-accent hover:underline"
+          >
+            Track
+          </Link>
+        ) : null}
       </td>
       <td className={`mono py-2 pr-3 text-xs ${signedClass(tx.valueNative)}`}>
         {tx.kind === "fill" && tx.valueNative != null
@@ -625,6 +633,15 @@ export function WalletExplorer() {
                         </button>
                       </span>
                     )}
+                    {chain.id === "btc" ? (
+                      <Link
+                        href={`/btc/watch?kind=address&target=${encodeURIComponent(result.normalized!)}`}
+                        className="text-[11px] uppercase tracking-wider text-accent hover:underline"
+                        title="Get a phone or Telegram message when this address moves"
+                      >
+                        Notify me
+                      </Link>
+                    ) : null}
                   </div>
                 ) : null}
 

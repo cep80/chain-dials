@@ -38,10 +38,12 @@ export type Profile = {
   stripe_subscription_id: string | null;
   pro_status: string;
   pro_current_period_end: string | null;
+  store_status: string | null;
+  store_period_end: string | null;
 };
 
 const PROFILE_COLS =
-  "user_id,email,stripe_customer_id,stripe_subscription_id,pro_status,pro_current_period_end";
+  "user_id,email,stripe_customer_id,stripe_subscription_id,pro_status,pro_current_period_end,store_status,store_period_end";
 
 /**
  * Billing runs with the service role: a webhook has no user session, and

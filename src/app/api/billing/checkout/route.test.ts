@@ -15,7 +15,11 @@ vi.mock("@/lib/stripe", () => ({
 }));
 import { POST } from "./route";
 
-const request = () => new Request("http://localhost/api/billing/checkout", { method: "POST" });
+const request = (body?: unknown) =>
+  new Request("http://localhost/api/billing/checkout", {
+    method: "POST",
+    ...(body ? { body: JSON.stringify(body), headers: { "Content-Type": "application/json" } } : {}),
+  });
 
 beforeEach(() => {
   vi.stubEnv("STRIPE_PRICE_ID", "price_1");
@@ -30,6 +34,33 @@ describe("checkout", () => {
     const res = await POST(request());
     expect(await res.json()).toEqual({ url: "https://stripe.test/pay" });
     expect(mocks.sessionsCreate.mock.calls[0][0]).toMatchObject({ customer: "cus_1", client_reference_id: "u1" });
+  });
+
+  it("bills yearly on the annual price", async () => {
+    vi.stubEnv("STRIPE_PRICE_ID_ANNUAL", "price_year");
+    await POST(request({ interval: "year" }));
+    expect(mocks.sessionsCreate.mock.calls[0][0].line_items).toEqual([{ price: "price_year", quantity: 1 }]);
+  });
+
+  it("says so when yearly isn't configured", async () => {
+    vi.stubEnv("STRIPE_PRICE_ID_ANNUAL", "");
+    const res = await POST(request({ interval: "year" }));
+    expect(res.status).toBe(400);
+    expect(mocks.sessionsCreate).not.toHaveBeenCalled();
+  });
+
+  it("refuses when Pro already comes from the app store", async () => {
+    mocks.ensureProfile.mockResolvedValue({
+      user_id: "u1",
+      pro_status: "none",
+      pro_current_period_end: null,
+      store_status: "active",
+      store_period_end: new Date(Date.now() + 86_400_000).toISOString(),
+      stripe_customer_id: null,
+    });
+    const res = await POST(request());
+    expect(res.status).toBe(400);
+    expect((await res.json()).error).toMatch(/App Store or Google Play/);
   });
 
   it("needs a session", async () => {

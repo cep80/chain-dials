@@ -45,6 +45,7 @@ export interface MempoolVin {
 export interface MempoolTx {
   txid: string;
   fee?: number;
+  weight?: number;
   vin: MempoolVin[];
   vout: MempoolVout[];
   status: {
@@ -65,6 +66,34 @@ async function getJson<T>(path: string): Promise<T> {
     throw new Error(`mempool ${path} → ${res.status}`);
   }
   return res.json() as Promise<T>;
+}
+
+/** Plain-text endpoints such as /blocks/tip/hash and /block-height/:h. */
+export async function mempoolText(path: string): Promise<string> {
+  const res = await fetch(`${UPSTREAM}${path}`, {
+    cache: "no-store",
+    signal: AbortSignal.timeout(8_000),
+  });
+  if (!res.ok) throw new Error(`mempool ${path} → ${res.status}`);
+  return (await res.text()).trim();
+}
+
+export { getJson as mempoolJson };
+
+/** A transaction, or null when the explorer does not know it (404). */
+export async function fetchTxOrNull(txid: string): Promise<MempoolTx | null> {
+  const res = await fetch(`${UPSTREAM}/tx/${txid}`, {
+    headers: { Accept: "application/json" },
+    cache: "no-store",
+    signal: AbortSignal.timeout(8_000),
+  });
+  if (res.status === 404 || res.status === 400) return null;
+  if (!res.ok) throw new Error(`mempool /tx → ${res.status}`);
+  return res.json() as Promise<MempoolTx>;
+}
+
+export async function fetchAddressRaw(address: string): Promise<MempoolAddressResponse> {
+  return getJson<MempoolAddressResponse>(`/address/${address}`);
 }
 
 export function toLiveStats(

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { isChainId } from "@/lib/chains/registry";
-import { isProActive } from "@/lib/pro";
+import { effectivePro } from "@/lib/pro";
 import {
   ensureStripeCustomer,
   getStripe,
@@ -27,19 +27,33 @@ export async function POST(req: Request) {
 
   // Read fresh: the session cookie can lag a purchase made a moment ago.
   const profile = await ensureProfile(user.id, user.email);
-  if (isProActive(profile.pro_status, profile.pro_current_period_end)) {
+  const current = effectivePro(profile);
+  if (current.source) {
     return NextResponse.json(
-      { error: "You already have Pro." },
+      {
+        error:
+          current.source === "store"
+            ? "You already have Pro through the App Store or Google Play."
+            : "You already have Pro.",
+      },
       { status: 400 },
     );
   }
 
   let chain = "btc";
+  let interval: "month" | "year" = "month";
   try {
-    const body = (await req.json()) as { chain?: string };
+    const body = (await req.json()) as { chain?: string; interval?: string };
     if (body.chain && isChainId(body.chain)) chain = body.chain;
+    if (body.interval === "year") interval = "year";
   } catch {
     // empty body ok
+  }
+  const priceId = (
+    interval === "year" ? process.env.STRIPE_PRICE_ID_ANNUAL : process.env.STRIPE_PRICE_ID
+  )?.trim();
+  if (!priceId) {
+    return NextResponse.json({ error: "Yearly billing isn't available yet." }, { status: 400 });
   }
 
   const customerId = await ensureStripeCustomer({
@@ -49,7 +63,6 @@ export async function POST(req: Request) {
   });
   const stripe = getStripe();
   const base = requestOrigin(req);
-  const priceId = process.env.STRIPE_PRICE_ID!.trim();
 
   const checkout = await stripe.checkout.sessions.create({
     mode: "subscription",

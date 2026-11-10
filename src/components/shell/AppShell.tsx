@@ -221,19 +221,6 @@ export function AppShell({
                     </Link>
                   </Hint>
                 ) : null}
-                <Hint tip="nav.alerts">
-                  <Link
-                    href={`/${chain.slug}/alerts`}
-                    className="min-h-11 inline-flex items-center text-paper-muted transition hover:text-paper"
-                  >
-                    Alerts
-                    {!isProEnabled() ? (
-                      <span className="ml-1 text-[10px] uppercase tracking-wider opacity-60">
-                        Pro
-                      </span>
-                    ) : null}
-                  </Link>
-                </Hint>
                 <Hint tip="nav.wall">
                   <Link
                     href={`/${chain.slug}/wall`}
@@ -279,6 +266,14 @@ export function AppShell({
                         className="min-h-11 inline-flex items-center text-paper-muted transition hover:text-paper"
                       >
                         Solo
+                      </Link>
+                    </Hint>
+                    <Hint tip="nav.watch">
+                      <Link
+                        href="/btc/watch"
+                        className="min-h-11 inline-flex items-center text-paper-muted transition hover:text-paper"
+                      >
+                        Watch
                       </Link>
                     </Hint>
                   </>

@@ -46,6 +46,17 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
+  // Alert rules were retired in favour of watches; keep old links landing.
+  async redirects() {
+    return [
+      { source: "/alerts", destination: "/btc", permanent: true },
+      {
+        source: "/:chain(btc|eth|sol|hype)/alerts",
+        destination: "/:chain",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

@@ -16,12 +16,12 @@ export type TipId =
   | "nav.board"
   | "nav.wallet"
   | "nav.regime"
-  | "nav.alerts"
   | "nav.wall"
   | "nav.controlRoom"
   | "nav.forensics"
   | "nav.desk"
   | "nav.solo"
+  | "nav.watch"
   | "nav.pro"
   | "nav.account"
   | "nav.settings"
@@ -109,10 +109,6 @@ const BASE: Record<TipId, TipBody> = {
     title: "Regime",
     body: "Hyperliquid paper co-pilot: Funding Tide, OI Vault, and Volume Fountain mapped to a stance. Local simulation. Not orders.",
   },
-  "nav.alerts": {
-    title: "Alerts",
-    body: "Pro: multi-rule + instrument-state nudges (metronome late, atmosphere pressure, forge heat, HYPE regime flips). Free local fee/quiet-block nudge still works.",
-  },
   "nav.wall": {
     title: "Wall",
     body: "Full-size instrument layout for a TV or second screen. Free on every board.",
@@ -133,9 +129,13 @@ const BASE: Record<TipId, TipBody> = {
     title: "Solo",
     body: "Live solo mining odds for every class of miner, from a Bitaxe to a hydro rack, plus your own rig.",
   },
+  "nav.watch": {
+    title: "Watch",
+    body: "Get a push or Telegram message when your transaction confirms, your wallet moves, or your solo miner hits a block. One watch free; Pro watches up to 25.",
+  },
   "nav.pro": {
     title: "Pro",
-    body: "Control room packs, instrument alerts, desk sync, and layouts. Boards, wall, and the HYPE paper co-pilot stay free.",
+    body: "Watches on your own transactions, wallets, and solo miner, plus control room packs and desk sync. Boards, wall, and one watch stay free.",
   },
   "regime.panel": {
     title: "Paper co-pilot",

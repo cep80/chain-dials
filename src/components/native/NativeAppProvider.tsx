@@ -7,7 +7,8 @@ import { deepLinkPath } from "@/lib/native";
 
 /**
  * Boots native chrome: status bar, splash, resume refresh, Android back,
- * and deep links (https://chaindials.com/... and chaindials://...).
+ * deep links (https://chaindials.com/... and chaindials://...), and watch
+ * notification taps.
  * No-ops on web.
  */
 export function NativeAppProvider({ children }: { children: React.ReactNode }) {
@@ -71,6 +72,13 @@ export function NativeAppProvider({ children }: { children: React.ReactNode }) {
         if (path !== here) window.location.assign(path);
       });
       cleanups.push(() => urlSub.remove());
+
+      try {
+        const { bootPush } = await import("@/lib/native-push");
+        cleanups.push(await bootPush((path) => window.location.assign(path)));
+      } catch {
+        // Push is optional; the app works without it.
+      }
     }
 
     void boot();

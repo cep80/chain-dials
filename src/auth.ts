@@ -2,7 +2,7 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { z } from "zod";
 import { sbLogin, sbRefresh, sbRest } from "@/lib/supabase";
-import { isProActive } from "@/lib/pro";
+import { effectivePro, ENTITLEMENT_COLS, isProActive, type EntitlementColumns } from "@/lib/pro";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 
 const credentialsSchema = z.object({
@@ -10,10 +10,6 @@ const credentialsSchema = z.object({
   password: z.string().min(8).max(128),
 });
 
-type ProfileRow = {
-  pro_status: string | null;
-  pro_current_period_end: string | null;
-};
 
 /** Refresh the access token a minute before it lapses, not after. */
 const REFRESH_SKEW_MS = 60_000;
@@ -97,13 +93,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         !token.proCheckedAt || Date.now() - token.proCheckedAt > PRO_RECHECK_MS;
       if (token.sbAccess && (user || trigger === "update" || stale)) {
         try {
-          const rows = await sbRest<ProfileRow[]>(
-            "profiles?select=pro_status,pro_current_period_end&limit=1",
+          const rows = await sbRest<EntitlementColumns[]>(
+            `profiles?select=${ENTITLEMENT_COLS}&limit=1`,
             { token: token.sbAccess },
           );
-          const profile = rows?.[0];
-          token.proStatus = profile?.pro_status ?? "none";
-          token.proCurrentPeriodEnd = profile?.pro_current_period_end ?? null;
+          const pro = effectivePro(rows?.[0]);
+          token.proStatus = pro.status;
+          token.proCurrentPeriodEnd = pro.periodEnd;
           token.pro = isProActive(token.proStatus, token.proCurrentPeriodEnd);
           token.proCheckedAt = Date.now();
         } catch {
