@@ -12,6 +12,7 @@ import {
   parseDeskPacksJson,
   type ForensicsDeskPack,
 } from "@/lib/forensics/desk-pack";
+import { sessionFetch } from "@/lib/session-fetch";
 
 function loadLocal(): ForensicsDeskPack[] {
   try {
@@ -55,7 +56,7 @@ export default function ForensicsDeskPage() {
 
   const loadCloud = useCallback(async () => {
     if (!pro || !signedIn) return;
-    const res = await fetch("/api/pro/desks", { cache: "no-store" });
+    const res = await sessionFetch("/api/pro/desks", { cache: "no-store" });
     if (!res.ok) return;
     const data = (await res.json()) as { desks: ForensicsDeskPack[] };
     if (data.desks?.length) {
@@ -100,7 +101,7 @@ export default function ForensicsDeskPage() {
     setSaving(true);
     setMessage(null);
     try {
-      const res = await fetch("/api/pro/desks", {
+      const res = await sessionFetch("/api/pro/desks", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ desks }),

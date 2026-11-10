@@ -4,7 +4,7 @@ import type Stripe from "stripe";
 import {
   findUserIdForSubscription,
   getStripe,
-  syncSubscriptionToUser,
+  syncCustomerEntitlement,
   getProfile,
 } from "@/lib/stripe";
 
@@ -85,30 +85,26 @@ export async function POST(req: Request) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
         const userId = await resolveCheckoutUserId(session);
-        const subId =
-          typeof session.subscription === "string"
-            ? session.subscription
-            : session.subscription?.id;
-        if (userId && subId) {
-          const sub = await stripe.subscriptions.retrieve(subId);
-          await syncSubscriptionToUser(userId, sub);
+        const customerId =
+          typeof session.customer === "string"
+            ? session.customer
+            : session.customer?.id;
+        if (userId && customerId) {
+          await syncCustomerEntitlement(userId, customerId);
         }
         break;
       }
       case "customer.subscription.created":
       case "customer.subscription.updated":
       case "customer.subscription.deleted": {
+        // The payload may be stale or about an older subscription; it only
+        // identifies the customer. Current state comes fresh from Stripe.
         const sub = event.data.object as Stripe.Subscription;
         const userId = await findUserIdForSubscription(sub);
-        if (userId) {
-          if (event.type === "customer.subscription.deleted") {
-            await sbAdmin(`profiles?user_id=eq.${encodeURIComponent(userId)}`, {
-              method: "PATCH",
-              body: { pro_status: "canceled", stripe_subscription_id: sub.id },
-            });
-          } else {
-            await syncSubscriptionToUser(userId, sub);
-          }
+        const customerId =
+          typeof sub.customer === "string" ? sub.customer : sub.customer?.id;
+        if (userId && customerId) {
+          await syncCustomerEntitlement(userId, customerId);
         }
         break;
       }

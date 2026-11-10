@@ -3,9 +3,11 @@
 import { useEffect } from "react";
 import { Capacitor } from "@capacitor/core";
 import { useInstrumentStage } from "@/lib/instrument-stage";
+import { deepLinkPath } from "@/lib/native";
 
 /**
- * Boots native chrome: status bar, splash, resume refresh, Android back.
+ * Boots native chrome: status bar, splash, resume refresh, Android back,
+ * and deep links (https://chaindials.com/... and chaindials://...).
  * No-ops on web.
  */
 export function NativeAppProvider({ children }: { children: React.ReactNode }) {
@@ -61,6 +63,14 @@ export function NativeAppProvider({ children }: { children: React.ReactNode }) {
         void App.exitApp();
       });
       cleanups.push(() => backSub.remove());
+
+      const urlSub = await App.addListener("appUrlOpen", ({ url }) => {
+        const path = deepLinkPath(url);
+        if (!path) return;
+        const here = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+        if (path !== here) window.location.assign(path);
+      });
+      cleanups.push(() => urlSub.remove());
     }
 
     void boot();

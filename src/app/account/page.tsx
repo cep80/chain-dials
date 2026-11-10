@@ -6,7 +6,9 @@ import { signOut, useSession } from "next-auth/react";
 import { Suspense, useState } from "react";
 import { DeleteAccount } from "@/components/account/DeleteAccount";
 import { AppShell } from "@/components/shell/AppShell";
+import { useIsNativeApp } from "@/hooks/useIsNativeApp";
 import { PRO_PRICE_LABEL } from "@/lib/pro";
+import { sessionFetch } from "@/lib/session-fetch";
 
 function AccountBody() {
   const { data, status, update } = useSession();
@@ -15,6 +17,7 @@ function AccountBody() {
   const checkout = params.get("checkout");
   const [busy, setBusy] = useState<"checkout" | "portal" | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const native = useIsNativeApp();
 
   if (status === "loading") {
     return <p className="text-paper-muted">Loading account…</p>;
@@ -53,7 +56,7 @@ function AccountBody() {
     setBusy("checkout");
     setError(null);
     try {
-      const res = await fetch("/api/billing/checkout", {
+      const res = await sessionFetch("/api/billing/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ chain: "btc" }),
@@ -75,7 +78,7 @@ function AccountBody() {
     setBusy("portal");
     setError(null);
     try {
-      const res = await fetch("/api/billing/portal", { method: "POST" });
+      const res = await sessionFetch("/api/billing/portal", { method: "POST" });
       const body = (await res.json()) as { url?: string; error?: string };
       if (!res.ok || !body.url) {
         setError(body.error ?? "Billing portal unavailable");
@@ -121,7 +124,7 @@ function AccountBody() {
                 : "rounded-full border border-line px-3 py-1 text-paper-muted"
             }
           >
-            {user.pro ? "Pro active" : `Free · Pro is ${PRO_PRICE_LABEL}`}
+            {user.pro ? "Pro active" : native ? "Free" : `Free · Pro is ${PRO_PRICE_LABEL}`}
           </span>
           <span className="text-xs text-paper-muted">
             Status: {user.proStatus}
@@ -132,7 +135,7 @@ function AccountBody() {
         </div>
 
         <div className="mt-6 flex flex-wrap gap-3">
-          {user.pro ? (
+          {native ? null : user.pro ? (
             <button
               type="button"
               disabled={busy === "portal"}

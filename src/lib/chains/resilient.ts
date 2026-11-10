@@ -51,9 +51,17 @@ export async function withRetryAndStale<T>(
 }
 
 /** Cache headers that say plainly whether the payload is fresh. */
-export function freshnessHeaders(r: Fresh<unknown>): Record<string, string> {
+/**
+ * `cdnSeconds` lets the edge share one reading across viewers for a few
+ * seconds, so polling boards don't each cost a function call and an upstream
+ * request. Browsers still revalidate every poll.
+ */
+export function freshnessHeaders(r: Fresh<unknown>, cdnSeconds = 0): Record<string, string> {
   return {
-    "Cache-Control": "no-store",
+    "Cache-Control":
+      cdnSeconds > 0
+        ? `public, max-age=0, s-maxage=${cdnSeconds}, stale-while-revalidate=${cdnSeconds * 2}`
+        : "no-store",
     "x-feed-stale": r.stale ? "1" : "0",
     "x-feed-age-ms": String(r.ageMs),
   };

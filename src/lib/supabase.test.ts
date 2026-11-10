@@ -36,3 +36,15 @@ describe("sbRefresh", () => {
     await expect(sbRefresh("old")).rejects.toBeInstanceOf(SupabaseError);
   });
 });
+
+describe("notIn", () => {
+  it("matches every row when nothing is kept", async () => {
+    const { notIn } = await load();
+    expect(notIn([])).toBe("id=not.is.null");
+  });
+
+  it("excludes the kept ids", async () => {
+    const { notIn } = await load();
+    expect(decodeURIComponent(notIn([{ id: "a1" }, { id: "b2" }]))).toBe('id=not.in.("a1","b2")');
+  });
+});

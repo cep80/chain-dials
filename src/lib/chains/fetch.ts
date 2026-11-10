@@ -152,10 +152,12 @@ async function fetchCoinGeckoSpot(
   chains: ChainId[],
 ): Promise<Partial<Record<ChainId, number>>> {
   const ids = chains.map((id) => CHAINS[id].coingeckoId).join(",");
-  const url = `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`;
   const headers: Record<string, string> = { accept: "application/json" };
   const demo = process.env.COINGECKO_DEMO_API_KEY?.trim();
   const pro = process.env.COINGECKO_API_KEY?.trim();
+  // Pro keys are only accepted on the pro host; demo/keyless use the public one.
+  const host = pro ? "https://pro-api.coingecko.com" : "https://api.coingecko.com";
+  const url = `${host}/api/v3/simple/price?ids=${ids}&vs_currencies=usd`;
   if (pro) headers["x-cg-pro-api-key"] = pro;
   else if (demo) headers["x-cg-demo-api-key"] = demo;
   const res = await fetch(url, {

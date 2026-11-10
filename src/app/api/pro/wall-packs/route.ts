@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { sbRest } from "@/lib/supabase";
+import { notIn, sbRest } from "@/lib/supabase";
 import { requireProUser } from "@/lib/supabase-session";
 import { normalizeWallPack } from "@/lib/wall-packs";
 
@@ -46,20 +46,22 @@ export async function PUT(req: Request) {
     .filter((p): p is NonNullable<typeof p> => p != null)
     .slice(0, MAX_PACKS);
 
-  // Replace the caller's set. Not a transaction — see the note in the alerts
-  // route — but both halves are scoped to the caller by row-level security.
-  await sbRest("wall_packs?id=not.is.null", {
+  // Replace the caller's set: insert the new rows first, then drop the rest.
+  // A failed insert leaves the old set intact instead of wiping it. Both halves
+  // are scoped to the caller by row-level security.
+  const inserted =
+    packs.length > 0
+      ? await sbRest<{ id: string }[]>("wall_packs?select=id", {
+          method: "POST",
+          token: gate.user.token,
+          representation: true,
+          body: packs.map((pack) => ({ name: pack.name, payload: pack })),
+        })
+      : [];
+  await sbRest(`wall_packs?${notIn(inserted)}`, {
     method: "DELETE",
     token: gate.user.token,
   });
-
-  if (packs.length > 0) {
-    await sbRest("wall_packs", {
-      method: "POST",
-      token: gate.user.token,
-      body: packs.map((pack) => ({ name: pack.name, payload: pack })),
-    });
-  }
 
   return NextResponse.json({ packs });
 }

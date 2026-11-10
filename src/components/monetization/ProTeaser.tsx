@@ -3,11 +3,15 @@
 import Link from "next/link";
 import { useChainOptional } from "@/lib/chains/context";
 import { PRO_PRICE_LABEL } from "@/lib/pro";
+import { useIsNativeApp } from "@/hooks/useIsNativeApp";
 import { useProAccess } from "@/hooks/useProAccess";
 
 export function ProTeaser() {
   const chain = useChainOptional();
   const { pro } = useProAccess();
+  const native = useIsNativeApp();
+  // No upsell in the store apps: there is nowhere to buy it there.
+  if (native && !pro) return null;
   const href = pro ? "/account" : `/${chain?.slug ?? "btc"}/pro#checkout`;
   return (
     <aside className="rounded-[12px] border border-line bg-ink-elevated p-4">

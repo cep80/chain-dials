@@ -17,11 +17,9 @@ export async function GET(
     const result = await withRetryAndStale(`snapshot:${chain}`, () =>
       fetchChainSnapshot(chain),
     );
-    return NextResponse.json(result.data, { headers: freshnessHeaders(result) });
+    return NextResponse.json(result.data, { headers: freshnessHeaders(result, 5) });
   } catch (e) {
-    return NextResponse.json(
-      { error: e instanceof Error ? e.message : "snapshot failed" },
-      { status: 502 },
-    );
+    console.error("snapshot failed", chain, e);
+    return NextResponse.json({ error: "snapshot failed" }, { status: 502 });
   }
 }

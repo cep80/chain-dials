@@ -125,10 +125,7 @@ export async function syncSubscriptionToUser(
           ? "canceled"
           : "none";
 
-  const periodEndSec =
-    // Stripe SDK types vary; read defensively
-    (subscription as unknown as { current_period_end?: number })
-      .current_period_end ?? null;
+  const periodEndSec = subscriptionPeriodEndSec(subscription);
 
   const customerId =
     typeof subscription.customer === "string"
@@ -146,6 +143,67 @@ export async function syncSubscriptionToUser(
         ? new Date(periodEndSec * 1000).toISOString()
         : null,
     },
+  });
+}
+
+/**
+ * End of the paid period, in unix seconds. Since the 2025 "basil" API the
+ * period lives on each subscription item, not the subscription; older
+ * payloads still carry it at the top level.
+ */
+export function subscriptionPeriodEndSec(subscription: Stripe.Subscription): number | null {
+  const ends = (subscription.items?.data ?? [])
+    .map((item) => item.current_period_end)
+    .filter((v): v is number => typeof v === "number" && v > 0);
+  if (ends.length > 0) return Math.max(...ends);
+  const legacy = (subscription as unknown as { current_period_end?: number }).current_period_end;
+  return typeof legacy === "number" && legacy > 0 ? legacy : null;
+}
+
+const STATUS_RANK: Partial<Record<Stripe.Subscription.Status, number>> = {
+  active: 3,
+  trialing: 3,
+  past_due: 2,
+};
+
+/**
+ * The subscription that should decide entitlement for a customer: the best
+ * live one (active/trialing, then past_due), else the newest. Lets webhook
+ * events arrive late or out of order without flipping a paying user.
+ */
+export function pickEntitlementSubscription(
+  subscriptions: Stripe.Subscription[],
+): Stripe.Subscription | null {
+  let best: Stripe.Subscription | null = null;
+  for (const sub of subscriptions) {
+    if (!best) {
+      best = sub;
+      continue;
+    }
+    const rank = STATUS_RANK[sub.status] ?? 0;
+    const bestRank = STATUS_RANK[best.status] ?? 0;
+    if (rank > bestRank || (rank === bestRank && sub.created > best.created)) best = sub;
+  }
+  return best;
+}
+
+/**
+ * Re-reads the customer's subscriptions from Stripe and writes the winner.
+ * Webhook payloads are snapshots and can be stale, so they only tell us
+ * *which* customer to refresh.
+ */
+export async function syncCustomerEntitlement(userId: string, customerId: string) {
+  const stripe = getStripe();
+  const list = await stripe.subscriptions.list({ customer: customerId, status: "all", limit: 20 });
+  const winner = pickEntitlementSubscription(list.data);
+  if (winner) {
+    await syncSubscriptionToUser(userId, winner);
+    return;
+  }
+  await ensureProfile(userId);
+  await sbAdmin(`profiles?user_id=eq.${encodeURIComponent(userId)}`, {
+    method: "PATCH",
+    body: { pro_status: "none", pro_current_period_end: null },
   });
 }
 

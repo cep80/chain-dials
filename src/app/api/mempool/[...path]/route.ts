@@ -35,11 +35,16 @@ export async function GET(
       headers: { Accept: "application/json" },
       cache: "no-store",
       next: { revalidate: 0 },
+      signal: AbortSignal.timeout(8_000),
     });
     const contentType = res.headers.get("content-type") ?? "";
+    // A few seconds at the edge collapses every viewer's poll into one upstream call.
+    const cache = res.ok
+      ? { "Cache-Control": "public, max-age=0, s-maxage=3, stale-while-revalidate=10" }
+      : undefined;
     if (contentType.includes("application/json")) {
       const data = await res.json();
-      return NextResponse.json(data, { status: res.status });
+      return NextResponse.json(data, { status: res.status, headers: cache });
     }
     const text = await res.text();
     return new NextResponse(text, {

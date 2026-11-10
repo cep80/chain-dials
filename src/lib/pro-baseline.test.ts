@@ -77,6 +77,9 @@ describe("Pro monetization baseline (shipped free vs Pro)", () => {
     expect(isProActive("active")).toBe(true);
     expect(isProActive("trialing")).toBe(true);
     expect(isProActive("canceled")).toBe(false);
-    expect(isProActive("past_due")).toBe(true);
+    const hour = 60 * 60 * 1000;
+    expect(isProActive("past_due", new Date(Date.now() - hour))).toBe(true);
+    expect(isProActive("past_due", new Date(Date.now() - 4 * 24 * hour))).toBe(false);
+    expect(isProActive("past_due", null)).toBe(false);
   });
 });

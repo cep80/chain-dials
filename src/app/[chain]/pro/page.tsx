@@ -2,12 +2,15 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { AppShell } from "@/components/shell/AppShell";
 import { useChain } from "@/lib/chains/context";
 import { SUITE } from "@/lib/chains/registry";
 import { PRO_PRICE_LABEL } from "@/lib/pro";
+import { useIsNativeApp } from "@/hooks/useIsNativeApp";
 import { useProAccess } from "@/hooks/useProAccess";
+import { sessionFetch } from "@/lib/session-fetch";
 
 const FEATURES = [
   {
@@ -39,18 +42,20 @@ export default function ProPage() {
   const chain = useChain();
   const { pro, signedIn } = useProAccess();
   const { update } = useSession();
+  const native = useIsNativeApp();
+  const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const startCheckout = async () => {
     if (!signedIn) {
-      window.location.href = `/account/signin?callbackUrl=/${chain.slug}/pro`;
+      router.push(`/account/signin?callbackUrl=/${chain.slug}/pro`);
       return;
     }
     setBusy(true);
     setError(null);
     try {
-      const res = await fetch("/api/billing/checkout", {
+      const res = await sessionFetch("/api/billing/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ chain: chain.slug }),
@@ -80,6 +85,41 @@ export default function ProPage() {
           alerts, and desk memory: optional extras on top of free boards.
         </p>
 
+        {native ? (
+          <div
+            id="checkout"
+            className="mt-10 rounded-[14px] border border-accent/40 bg-ink-elevated p-6 md:p-8"
+          >
+            <p className="text-sm text-paper-muted">
+              {pro ? "You’re on Pro" : "Pro"}
+            </p>
+            <p className="mt-2 text-paper">
+              {pro
+                ? "Pro is active on this account."
+                : signedIn
+                  ? "Pro isn’t sold in this app. If you already have Pro on this account, it unlocks here automatically."
+                  : "Pro isn’t sold in this app. Already a member? Sign in and it unlocks here."}
+            </p>
+            <div className="mt-4 flex flex-wrap gap-3">
+              {signedIn ? (
+                <button
+                  type="button"
+                  className="rounded-full border border-line px-4 py-2 text-sm text-paper"
+                  onClick={() => void update()}
+                >
+                  Refresh Pro status
+                </button>
+              ) : (
+                <Link
+                  href={`/account/signin?callbackUrl=/${chain.slug}/pro`}
+                  className="btn-cta rounded-full px-5 py-2.5 text-sm"
+                >
+                  Sign in
+                </Link>
+              )}
+            </div>
+          </div>
+        ) : (
         <div
           id="checkout"
           className="mt-10 rounded-[14px] border border-accent/40 bg-ink-elevated p-6 md:p-8"
@@ -133,6 +173,7 @@ export default function ProPage() {
             </p>
           ) : null}
         </div>
+        )}
 
         <ul className="mt-10 grid gap-4 sm:grid-cols-2">
           {FEATURES.map((f) => (

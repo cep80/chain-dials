@@ -31,3 +31,27 @@ export function isAndroidNative(): boolean {
   ).Capacitor;
   return Boolean(cap?.isNativePlatform?.() && cap.getPlatform?.() === "android");
 }
+
+const APP_HOSTS = new Set(["chaindials.com", "www.chaindials.com"]);
+
+/**
+ * In-app path for a deep link (https://chaindials.com/... or chaindials://...),
+ * or null when the URL isn't ours.
+ */
+export function deepLinkPath(raw: string): string | null {
+  let url: URL;
+  try {
+    url = new URL(raw);
+  } catch {
+    return null;
+  }
+  if (url.protocol === "https:" && APP_HOSTS.has(url.hostname)) {
+    return `${url.pathname}${url.search}${url.hash}` || "/";
+  }
+  if (url.protocol === "chaindials:") {
+    // chaindials://btc/solo parses "btc" as the host.
+    const path = `/${url.hostname}${url.pathname}`.replace(/\/{2,}/g, "/").replace(/\/$/, "") || "/";
+    return `${path}${url.search}${url.hash}`;
+  }
+  return null;
+}

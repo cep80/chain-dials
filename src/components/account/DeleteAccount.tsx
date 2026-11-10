@@ -2,6 +2,7 @@
 
 import { signOut } from "next-auth/react";
 import { useState } from "react";
+import { sessionFetch } from "@/lib/session-fetch";
 
 /** In-app account deletion, which both app stores require. */
 export function DeleteAccount({ pro }: { pro: boolean }) {
@@ -15,7 +16,7 @@ export function DeleteAccount({ pro }: { pro: boolean }) {
     setBusy(true);
     setError(null);
     try {
-      const res = await fetch("/api/account", {
+      const res = await sessionFetch("/api/account", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ password }),

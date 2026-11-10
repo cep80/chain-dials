@@ -6,6 +6,7 @@ import { useProAccess } from "@/hooks/useProAccess";
 import { useDashboardStore } from "@/lib/store";
 import { saveFavorites } from "@/lib/favorites";
 import type { MetricId } from "@/types/metrics";
+import { sessionFetch } from "@/lib/session-fetch";
 
 type LayoutRow = {
   id: string;
@@ -27,7 +28,7 @@ export function SavedLayoutsPanel() {
 
   const refresh = useCallback(async () => {
     if (!pro || !signedIn) return;
-    const res = await fetch(`/api/pro/layouts?chainId=${chain.id}`, {
+    const res = await sessionFetch(`/api/pro/layouts?chainId=${chain.id}`, {
       cache: "no-store",
     });
     if (!res.ok) return;
@@ -50,7 +51,7 @@ export function SavedLayoutsPanel() {
     setBusy(true);
     setMessage(null);
     try {
-      const res = await fetch("/api/pro/layouts", {
+      const res = await sessionFetch("/api/pro/layouts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -87,7 +88,7 @@ export function SavedLayoutsPanel() {
   const remove = async (id: string) => {
     setBusy(true);
     try {
-      await fetch(`/api/pro/layouts?id=${encodeURIComponent(id)}`, {
+      await sessionFetch(`/api/pro/layouts?id=${encodeURIComponent(id)}`, {
         method: "DELETE",
       });
       await refresh();

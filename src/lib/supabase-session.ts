@@ -47,6 +47,17 @@ export async function requireUser(
       error: NextResponse.json({ error: "Sign in required" }, { status: 401 }),
     };
   }
+  // Route handlers can't refresh the Supabase token (see above), and an
+  // expired one fails at PostgREST as a 500. Say so plainly; sessionFetch on
+  // the client refreshes the session and retries.
+  if (typeof token.sbExpiresAt === "number" && Date.now() >= token.sbExpiresAt - 5_000) {
+    return {
+      error: NextResponse.json(
+        { error: "Session expired", code: "session_expired" },
+        { status: 401 },
+      ),
+    };
+  }
   return {
     user: {
       id: token.sub,

@@ -227,6 +227,16 @@ async function rest<T>(
 }
 
 /** One PostgREST call as the user. `path` starts with the table, e.g. `layouts?select=*`. */
+/**
+ * PostgREST filter matching every row except `keep` (by id), or every row when
+ * `keep` is empty. Used to drop the old set after inserting a replacement.
+ */
+export function notIn(keep: { id: string }[]): string {
+  if (keep.length === 0) return "id=not.is.null";
+  const ids = keep.map((row) => `"${String(row.id).replace(/"/g, "")}"`).join(",");
+  return `id=not.in.(${encodeURIComponent(ids)})`;
+}
+
 export async function sbRest<T>(path: string, opts: RestOptions): Promise<T> {
   const { token, ...rest_ } = opts;
   return rest<T>(path, { apikey: PUBLISHABLE, Authorization: `Bearer ${token}` }, rest_);

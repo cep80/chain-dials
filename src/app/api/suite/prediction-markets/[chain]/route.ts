@@ -21,13 +21,9 @@ export async function GET(
       },
     });
   } catch (error) {
+    console.error("prediction-market comparison failed", chain, error);
     return NextResponse.json(
-      {
-        error:
-          error instanceof Error
-            ? error.message
-            : "prediction-market comparison failed",
-      },
+      { error: "prediction-market comparison failed" },
       { status: 502 },
     );
   }

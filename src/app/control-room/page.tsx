@@ -18,6 +18,7 @@ import {
   type WallPack,
   type WallPackSlot,
 } from "@/lib/wall-packs";
+import { sessionFetch } from "@/lib/session-fetch";
 
 function loadLocalPacks(): WallPack[] {
   try {
@@ -81,7 +82,7 @@ export default function ControlRoomPage() {
 
   const loadCloud = useCallback(async () => {
     if (!pro || !signedIn) return;
-    const res = await fetch("/api/pro/wall-packs", { cache: "no-store" });
+    const res = await sessionFetch("/api/pro/wall-packs", { cache: "no-store" });
     if (!res.ok) return;
     const data = (await res.json()) as { packs: WallPack[] };
     if (data.packs?.length) {
@@ -110,7 +111,7 @@ export default function ControlRoomPage() {
     setSaving(true);
     setMessage(null);
     try {
-      const res = await fetch("/api/pro/wall-packs", {
+      const res = await sessionFetch("/api/pro/wall-packs", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ packs }),

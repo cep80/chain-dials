@@ -59,6 +59,7 @@ async function getJson<T>(path: string): Promise<T> {
     headers: { Accept: "application/json" },
     cache: "no-store",
     next: { revalidate: 0 },
+    signal: AbortSignal.timeout(8_000),
   });
   if (!res.ok) {
     throw new Error(`mempool ${path} → ${res.status}`);

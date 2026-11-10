@@ -106,7 +106,10 @@ export async function PUT(req: Request) {
     });
   }
 
-  const rows = await sbRest<RuleRow[]>(`${SELECT}&order=created_at.asc`, {
+  // Return only the chains this save touched. Kinds repeat across chains, so
+  // handing back every chain let the client pick up another chain's values.
+  const scope = chainIds.length ? `&chain_id=in.(${encodeURIComponent(list)})` : "";
+  const rows = await sbRest<RuleRow[]>(`${SELECT}${scope}&order=created_at.asc`, {
     token: gate.user.token,
   });
   return NextResponse.json({ rules: rows.map(toRule) });

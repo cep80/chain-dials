@@ -3,7 +3,7 @@ import Credentials from "next-auth/providers/credentials";
 import { z } from "zod";
 import { sbLogin, sbRefresh, sbRest } from "@/lib/supabase";
 import { isProActive } from "@/lib/pro";
-import { rateLimit } from "@/lib/rate-limit";
+import { clientIp, rateLimit } from "@/lib/rate-limit";
 
 const credentialsSchema = z.object({
   email: z.string().email(),
@@ -31,14 +31,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(raw) {
+      async authorize(raw, request) {
         const parsed = credentialsSchema.safeParse(raw);
         if (!parsed.success) return null;
         const email = parsed.data.email.toLowerCase().trim();
         // Supabase throttles this too; keeping a local limit avoids spending
         // that budget (and the round trip) on an obvious flood.
-        const limited = rateLimit(`auth:cred:${email}`, 10, 15 * 60 * 1000);
-        if (!limited.ok) return null;
+        // Keyed by IP + email so a stranger can't lock a known user out, plus a
+        // looser per-IP cap against spraying many emails.
+        const ip = request instanceof Request ? clientIp(request) : "unknown";
+        const perAccount = rateLimit(`auth:cred:${ip}:${email}`, 10, 15 * 60 * 1000);
+        const perIp = rateLimit(`auth:cred-ip:${ip}`, 40, 15 * 60 * 1000);
+        if (!perAccount.ok || !perIp.ok) return null;
 
         const session = await sbLogin(email, parsed.data.password);
         if (!session) return null;

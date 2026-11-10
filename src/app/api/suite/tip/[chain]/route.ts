@@ -18,11 +18,9 @@ export async function GET(
     const result = await withRetryAndStale(`tip:${chain}`, () => fetchTip(chain), {
       maxStaleMs: 30_000,
     });
-    return NextResponse.json(result.data, { headers: freshnessHeaders(result) });
+    return NextResponse.json(result.data, { headers: freshnessHeaders(result, 2) });
   } catch (e) {
-    return NextResponse.json(
-      { error: e instanceof Error ? e.message : "tip fetch failed" },
-      { status: 502 },
-    );
+    console.error("tip fetch failed", chain, e);
+    return NextResponse.json({ error: "tip fetch failed" }, { status: 502 });
   }
 }

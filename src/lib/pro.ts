@@ -24,7 +24,9 @@ export function isProActive(
   }
   if (status === "active" || status === "trialing") return true;
   if (status === "past_due") {
-    if (!periodEnd) return true;
+    // Grace runs 3 days past the paid period. No known period end means no
+    // grace: otherwise a failed renewal would keep Pro indefinitely.
+    if (!periodEnd) return false;
     const end =
       typeof periodEnd === "string" ? Date.parse(periodEnd) : periodEnd.getTime();
     return Number.isFinite(end) && end + 3 * 24 * 60 * 60 * 1000 > Date.now();

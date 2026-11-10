@@ -1,6 +1,7 @@
 "use client";
 
 import { Hint } from "@/components/ui/Hint";
+import { useIsNativeApp } from "@/hooks/useIsNativeApp";
 
 const LN_ADDRESS = process.env.NEXT_PUBLIC_LN_ADDRESS?.trim() ?? "";
 const ENABLED =
@@ -16,7 +17,9 @@ function BoltIcon() {
 
 /** Suite tip jar (Lightning). Hidden until NEXT_PUBLIC_LN_ADDRESS is set. */
 export function TipJar({ label = "Tip a few sats" }: { label?: string }) {
-  if (!ENABLED) return null;
+  const native = useIsNativeApp();
+  // Tips for digital content fall under store payment rules; web only.
+  if (!ENABLED || native) return null;
 
   const href = LN_ADDRESS.includes("@")
     ? `lightning:${LN_ADDRESS}`

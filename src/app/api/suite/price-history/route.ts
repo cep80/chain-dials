@@ -34,11 +34,7 @@ export async function GET(req: Request) {
       },
     });
   } catch (e) {
-    return NextResponse.json(
-      {
-        error: e instanceof Error ? e.message : "price history fetch failed",
-      },
-      { status: 502 },
-    );
+    console.error("price history fetch failed", chainRaw, range, e);
+    return NextResponse.json({ error: "price history fetch failed" }, { status: 502 });
   }
 }

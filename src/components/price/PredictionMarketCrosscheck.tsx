@@ -1,6 +1,7 @@
 "use client";
 
 import { formatPercent, formatRelativeAge } from "@/lib/format";
+import { useIsNativeApp } from "@/hooks/useIsNativeApp";
 import { usePredictionMarketCrosscheck } from "@/hooks/usePredictionMarketCrosscheck";
 import { ReadingStatus } from "@/components/status/ReadingStatus";
 import type { ChainId } from "@/lib/chains/types";
@@ -25,6 +26,12 @@ function VenueLink({
 }
 
 export function PredictionMarketCrosscheck({ chain }: { chain: ChainId }) {
+  // Real-money market prompts stay off the store apps (gambling policies).
+  if (useIsNativeApp()) return null;
+  return <Crosscheck chain={chain} />;
+}
+
+function Crosscheck({ chain }: { chain: ChainId }) {
   const { data, loading, error, reload, updatedAt, retryAt } = usePredictionMarketCrosscheck(chain);
   const hasGaps = Boolean(data?.crossVenue.length || data?.withinVenue.length);
   const mismatch = data?.ruleMismatches[0] ?? null;
@@ -76,8 +83,8 @@ export function PredictionMarketCrosscheck({ chain }: { chain: ChainId }) {
                 >
                   <p className="text-paper">{gap.title}</p>
                   <p className="mt-1">
-                    Buy Polymarket {gap.buyPolymarket.toUpperCase()} + Kalshi{" "}
-                    {gap.buyKalshi.toUpperCase()} · gross edge{" "}
+                    Polymarket {gap.buyPolymarket.toUpperCase()} vs Kalshi{" "}
+                    {gap.buyKalshi.toUpperCase()} · gross gap{" "}
                     {formatPercent(gap.grossEdgePct, 2)}
                   </p>
                   <p className="mt-1">
@@ -94,7 +101,7 @@ export function PredictionMarketCrosscheck({ chain }: { chain: ChainId }) {
                 >
                   <p className="text-paper">{gap.title}</p>
                   <p className="mt-1">
-                    {gap.venue} YES + NO asks · gross edge{" "}
+                    {gap.venue} YES + NO asks · gross gap{" "}
                     {formatPercent(gap.grossEdgePct, 2)}
                   </p>
                   <p className="mt-1">
@@ -141,6 +148,10 @@ export function PredictionMarketCrosscheck({ chain }: { chain: ChainId }) {
           <p className="mt-2 text-[10px] uppercase tracking-[0.14em] text-paper-muted">
             {kalshiOn ? "Polymarket + Kalshi" : "Polymarket only"} ·{" "}
             {formatRelativeAge(data.asOf)} · fees and fill risk excluded
+          </p>
+          <p className="mt-1 text-[11px] leading-relaxed text-paper-muted">
+            Informational price comparison only, not a recommendation to trade.
+            Prediction markets are restricted in many places.
           </p>
         </>
       ) : null}

@@ -25,13 +25,14 @@ const config: CapacitorConfig = {
   server: {
     url: serverUrl,
     cleartext: isHttp,
+    // Dev hosts only ride along on cleartext dev builds, never in store builds.
     allowNavigation: [
-      "localhost",
-      "127.0.0.1",
-      "10.0.2.2",
+      ...(isHttp ? ["localhost", "127.0.0.1", "10.0.2.2"] : []),
       "*.chaindials.com",
       "chaindials.com",
     ],
+    // Local page (in webDir) shown when the remote site can't load, e.g. offline.
+    errorPath: "offline.html",
   },
   plugins: {
     SplashScreen: {
@@ -54,7 +55,6 @@ const config: CapacitorConfig = {
     contentInset: "automatic",
     preferredContentMode: "mobile",
     backgroundColor: "#0a0c10",
-    scheme: "Chain Dials",
   },
   android: {
     backgroundColor: "#0a0c10",

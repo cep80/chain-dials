@@ -69,6 +69,13 @@ function downsample(points: PricePoint[], maxPoints: number): PricePoint[] {
   return out;
 }
 
+/** Pro keys are only accepted on the pro host; demo/keyless use the public one. */
+function geckoBase(): string {
+  return process.env.COINGECKO_API_KEY?.trim()
+    ? "https://pro-api.coingecko.com/api/v3"
+    : "https://api.coingecko.com/api/v3";
+}
+
 async function geckoHeaders(): Promise<HeadersInit> {
   const headers: Record<string, string> = { accept: "application/json" };
   const demo = process.env.COINGECKO_DEMO_API_KEY?.trim();
@@ -84,7 +91,7 @@ async function fetchCoinGeckoMarketChart(
   revalidate: number,
 ): Promise<{ prices: [number, number][]; volumes: [number, number][] }> {
   const url = new URL(
-    `https://api.coingecko.com/api/v3/coins/${coinId}/market_chart`,
+    `${geckoBase()}/coins/${coinId}/market_chart`,
   );
   url.searchParams.set("vs_currency", "usd");
   url.searchParams.set("days", days);
@@ -114,7 +121,7 @@ async function fetchCoinGeckoOhlc(
   const allowed = new Set(["1", "7", "14", "30", "90", "180", "365", "max"]);
   const daysParam = allowed.has(days) ? days : "30";
 
-  const url = new URL(`https://api.coingecko.com/api/v3/coins/${coinId}/ohlc`);
+  const url = new URL(`${geckoBase()}/coins/${coinId}/ohlc`);
   url.searchParams.set("vs_currency", "usd");
   url.searchParams.set("days", daysParam);
 

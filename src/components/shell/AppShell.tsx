@@ -12,6 +12,7 @@ import { freshnessLabel, SUITE } from "@/lib/chains/registry";
 import { formatRelativeAge } from "@/lib/format";
 import { isProEnabled, PRO_PRICE_USD } from "@/lib/pro";
 import { useDashboardStore } from "@/lib/store";
+import { useIsNativeApp } from "@/hooks/useIsNativeApp";
 
 export function AppShell({
   children,
@@ -22,6 +23,7 @@ export function AppShell({
   suiteHome?: boolean;
 }) {
   const chain = useChainOptional();
+  const native = useIsNativeApp();
   const startBtc = useDashboardStore((s) => s.start);
   const hydrate = useDashboardStore((s) => s.hydrate);
   const resetLive = useDashboardStore((s) => s.resetLive);
@@ -287,7 +289,7 @@ export function AppShell({
                     className="min-h-11 inline-flex items-center text-paper-muted transition hover:text-paper"
                   >
                     Pro
-                    {!isProEnabled() ? (
+                    {!isProEnabled() && !native ? (
                       <span className="ml-1 text-[10px] uppercase tracking-wider opacity-60">
                         ${PRO_PRICE_USD}
                       </span>

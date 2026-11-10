@@ -21,6 +21,7 @@ import {
 import { isRegimeId } from "@/lib/regime/types";
 import { normalizeHashrate } from "@/lib/viz-scale";
 import { useDashboardStore } from "@/lib/store";
+import { sessionFetch } from "@/lib/session-fetch";
 
 type Rule = {
   id?: string;
@@ -109,7 +110,7 @@ function AlertsContent() {
     if (!pro) return;
     if (!signedIn) { loadedRulesKey.current = rulesKey; setRulesLoadedKey(rulesKey); setRulesReady(true); return; }
     try {
-    const res = await fetch(`/api/pro/alerts?chainId=${chain.id}`, {
+    const res = await sessionFetch(`/api/pro/alerts?chainId=${chain.id}`, {
       cache: "no-store",
       signal,
     });
@@ -259,7 +260,7 @@ function AlertsContent() {
     setSaving(true);
     setMessage(null);
     try {
-      const res = await fetch("/api/pro/alerts", {
+      const res = await sessionFetch("/api/pro/alerts", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

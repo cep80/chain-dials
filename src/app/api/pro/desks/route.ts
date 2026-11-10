@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { sbRest } from "@/lib/supabase";
+import { notIn, sbRest } from "@/lib/supabase";
 import { requireProUser } from "@/lib/supabase-session";
 import { normalizeDeskPack } from "@/lib/forensics/desk-pack";
 
@@ -46,24 +46,26 @@ export async function PUT(req: Request) {
     .filter((d): d is NonNullable<typeof d> => d != null)
     .slice(0, MAX_DESKS);
 
-  // Replace the caller's set. Not a transaction — see the note in the alerts
-  // route — but both halves are scoped to the caller by row-level security.
-  await sbRest("desk_packs?id=not.is.null", {
+  // Replace the caller's set: insert the new rows first, then drop the rest.
+  // A failed insert leaves the old set intact instead of wiping it. Both halves
+  // are scoped to the caller by row-level security.
+  const inserted =
+    desks.length > 0
+      ? await sbRest<{ id: string }[]>("desk_packs?select=id", {
+          method: "POST",
+          token: gate.user.token,
+          representation: true,
+          body: desks.map((desk) => ({
+            name: desk.name,
+            chain_id: desk.chainId,
+            payload: desk,
+          })),
+        })
+      : [];
+  await sbRest(`desk_packs?${notIn(inserted)}`, {
     method: "DELETE",
     token: gate.user.token,
   });
-
-  if (desks.length > 0) {
-    await sbRest("desk_packs", {
-      method: "POST",
-      token: gate.user.token,
-      body: desks.map((desk) => ({
-        name: desk.name,
-        chain_id: desk.chainId,
-        payload: desk,
-      })),
-    });
-  }
 
   return NextResponse.json({ desks });
 }
