@@ -28,7 +28,8 @@ jobs:
 
       - name: Install node modules
         run: |
-          npm ci --ignore-scripts
+          # npm install, not ci: the lock file trails optional macOS-only deps.
+          npm install --ignore-scripts --no-audit --no-fund
           node scripts/fix-spm-paths.mjs
 
       - name: Compile widget extension (simulator, unsigned)
