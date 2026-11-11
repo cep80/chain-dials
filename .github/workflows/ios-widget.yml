@@ -1,0 +1,48 @@
+name: iOS widget
+
+# Compiles the WidgetKit extension and renders the dial art on a macOS runner,
+# since the project is developed without a Mac. Unsigned simulator build, so no
+# Apple account or secrets are needed.
+
+on:
+  push:
+    paths:
+      - "ios/**"
+      - "scripts/ios-widget-snapshots/**"
+      - ".github/workflows/ios-widget.yml"
+  workflow_dispatch:
+
+jobs:
+  widget:
+    runs-on: macos-15
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compile widget extension (simulator, unsigned)
+        run: |
+          xcodebuild -version
+          xcodebuild \
+            -project ios/App/App.xcodeproj \
+            -target ChainDialsWidget \
+            -sdk iphonesimulator \
+            -configuration Debug \
+            CODE_SIGNING_ALLOWED=NO \
+            -quiet \
+            build
+
+      - name: Render dial snapshots
+        if: always()
+        run: |
+          swiftc -parse-as-library \
+            ios/App/ChainDialsWidget/DialArt.swift \
+            scripts/ios-widget-snapshots/Render.swift \
+            -o render
+          ./render snapshots
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: widget-snapshots
+          path: snapshots
+          if-no-files-found: ignore
