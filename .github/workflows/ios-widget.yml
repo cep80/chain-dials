@@ -19,6 +19,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Xcode resolves the app's local Capacitor packages (node_modules) even
+      # when building only the widget target.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install node modules
+        run: |
+          npm ci --ignore-scripts
+          node scripts/fix-spm-paths.mjs
+
       - name: Compile widget extension (simulator, unsigned)
         run: |
           xcodebuild -version
