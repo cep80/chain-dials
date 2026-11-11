@@ -73,6 +73,23 @@ export function NativeAppProvider({ children }: { children: React.ReactNode }) {
       });
       cleanups.push(() => urlSub.remove());
 
+      // A cold start from a link or home-screen widget tap arrives as the
+      // launch URL, not an appUrlOpen event (Android never replays it).
+      // The launch URL sticks for the whole process, and full page loads re-run
+      // this boot, so follow it once per session or every reload snaps back.
+      try {
+        const launch = await App.getLaunchUrl();
+        const path = launch?.url ? deepLinkPath(launch.url) : null;
+        const seenKey = "cd.launchUrlHandled";
+        if (!cancelled && path && sessionStorage.getItem(seenKey) !== launch!.url) {
+          sessionStorage.setItem(seenKey, launch!.url);
+          const here = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+          if (path !== here) window.location.assign(path);
+        }
+      } catch {
+        // No launch URL support on this platform.
+      }
+
       try {
         const { bootPush } = await import("@/lib/native-push");
         cleanups.push(await bootPush((path) => window.location.assign(path)));

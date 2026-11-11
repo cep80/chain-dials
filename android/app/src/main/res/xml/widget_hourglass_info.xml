@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The bench is 4:3, so it defaults to three cells wide. -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:description="@string/widget_hourglass_description"
+    android:initialLayout="@layout/widget_dial"
+    android:minWidth="180dp"
+    android:minHeight="110dp"
+    android:minResizeWidth="110dp"
+    android:minResizeHeight="80dp"
+    android:targetCellWidth="3"
+    android:targetCellHeight="2"
+    android:maxResizeWidth="420dp"
+    android:maxResizeHeight="320dp"
+    android:resizeMode="horizontal|vertical"
+    android:updatePeriodMillis="1800000"
+    android:widgetCategory="home_screen" />

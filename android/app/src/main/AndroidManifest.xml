@@ -28,6 +28,66 @@
             </intent-filter>
         </activity>
 
+        <receiver
+            android:name=".widget.BitcoinWidgetProvider"
+            android:exported="false"
+            android:label="Bitcoin">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_bitcoin_info" />
+        </receiver>
+
+        <receiver
+            android:name=".widget.MetronomeWidgetProvider"
+            android:exported="false"
+            android:label="Block Metronome">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_metronome_info" />
+        </receiver>
+
+        <receiver
+            android:name=".widget.SigilWidgetProvider"
+            android:exported="false"
+            android:label="Block Sigil">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_sigil_info" />
+        </receiver>
+
+        <receiver
+            android:name=".widget.HourglassWidgetProvider"
+            android:exported="false"
+            android:label="Issuance Hourglass">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_hourglass_info" />
+        </receiver>
+
+        <receiver
+            android:name=".widget.ForgeWidgetProvider"
+            android:exported="false"
+            android:label="Hashrate Forge">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_forge_info" />
+        </receiver>
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"

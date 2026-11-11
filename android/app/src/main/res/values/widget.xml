@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="widget_ink">#0A0C10</color>
+    <color name="widget_line">#2A3140</color>
+    <color name="widget_paper">#F3EFE6</color>
+    <color name="widget_muted">#A8A195</color>
+    <color name="widget_accent">#F7931A</color>
+    <color name="widget_up">#3ECF8E</color>
+    <color name="widget_down">#FF5C5C</color>
+
+    <string name="widget_bitcoin_description">Price, 24h trend, latest block, fees and the halving clock.</string>
+    <string name="widget_metronome_description">Time since the latest block. One sweep is the ten-minute target.</string>
+    <string name="widget_sigil_description">A glyph engraved from the latest block hash. New block, new glyph.</string>
+    <string name="widget_hourglass_description">Sand tracks this subsidy era, counting down to the next halving.</string>
+    <string name="widget_forge_description">Network hashrate as heat, with the difficulty epoch in orbit.</string>
+    <string name="widget_waiting">Waiting for the chain</string>
+    <string name="widget_offline">offline</string>
+    <string name="widget_fees_title">FEES · sat/vB</string>
+    <string name="widget_halving_title">HALVING</string>
+
+    <style name="WidgetFeeRow">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">2dp</item>
+        <item name="android:fontFamily">monospace</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:textColor">@color/widget_paper</item>
+        <item name="android:textSize">11sp</item>
+    </style>
+</resources>

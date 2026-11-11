@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The dial is round, so there is no card behind it; it sits on the wallpaper like the board's bezels. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="4dp">
+
+    <ImageView
+        android:id="@+id/widget_dial"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="fitCenter" />
+
+    <Chronometer
+        android:id="@+id/widget_reading"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fontFamily="monospace"
+        android:gravity="center"
+        android:importantForAccessibility="no"
+        android:letterSpacing="0.08"
+        android:textColor="#F3F6FB"
+        android:visibility="gone" />
+</FrameLayout>

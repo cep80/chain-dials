@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 30 minutes is Android's floor for updatePeriodMillis. Resizing and tapping the block line also refresh. -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:description="@string/widget_bitcoin_description"
+    android:initialLayout="@layout/widget_bitcoin_loading"
+    android:previewLayout="@layout/widget_bitcoin_preview"
+    android:minWidth="110dp"
+    android:minHeight="110dp"
+    android:minResizeWidth="110dp"
+    android:minResizeHeight="100dp"
+    android:targetCellWidth="2"
+    android:targetCellHeight="2"
+    android:maxResizeWidth="420dp"
+    android:maxResizeHeight="220dp"
+    android:resizeMode="horizontal|vertical"
+    android:updatePeriodMillis="1800000"
+    android:widgetCategory="home_screen" />

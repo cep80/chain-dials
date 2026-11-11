@@ -91,6 +91,40 @@ Quick path:
 | Safe areas | Notch / home indicator via sticky header + footer |
 | Keyboard | Body resize |
 
+## Home-screen widgets
+
+Both widgets read one public endpoint, `GET /api/widget` (`src/lib/widget.ts`): BTC price, 24h change and sparkline, latest block, fees, and halving progress. The CDN caches it for 60s. Each section is nullable, so if one upstream is down only that line goes blank. Both widgets keep the last good reading and mark it `offline` when a fetch fails.
+
+| | iOS (`ios/App/ChainDialsWidget`) | Android (`android/.../widget`) |
+|---|---|---|
+| Sizes | Small, Medium, Lock Screen (rectangular, circular halving gauge, inline) | Resizable 2x2 to 4x2. At 230dp or wider it adds fees and halving |
+| Refresh | Asks for every 15 min (iOS budgets the actual rate) | Every 30 min (Android's minimum), on resize, and when you tap the block line |
+| Block clock | `Text(.relative)` ticks live | `Chronometer` ticks live |
+| Tap | Opens `chaindials://btc` | Opens `https://chaindials.com/btc` |
+
+### Dial widgets
+
+Four of the board's instruments also ship as widgets: **Block Metronome**, **Block Sigil**, **Hashrate Forge** and **Issuance Hourglass**. They are native redraws of the SVG dials in the same 240-unit coordinates, so a coordinate change in `src/components/viz/*.tsx` should be copied to `ios/App/ChainDialsWidget/DialArt.swift` and `android/.../widget/*Art.java`. The Sigil glyph is a line-for-line port of `buildSigil()`, so keep the three in step.
+
+| | iOS | Android |
+|---|---|---|
+| Sizes | Dials: Small. Hourglass: Medium, with its readings as text beside the glass | Dials: resizable square. Hourglass: 3x2 on a dark plate |
+| Metronome hand | 30 timeline entries a minute apart per reload | Redrawn about once a minute by a non-waking alarm (screen on only) |
+| Readings | Metronome uses `Text(.timer)` | Metronome uses `Chronometer` |
+| Fetching | All widgets share the cached reading and refetch at most every 3–10 min | Same, every 3 min at most |
+
+**iOS setup (once, on a Mac):** open the project in Xcode. Select the **ChainDialsWidget** target, then under Signing & Capabilities pick the same team as **App**. The widget needs iOS 16+, while the app still supports iOS 15. To test against a dev server, set the `CD_WIDGET_API_BASE` build setting on the widget target to e.g. `http://localhost:3000`.
+
+**Android against a local server:**
+
+```bash
+cd android && ./gradlew installDebug -PwidgetApiBase=http://10.0.2.2:3000
+```
+
+Capacitor 8 needs JDK 21 or newer to build Android. Android Studio's bundled `jbr` works.
+
+The endpoint has to be deployed to production before store builds ship. Until then the widgets show "Waiting for the chain".
+
 ## PWA (no store)
 
 Open the site in Safari / Chrome → **Add to Home Screen**. Manifest + icons live under `public/`.
